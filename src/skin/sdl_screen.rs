@@ -11,8 +11,10 @@ use std::time::Duration;
 use crate::abst::screen::Screen;
 use crate::exp::string_to_input::StringToInput;
 
+mod header;
 mod text;
 
+use header::Header;
 use text::TextBuilder;
 
 pub struct SDLScreen {
@@ -54,17 +56,15 @@ impl SDLScreen {
       .load_font(std::path::Path::new("./asset/mplus-1m-medium.ttf"), 128)
       .unwrap();
 
-    let header_text = TextBuilder::new()
-      .text("Header")
-      .build(&font, &texture_creator);
-    let section_text = TextBuilder::new()
+    let header = Header::new("Music Name", "Composer");
+    let section_text = TextBuilder::new(&font, &texture_creator)
       .text("Section")
-      .build(&font, &texture_creator);
-    let keyboard_text = TextBuilder::new()
+      .build();
+    let keyboard_text = TextBuilder::new(&font, &texture_creator)
       .text("Keyboard")
-      .build(&font, &texture_creator);
+      .build();
 
-    let hedaer_dim = Rect::new(0, 0, self.width, 100);
+    let header_dim = Rect::new(0, 0, self.width, 100);
     let section_dim = Rect::new(0, 100, self.width, 200);
     let keyboard_dim = Rect::new(0, self.height as i32 - 300, self.width, 300);
 
@@ -82,8 +82,9 @@ impl SDLScreen {
         self.canvas.clear();
 
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-        self.canvas.draw_rect(hedaer_dim).unwrap();
-        header_text.render(&mut self.canvas, hedaer_dim).unwrap();
+        self.canvas.draw_rect(header_dim).unwrap();
+        let builder = TextBuilder::new(&font, &texture_creator);
+        header.draw(&mut self.canvas, builder).unwrap();
 
         self.canvas.draw_rect(section_dim).unwrap();
         section_text.render(&mut self.canvas, section_dim).unwrap();

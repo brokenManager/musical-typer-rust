@@ -2,16 +2,15 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, RenderTarget, Texture, TextureCreator};
 use sdl2::ttf::Font;
-use sdl2::video::WindowContext;
 
 pub struct Text<'ttf> {
   texture: Texture<'ttf>,
 }
 
 impl<'ttf> Text<'ttf> {
-  fn new(
+  fn new<T>(
     font: &'ttf Font<'ttf, 'static>,
-    texture_creator: &'ttf TextureCreator<WindowContext>,
+    texture_creator: &'ttf TextureCreator<T>,
     text: &str,
     color: Color,
   ) -> Text<'ttf> {
@@ -27,34 +26,42 @@ impl<'ttf> Text<'ttf> {
   }
 }
 
-pub struct TextBuilder {
+pub struct TextBuilder<'a, T> {
   text: String,
   color: Color,
+  font: &'a Font<'a, 'static>,
+  texture_creator: &'a TextureCreator<T>,
 }
 
-impl TextBuilder {
-  pub fn new<'a>() -> TextBuilder {
+impl<'a, T> TextBuilder<'a, T> {
+  pub fn new(
+    font: &'a Font<'a, 'static>,
+    texture_creator: &'a TextureCreator<T>,
+  ) -> TextBuilder<'a, T> {
     TextBuilder {
       text: "".to_owned(),
       color: Color::RGB(0, 0, 0),
+      font,
+      texture_creator,
     }
   }
 
-  pub fn text(&mut self, new_text: &str) -> &mut TextBuilder {
+  pub fn text(&mut self, new_text: &str) -> &mut TextBuilder<'a, T> {
     self.text = new_text.to_owned();
     self
   }
 
-  pub fn color(&mut self, new_color: Color) -> &mut TextBuilder {
+  pub fn color(&mut self, new_color: Color) -> &mut TextBuilder<'a, T> {
     self.color = new_color;
     self
   }
 
-  pub fn build<'a>(
-    &self,
-    font: &'a Font<'a, 'static>,
-    texture_creator: &'a TextureCreator<WindowContext>,
-  ) -> Text<'a> {
-    Text::new(font, texture_creator, self.text.as_str(), self.color)
+  pub fn build(&self) -> Text<'a> {
+    Text::new::<T>(
+      self.font,
+      self.texture_creator,
+      self.text.as_str(),
+      self.color,
+    )
   }
 }
