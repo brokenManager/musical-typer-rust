@@ -8,3 +8,7 @@ edition = "2018"
 
 [dependencies]
 sdl2 = "0.33.0"
+
+[features]
+default = []
+use_sdl2_mac_framework = ["sdl2/use_mac_framework"]
