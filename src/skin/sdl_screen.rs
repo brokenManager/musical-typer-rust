@@ -2,9 +2,8 @@ extern crate sdl2;
 
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
-use sdl2::render::{Canvas, RenderTarget, Texture, TextureCreator};
-use sdl2::ttf::Font;
-use sdl2::video::{Window, WindowContext};
+use sdl2::render::Canvas;
+use sdl2::video::Window;
 use sdl2::Sdl;
 
 use std::time::Duration;
@@ -12,28 +11,9 @@ use std::time::Duration;
 use crate::abst::screen::Screen;
 use crate::exp::string_to_input::StringToInput;
 
-struct Text<'ttf> {
-  texture: Texture<'ttf>,
-}
+mod text;
 
-impl<'ttf> Text<'ttf> {
-  pub fn new(
-    font: &'ttf Font<'ttf, 'static>,
-    texture_creator: &'ttf TextureCreator<WindowContext>,
-    text: &str,
-    color: Color,
-  ) -> Text<'ttf> {
-    let surface = font.render(text).blended(color).unwrap();
-    let texture = texture_creator
-      .create_texture_from_surface(&surface)
-      .unwrap();
-    Text { texture }
-  }
-
-  pub fn render<T: RenderTarget>(&self, canvas: &mut Canvas<T>, to: Rect) -> Result<(), String> {
-    canvas.copy(&self.texture, None, Some(to))
-  }
-}
+use text::TextBuilder;
 
 pub struct SDLScreen {
   width: u32,
@@ -74,9 +54,15 @@ impl SDLScreen {
       .load_font(std::path::Path::new("./asset/mplus-1m-medium.ttf"), 128)
       .unwrap();
 
-    let header_text = Text::new(&font, &texture_creator, "Header", Color::RGB(0, 0, 0));
-    let section_text = Text::new(&font, &texture_creator, "Section", Color::RGB(0, 0, 0));
-    let keyboard_text = Text::new(&font, &texture_creator, "Keyboard", Color::RGB(0, 0, 0));
+    let header_text = TextBuilder::new()
+      .text("Header")
+      .build(&font, &texture_creator);
+    let section_text = TextBuilder::new()
+      .text("Section")
+      .build(&font, &texture_creator);
+    let keyboard_text = TextBuilder::new()
+      .text("Keyboard")
+      .build(&font, &texture_creator);
 
     let hedaer_dim = Rect::new(0, 0, self.width, 100);
     let section_dim = Rect::new(0, 100, self.width, 200);
