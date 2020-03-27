@@ -6,6 +6,8 @@ use std::time::Duration;
 const WIDTH: u32 = 800;
 const HEIGHT: u32 = 600;
 
+mod exp;
+
 fn main() {
   let ctx = sdl2::init().unwrap();
   let video = ctx.video().unwrap();
