@@ -4,9 +4,9 @@ pub struct StringToInput {
 }
 
 impl StringToInput {
-  pub fn new(toInput: &str) -> StringToInput {
+  pub fn new(to_input: &str) -> StringToInput {
     StringToInput {
-      will_input: toInput.to_owned(),
+      will_input: to_input.to_owned(),
       inputted: String::new(),
     }
   }
