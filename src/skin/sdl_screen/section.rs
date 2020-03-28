@@ -38,7 +38,7 @@ impl<'a> Section<'a> {
       offset.y(),
       remaining_width,
       offset.height(),
-    ));
+    ))?;
 
     const JAPANESE_GLYPH_WIDTH: u32 = 20;
     const JAPANESE_HEIGHT: u32 = 80;

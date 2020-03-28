@@ -5,6 +5,6 @@ mod skin;
 use skin::sdl_screen::SDLScreen;
 
 fn main() {
-  let mut screen = SDLScreen::new(800, 600);
-  screen.run();
+  let mut screen = SDLScreen::new(800, 600).unwrap();
+  screen.run().unwrap();
 }
