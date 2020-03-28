@@ -33,6 +33,17 @@ pub struct TextBuilder<'a, T> {
   texture_creator: &'a TextureCreator<T>,
 }
 
+impl<'a, T> Clone for TextBuilder<'a, T> {
+  fn clone(&self) -> Self {
+    TextBuilder {
+      text: self.text.clone(),
+      color: self.color,
+      font: self.font,
+      texture_creator: self.texture_creator,
+    }
+  }
+}
+
 impl<'a, T> TextBuilder<'a, T> {
   pub fn new(
     font: &'a Font<'a, 'static>,

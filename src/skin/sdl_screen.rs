@@ -12,9 +12,11 @@ use crate::abst::screen::Screen;
 use crate::exp::string_to_input::StringToInput;
 
 mod header;
+mod keyboard;
 mod text;
 
 use header::Header;
+use keyboard::Keyboard;
 use text::TextBuilder;
 
 pub struct SDLScreen {
@@ -57,11 +59,10 @@ impl SDLScreen {
       .unwrap();
 
     let header = Header::new("Music Name", "Composer");
+    let keyboard = Keyboard::new(&['h']);
+
     let section_text = TextBuilder::new(&font, &texture_creator)
       .text("Section")
-      .build();
-    let keyboard_text = TextBuilder::new(&font, &texture_creator)
-      .text("Keyboard")
       .build();
 
     let header_dim = Rect::new(0, 0, self.width, 100);
@@ -90,8 +91,9 @@ impl SDLScreen {
         section_text.render(&mut self.canvas, section_dim).unwrap();
 
         self.canvas.draw_rect(keyboard_dim).unwrap();
-        keyboard_text
-          .render(&mut self.canvas, keyboard_dim)
+        let builder = TextBuilder::new(&font, &texture_creator);
+        keyboard
+          .draw(&mut self.canvas, builder, keyboard_dim)
           .unwrap();
 
         self.canvas.present();
