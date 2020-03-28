@@ -63,7 +63,7 @@ impl SDLScreen {
     let header = Header::new("Music Name", "Composer");
 
     let japanese = StringToInput::new("千本桜夜ニ紛レ");
-    let roman = StringToInput::new("せんぼんざくらよるにまぎれ");
+    let roman = StringToInput::new("senbonzakurayorunimagire");
     let section = Section::new(&japanese, &roman, 0.2);
     let keyboard = Keyboard::new(&['h']);
 
