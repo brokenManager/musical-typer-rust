@@ -13,10 +13,12 @@ use crate::exp::string_to_input::StringToInput;
 
 mod header;
 mod keyboard;
+mod section;
 mod text;
 
 use header::Header;
 use keyboard::Keyboard;
+use section::Section;
 use text::TextBuilder;
 
 pub struct SDLScreen {
@@ -59,11 +61,11 @@ impl SDLScreen {
       .unwrap();
 
     let header = Header::new("Music Name", "Composer");
-    let keyboard = Keyboard::new(&['h']);
 
-    let section_text = TextBuilder::new(&font, &texture_creator)
-      .text("Section")
-      .build();
+    let japanese = StringToInput::new("千本桜夜ニ紛レ");
+    let roman = StringToInput::new("せんぼんざくらよるにまぎれ");
+    let section = Section::new(&japanese, &roman, 0.2);
+    let keyboard = Keyboard::new(&['h']);
 
     let header_dim = Rect::new(0, 0, self.width, 100);
     let section_dim = Rect::new(0, 100, self.width, 200);
@@ -81,20 +83,24 @@ impl SDLScreen {
         }
         self.canvas.set_draw_color(Color::RGB(253, 243, 226));
         self.canvas.clear();
-
-        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-        self.canvas.draw_rect(header_dim).unwrap();
         let builder = TextBuilder::new(&font, &texture_creator);
         header.draw(&mut self.canvas, builder).unwrap();
+        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
+        self.canvas.draw_rect(header_dim).unwrap();
 
+        let builder = TextBuilder::new(&font, &texture_creator);
+        section
+          .draw(&mut self.canvas, builder, section_dim)
+          .unwrap();
+        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.draw_rect(section_dim).unwrap();
-        section_text.render(&mut self.canvas, section_dim).unwrap();
 
-        self.canvas.draw_rect(keyboard_dim).unwrap();
         let builder = TextBuilder::new(&font, &texture_creator);
         keyboard
           .draw(&mut self.canvas, builder, keyboard_dim)
           .unwrap();
+        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
+        self.canvas.draw_rect(keyboard_dim).unwrap();
 
         self.canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
