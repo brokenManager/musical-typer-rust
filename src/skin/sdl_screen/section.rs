@@ -31,7 +31,8 @@ impl<'a> Section<'a> {
     mut text_builder: TextBuilder<'a, U>,
     offset: Rect,
   ) -> Result<(), String> {
-    let remaining_width = (offset.width() as f64 * self.remaining_ratio) as u32;
+    let remaining_width =
+      (offset.width() as f64 * self.remaining_ratio) as u32;
     canvas.set_draw_color(Color::RGB(203, 193, 176));
     canvas.fill_rect(Rect::new(
       offset.x(),

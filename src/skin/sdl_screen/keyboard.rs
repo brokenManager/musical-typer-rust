@@ -30,11 +30,16 @@ impl KeyCell {
     const GREEN: Color = Color::RGB(20, 76, 64);
     const BACK: Color = Color::RGB(253, 243, 226);
     const BLACK: Color = Color::RGB(0, 0, 0);
-    let client = Rect::from_center(self.center, CELL_WIDTH, CELL_HEIGHT);
+    let client =
+      Rect::from_center(self.center, CELL_WIDTH, CELL_HEIGHT);
     canvas.set_draw_color(if self.is_pressed { GREEN } else { BACK });
     canvas.fill_rect(client)?;
     canvas.set_draw_color(BLACK);
-    canvas.draw_rect(Rect::from_center(self.center, CELL_WIDTH, CELL_HEIGHT))?;
+    canvas.draw_rect(Rect::from_center(
+      self.center,
+      CELL_WIDTH,
+      CELL_HEIGHT,
+    ))?;
     text_builder
       .color(if self.is_pressed { BACK } else { BLACK })
       .text(&self.key.to_string())
@@ -68,10 +73,18 @@ impl Keyboard {
       for key_char in key_chars_row.chars() {
         let width = key_chars_row.len() as u32 - 1;
         let center = Point::new(
-          x * CELL_WIDTH as i32 + offset.x() + (offset.width() - width * CELL_WIDTH) as i32 / 2,
-          y * CELL_HEIGHT as i32 + offset.y() + CELL_HEIGHT as i32 * 2 / 3,
+          x * CELL_WIDTH as i32
+            + offset.x()
+            + (offset.width() - width * CELL_WIDTH) as i32 / 2,
+          y * CELL_HEIGHT as i32
+            + offset.y()
+            + CELL_HEIGHT as i32 * 2 / 3,
         );
-        let cell = KeyCell::new(center, key_char, self.pressed_keys.contains(&key_char));
+        let cell = KeyCell::new(
+          center,
+          key_char,
+          self.pressed_keys.contains(&key_char),
+        );
         {
           cell.draw(&mut canvas, text_builder.clone())?;
         }

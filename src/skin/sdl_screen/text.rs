@@ -21,7 +21,11 @@ impl<'ttf> Text<'ttf> {
     Text { texture }
   }
 
-  pub fn render<T: RenderTarget>(&self, canvas: &mut Canvas<T>, to: Rect) -> Result<(), String> {
+  pub fn render<T: RenderTarget>(
+    &self,
+    canvas: &mut Canvas<T>,
+    to: Rect,
+  ) -> Result<(), String> {
     canvas.copy(&self.texture, None, Some(to))
   }
 }
@@ -62,7 +66,10 @@ impl<'a, T> TextBuilder<'a, T> {
     self
   }
 
-  pub fn color(&mut self, new_color: Color) -> &mut TextBuilder<'a, T> {
+  pub fn color(
+    &mut self,
+    new_color: Color,
+  ) -> &mut TextBuilder<'a, T> {
     self.color = new_color;
     self
   }

@@ -40,7 +40,8 @@ impl SDLScreen {
       .build()
       .map_err(|e| e.to_string())?;
 
-    let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+    let mut canvas =
+      window.into_canvas().build().map_err(|e| e.to_string())?;
     canvas.clear();
     canvas.present();
 
@@ -52,7 +53,10 @@ impl SDLScreen {
     })
   }
 
-  fn render<'a, T>(&mut self, builder: TextBuilder<'a, T>) -> Result<(), String> {
+  fn render<'a, T>(
+    &mut self,
+    builder: TextBuilder<'a, T>,
+  ) -> Result<(), String> {
     let header = Header::new("Music Name", "Composer");
     let header_dim = Rect::new(0, 0, self.width, 100);
 
@@ -62,7 +66,8 @@ impl SDLScreen {
     let section_dim = Rect::new(0, 100, self.width, 200);
 
     let keyboard = Keyboard::new(&['h']);
-    let keyboard_dim = Rect::new(0, self.height as i32 - 300, self.width, 300);
+    let keyboard_dim =
+      Rect::new(0, self.height as i32 - 300, self.width, 300);
 
     self.canvas.set_draw_color(Color::RGB(253, 243, 226));
     self.canvas.clear();
@@ -86,12 +91,16 @@ impl SDLScreen {
 
     let ttf = sdl2::ttf::init().map_err(|e| e.to_string())?;
     let font = ttf
-      .load_font(std::path::Path::new("./asset/mplus-1m-medium.ttf"), 128)
+      .load_font(
+        std::path::Path::new("./asset/mplus-1m-medium.ttf"),
+        128,
+      )
       .map_err(|e| e.to_string())?;
 
     let builder = TextBuilder::new(&font, &texture_creator);
 
-    let mut poller = self.ctx.event_pump().map_err(|e| e.to_string())?;
+    let mut poller =
+      self.ctx.event_pump().map_err(|e| e.to_string())?;
     'main: loop {
       for event in poller.poll_iter() {
         use sdl2::event::Event::*;
