@@ -1,10 +1,11 @@
 mod abst;
 mod exp;
+mod op;
 mod skin;
 
-use skin::sdl_screen::SDLScreen;
+use skin::sdl_presenter::SDLPresenter;
 
 fn main() {
-  let mut screen = SDLScreen::new(800, 600).unwrap();
+  let mut screen = SDLPresenter::new(800, 600).unwrap();
   screen.run().unwrap();
 }

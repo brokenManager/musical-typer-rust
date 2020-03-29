@@ -8,7 +8,7 @@ use sdl2::Sdl;
 
 use std::time::Duration;
 
-use crate::abst::screen::Screen;
+use crate::abst::presenter::Presenter;
 use crate::exp::string_to_input::StringToInput;
 
 mod header;
@@ -21,15 +21,18 @@ use keyboard::Keyboard;
 use section::Section;
 use text::TextBuilder;
 
-pub struct SDLScreen {
+pub struct SDLPresenter {
   width: u32,
   height: u32,
   ctx: Sdl,
   canvas: Canvas<Window>,
 }
 
-impl SDLScreen {
-  pub fn new(width: u32, height: u32) -> Result<SDLScreen, String> {
+impl SDLPresenter {
+  pub fn new(
+    width: u32,
+    height: u32,
+  ) -> Result<SDLPresenter, String> {
     let ctx = sdl2::init().map_err(|e| e.to_string())?;
 
     let video = ctx.video().map_err(|e| e.to_string())?;
@@ -45,7 +48,7 @@ impl SDLScreen {
     canvas.clear();
     canvas.present();
 
-    Ok(SDLScreen {
+    Ok(SDLPresenter {
       width,
       height,
       ctx,
@@ -117,14 +120,20 @@ impl SDLScreen {
   }
 }
 
-impl Screen for SDLScreen {
-  fn play_bgm(_: &str) {
+impl Presenter for SDLPresenter {
+  fn play_bgm(&mut self, _: &str) {
     todo!()
   }
-  fn decrease_remaining_time(_: f64) {
+  fn decrease_remaining_time(&mut self, _: f64) {
     todo!()
   }
-  fn update_string_to_input(_: &StringToInput) {
+  fn update_string_to_input(&mut self, _: &StringToInput) {
+    todo!()
+  }
+  fn mistyped(&mut self) {
+    todo!()
+  }
+  fn flush_screen(&mut self) {
     todo!()
   }
 }
