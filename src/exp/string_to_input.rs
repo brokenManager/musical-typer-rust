@@ -1,18 +1,27 @@
+use super::roman_lexer::RomanStr;
+
 pub struct StringToInput {
-  will_input: String,
+  will_input: RomanStr,
   inputted: String,
 }
 
 impl StringToInput {
-  pub fn new(to_input: &str) -> StringToInput {
-    StringToInput {
-      will_input: to_input.to_owned(),
+  pub fn new(to_input: &str) -> Result<StringToInput, String> {
+    Ok(StringToInput {
+      will_input: RomanStr::new(to_input)
+        .map_err(|e| format!("{:?}", e))?,
       inputted: String::new(),
-    }
+    })
   }
 
-  pub fn will_input(&self) -> &str {
-    self.will_input.as_str()
+  pub fn will_input(&self) -> String {
+    let first_suggestions: Vec<&str> = self
+      .will_input
+      .exprs()
+      .iter()
+      .map(|options| options[0])
+      .collect();
+    first_suggestions.join("").chars().collect()
   }
 
   pub fn inputted(&self) -> &str {

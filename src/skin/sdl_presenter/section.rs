@@ -48,7 +48,7 @@ impl<'a> Section<'a> {
     let will_input_japanese = self.japanese.will_input();
     text_builder
       .color(Color::RGB(0, 0, 0))
-      .text(will_input_japanese)
+      .text(will_input_japanese.as_str())
       .build()
       .render(
         &mut canvas,
@@ -65,7 +65,7 @@ impl<'a> Section<'a> {
     let will_input_roman = self.roman.will_input();
     text_builder
       .color(Color::RGB(0, 0, 0))
-      .text(will_input_roman)
+      .text(will_input_roman.as_str())
       .build()
       .render(
         &mut canvas,

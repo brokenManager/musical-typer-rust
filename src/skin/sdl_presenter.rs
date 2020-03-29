@@ -63,8 +63,8 @@ impl SDLPresenter {
     let header = Header::new("Music Name", "Composer");
     let header_dim = Rect::new(0, 0, self.width, 100);
 
-    let japanese = StringToInput::new("千本桜夜ニ紛レ");
-    let roman = StringToInput::new("senbonzakurayorunimagire");
+    let japanese = StringToInput::new("千本桜夜ニ紛レ")?;
+    let roman = StringToInput::new("senbonzakurayorunimagire")?;
     let section = Section::new(&japanese, &roman, 0.2);
     let section_dim = Rect::new(0, 100, self.width, 200);
 
