@@ -35,6 +35,8 @@ const COMMAND: &str =
   r"^[[:space:]]*\[[[:space:]]*(.*)[[:space:]]*\][[:space:]]*$";
 const HIRAGANA: &str = r"^:([あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをんぁぃぅぇぉゃゅょゎっーがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]+)$";
 const CAPTION: &str = r"^>>(.+)$";
+const SECONDS: &str = r"^\*[[:space:]]*((?:[1-9][0-9]*\.[0-9]+)|(?:0\.[0-9]+))[[:space:]]*$";
+const MINUTES: &str = r"^\|[[:space:]]*([1-9][0-9]*)[[:space:]]*$";
 
 fn captures_vec<'a>(this: &'a Regex, text: &'a str) -> Vec<&'a str> {
   this
@@ -92,6 +94,20 @@ fn pattern_tests() {
   let reg = Regex::new(CAPTION).unwrap();
   assert!(reg.is_match(">>テスト"));
   assert!(reg.is_match(">>HAMBURGER"));
+
+  let reg = Regex::new(SECONDS).unwrap();
+  assert!(reg.is_match("*2.0"));
+  assert!(reg.is_match("* 1.423523"));
+  assert!(reg.is_match("*0.020"));
+  assert!(reg.is_match("* 1223.20"));
+  assert!(!reg.is_match("*01.2"));
+  assert!(!reg.is_match("* 03."));
+  assert!(!reg.is_match("*7."));
+  assert!(!reg.is_match("*.5"));
+
+  let reg = Regex::new(MINUTES).unwrap();
+  assert!(reg.is_match("|3"));
+  assert!(reg.is_match("| 4"));
 }
 
 impl Scoremap {
