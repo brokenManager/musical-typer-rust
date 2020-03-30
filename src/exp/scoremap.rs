@@ -175,7 +175,6 @@ impl Scoremap {
       if comment_reg.is_match(line) {
         continue;
       }
-      println!("{}", line);
       let line_time = line_minute_second.into_time();
       if let Some(seconds) = seconds_reg.captures(line) {
         let num: f64 =

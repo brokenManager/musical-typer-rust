@@ -411,6 +411,11 @@ impl RomanStr {
           romans.push(RomanChar::new(&["po"]));
           1
         }
+
+        ['ー', ..] => {
+          romans.push(RomanChar::new(&["-"]));
+          1
+        }
         n => {
           return Err(RomanParseError::IllegalYomigana(format!(
             "{:#?}",
