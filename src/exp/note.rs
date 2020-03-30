@@ -23,6 +23,7 @@ impl Section {
   }
 }
 
+#[derive(Debug)]
 pub enum NoteContent {
   Sentence(StringToInput),
   Caption(String),
@@ -31,6 +32,7 @@ pub enum NoteContent {
 
 pub type NoteId = String;
 
+#[derive(Debug)]
 pub struct Note {
   id: NoteId,
   time: Seconds,

@@ -1,5 +1,6 @@
 use super::roman_lexer::RomanStr;
 
+#[derive(Debug)]
 pub struct StringToInput {
   origin: String,
   will_input: RomanStr,

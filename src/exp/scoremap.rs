@@ -14,6 +14,24 @@ pub enum ScoremapError {
   InvalidTimingDeifinition { line_num: u64, reason: &'static str },
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct ScoremapLoadConfig {
+  ignore_invalid_properties: bool,
+}
+
+impl ScoremapLoadConfig {
+  pub fn new() -> Self {
+    ScoremapLoadConfig {
+      ignore_invalid_properties: false,
+    }
+  }
+
+  pub fn ignore_invalid_properties(mut self, whether: bool) -> Self {
+    self.ignore_invalid_properties = whether;
+    self
+  }
+}
+
 const METADATA_KEYS: &[&'static str] = &[
   "title",
   "song_author",
@@ -25,6 +43,7 @@ const METADATA_KEYS: &[&'static str] = &[
 
 pub type ScoremapMetadata = HashMap<String, String>;
 
+#[derive(Debug)]
 pub struct Scoremap {
   metadata: ScoremapMetadata,
   notes: Vec<Note>,
@@ -32,7 +51,7 @@ pub struct Scoremap {
 
 const PROPERTY: &str =
   r"^:([[:^space:]]+)[[:space:]]+([[:^space:]]+)$";
-const COMMENT: &str = r"^[[:space:]]*#?.*$";
+const COMMENT: &str = r"^[[:space:]]*(:?#.*)?$";
 const COMMAND: &str =
   r"^[[:space:]]*\[[[:space:]]*(.*)[[:space:]]*\][[:space:]]*$";
 const YOMIGANA: &str = r"^:([あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをんぁぃぅぇぉゃゅょゎっーがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]+)$";
@@ -79,6 +98,16 @@ fn pattern_tests() {
   assert!(reg.is_match("  # Indented!"));
   assert!(reg.is_match(""));
 
+  assert!(!reg.is_match("[break] "));
+  assert!(!reg.is_match(" [start ]"));
+  assert!(!reg.is_match(":はんばーがー"));
+  assert!(!reg.is_match(">>テスト"));
+  assert!(!reg.is_match("*2.0"));
+  assert!(!reg.is_match("* 1.423523"));
+  assert!(!reg.is_match("* 03."));
+  assert!(!reg.is_match("*7."));
+  assert!(!reg.is_match("|3"));
+
   let reg = Regex::new(COMMAND).unwrap();
   assert!(reg.is_match("[start]"));
   assert!(reg.is_match(" [ end ] "));
@@ -102,6 +131,7 @@ fn pattern_tests() {
   assert!(reg.is_match("* 1.423523"));
   assert!(reg.is_match("*0.020"));
   assert!(reg.is_match("* 1223.20"));
+
   assert!(!reg.is_match("*01.2"));
   assert!(!reg.is_match("* 03."));
   assert!(!reg.is_match("*7."));
@@ -113,7 +143,10 @@ fn pattern_tests() {
 }
 
 impl Scoremap {
-  pub fn from_file(file: std::fs::File) -> Result<(), ScoremapError> {
+  pub fn from_file(
+    file: std::fs::File,
+    config: ScoremapLoadConfig,
+  ) -> Result<Scoremap, ScoremapError> {
     use ScoremapError::*;
 
     let property_reg = Regex::new(PROPERTY).unwrap();
@@ -139,6 +172,7 @@ impl Scoremap {
       if comment_reg.is_match(line) {
         continue;
       }
+      println!("{}", line);
       let line_time = line_minute_second.into_time();
       if let Some(seconds) = seconds_reg.captures(line) {
         Self::check_before_define_timing(
@@ -217,6 +251,10 @@ impl Scoremap {
         }
         let key = property.get(1).unwrap().as_str();
         if !METADATA_KEYS.contains(&key) {
+          if config.ignore_invalid_properties {
+            println!("未対応のプロパティがありました。無視します。");
+            continue;
+          }
           return Err(InvalidPropertyDeifinition {
             line_num,
             reason: "未対応のプロパティです。",
@@ -254,8 +292,7 @@ impl Scoremap {
         parsed_japanese = Some(line.to_owned())
       }
     }
-    Ok(())
-    //Ok(Scoremap {})
+    Ok(Scoremap { metadata, notes })
   }
 
   fn check_before_define_timing(

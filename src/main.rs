@@ -3,9 +3,12 @@ mod exp;
 mod op;
 mod skin;
 
-use skin::sdl_presenter::SDLPresenter;
-
 fn main() {
-  let mut screen = SDLPresenter::new(800, 600).unwrap();
-  screen.run().unwrap();
+  let file =
+    std::fs::File::open("./example/sampleScore.tsc").unwrap();
+  use exp::scoremap::{Scoremap, ScoremapLoadConfig};
+  let config =
+    ScoremapLoadConfig::new().ignore_invalid_properties(true);
+  let score = Scoremap::from_file(file, config).unwrap();
+  println!("{:?}", score);
 }
