@@ -16,7 +16,8 @@ pub struct Scoremap {
 }
 
 const COMMENT: &str = r"^[[:space:]]*#?.*$";
-const COMMAND: &str = r"^[[:space:]]*\[[[:space:]]*(start|break|end)[[:space:]]*\][[:space:]]*$";
+const COMMAND: &str =
+  r"^[[:space:]]*\[[[:space:]]*(.*)[[:space:]]*\][[:space:]]*$";
 
 #[test]
 fn pattern_tests() {
@@ -59,7 +60,6 @@ impl Scoremap {
           let string = command.get(0).unwrap().as_str();
           match string {
             "start" => {
-              // start コマンド後に
               if parsing_lyrics {
                 return Err(InvalidCommand {
                   line_num,
@@ -69,13 +69,7 @@ impl Scoremap {
               }
               parsing_lyrics = true;
             }
-            "break" => {
-              // break コマンドは start
-              if !parsing_lyrics {
-                return Err(InvalidCommand { line_num, reason: "break コマンドは start コマンドと end コマンドの間でのみ有効です。" });
-              }
-              notes.push(Note::blank(line_time))
-            }
+            "break" => {}
             "end" => {
               if !parsing_lyrics {
                 return Err(InvalidCommand {

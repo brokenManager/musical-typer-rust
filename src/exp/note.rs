@@ -14,12 +14,12 @@ impl Section {
     Section { from, to }
   }
 
-  pub fn from(&self) -> NoteId {
-    self.from
+  pub fn from(&self) -> &str {
+    &self.from
   }
 
-  pub fn to(&self) -> NoteId {
-    self.to
+  pub fn to(&self) -> &str {
+    &self.to
   }
 }
 
