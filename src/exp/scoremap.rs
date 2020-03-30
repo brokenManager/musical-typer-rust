@@ -106,13 +106,14 @@ impl Scoremap {
 
     let mut metadata = ScoremapMetadata::new();
     let mut notes: Vec<Note> = vec![];
-    let mut line_num = 1;
+    let mut line_num = 0;
     let mut parsing_lyrics = false;
     let mut line_time = 0.0;
 
     use std::io::{BufRead, BufReader};
     let reader = BufReader::new(file);
     for line in reader.lines() {
+      line_num += 1;
       let line = &line.map_err(|_e| UnexceptedEndOfFile)?;
       if comment_reg.is_match(line) {
         continue;
@@ -182,7 +183,6 @@ impl Scoremap {
         let value = property.get(2).unwrap().as_str();
         metadata.insert(key.to_owned(), value.to_owned());
       }
-      line_num += 1;
     }
     Ok(())
     //Ok(Scoremap {})
