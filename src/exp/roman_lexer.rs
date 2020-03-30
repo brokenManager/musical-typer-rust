@@ -415,9 +415,10 @@ impl RomanStr {
 #[test]
 fn jojo() {
   let lexed = RomanStr::new("そのちのさだめ").unwrap();
-  assert_eq!(
-    lexed.exprs(),
-    &[
+  assert!(lexed
+    .exprs()
+    .iter()
+    .zip(&[
       vec!["so"],
       vec!["no"],
       vec!["ti", "chi"],
@@ -425,6 +426,17 @@ fn jojo() {
       vec!["sa"],
       vec!["da"],
       vec!["me"],
-    ]
-  );
+    ])
+    .all(|(roman_char, except)| {
+      let styles = roman_char.styles();
+      if styles.len() != except.len() {
+        return false;
+      }
+      for i in 0..styles.len() {
+        if styles[i] != except[i] {
+          return false;
+        }
+      }
+      true
+    }));
 }

@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RomanChar {
   styles: Vec<&'static str>,
 }
@@ -28,5 +28,9 @@ impl RomanChar {
 
   pub fn standard_style(&self) -> &str {
     self.styles[0]
+  }
+
+  pub fn styles(&self) -> &[&str] {
+    &self.styles
   }
 }
