@@ -1,4 +1,5 @@
 pub mod game_stat;
+pub mod minute_second;
 pub mod note;
 pub mod roman_char;
 pub mod roman_lexer;

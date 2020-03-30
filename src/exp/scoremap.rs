@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use regex::Regex;
 
+use super::minute_second::MinuteSecond;
 use super::note::Note;
 
 #[derive(Debug)]
@@ -114,27 +115,6 @@ fn pattern_tests() {
 impl Scoremap {
   pub fn from_file(file: std::fs::File) -> Result<(), ScoremapError> {
     use ScoremapError::*;
-    struct MinuteSecond {
-      minutes: u32,
-      seconds: f64,
-    }
-    impl MinuteSecond {
-      fn new() -> Self {
-        MinuteSecond {
-          minutes: 0,
-          seconds: 0.0,
-        }
-      }
-      fn minutes(&mut self, minutes: u32) {
-        self.minutes = minutes;
-      }
-      fn seconds(&mut self, seconds: f64) {
-        self.seconds = seconds;
-      }
-      fn into_time(&self) -> f64 {
-        self.minutes as f64 * 60.0 + self.seconds
-      }
-    }
 
     let property_reg = Regex::new(PROPERTY).unwrap();
     let comment_reg = Regex::new(COMMENT).unwrap();
