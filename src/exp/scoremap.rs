@@ -56,6 +56,7 @@ const COMMAND: &str =
   r"^[[:space:]]*\[[[:space:]]*(.*)[[:space:]]*\][[:space:]]*$";
 const YOMIGANA: &str = r"^:([あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをんぁぃぅぇぉゃゅょゎっーがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]+)$";
 const CAPTION: &str = r"^[[:space:]]*>>[[:space:]]*(.+)[[:space:]]*$";
+const SECTION: &str = r"@[[:space:]]*>>[[:space:]]*(.+)[[:space:]]*$";
 const SECONDS: &str =
   r"^\*[[:space:]]*((?:[0-9]+\.[0-9]+)|(?:0\.[0-9]+))[[:space:]]*$";
 const MINUTES: &str = r"^\|[[:space:]]*([1-9][0-9]*)[[:space:]]*$";
@@ -155,6 +156,7 @@ impl Scoremap {
     let command_reg = Regex::new(COMMAND).unwrap();
     let yomigana_reg = Regex::new(YOMIGANA).unwrap();
     let caption_reg = Regex::new(CAPTION).unwrap();
+    let section_reg = Regex::new(SECTION).unwrap();
     let seconds_reg = Regex::new(SECONDS).unwrap();
     let minutes_reg = Regex::new(MINUTES).unwrap();
 
@@ -182,11 +184,9 @@ impl Scoremap {
         if new_time.into_time() == line_time {
           continue;
         }
-        Self::check_before_define_timing(
-          line_num,
-          parsing_lyrics,
-          &parsed_japanese,
-        )?;
+        Self::check_before_define_timing(line_num, parsing_lyrics)?;
+
+        parsed_japanese = None;
         line_minute_second = new_time;
         continue;
       }
@@ -197,11 +197,9 @@ impl Scoremap {
         if new_time.into_time() == line_time {
           continue;
         }
-        Self::check_before_define_timing(
-          line_num,
-          parsing_lyrics,
-          &parsed_japanese,
-        )?;
+        Self::check_before_define_timing(line_num, parsing_lyrics)?;
+
+        parsed_japanese = None;
         line_minute_second = new_time;
         continue;
       }
@@ -290,12 +288,16 @@ impl Scoremap {
               },
             )?,
           );
+          parsed_japanese = None;
           continue;
         }
         return Err(InvalidStatementDefinition {
           line_num,
           reason: "読み仮名は歌詞より後にしてください。",
         });
+      }
+      if let Some(_) = section_reg.captures(line) {
+        continue;
       }
       if parsing_lyrics {
         // どのパターンにも一致しない場合は文指定なので
@@ -314,7 +316,6 @@ impl Scoremap {
   fn check_before_define_timing(
     line_num: u64,
     parsing_lyrics: bool,
-    parsed_japanese: &Option<String>,
   ) -> Result<(), ScoremapError> {
     use ScoremapError::*;
 
@@ -322,12 +323,6 @@ impl Scoremap {
       return Err(InvalidTimingDeifinition {
         line_num,
         reason: "時間指定は歌詞定義の中のみ有効です。",
-      });
-    }
-    if parsed_japanese.is_some() {
-      return Err(InvalidStatementDefinition {
-        line_num,
-        reason: "読み仮名が定義されていません。",
       });
     }
     Ok(())
