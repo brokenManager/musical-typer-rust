@@ -19,7 +19,7 @@ impl StringToInput {
       .will_input
       .exprs()
       .iter()
-      .map(|options| options[0])
+      .map(|options| options.standard_style())
       .collect();
     first_suggestions.join("").chars().collect()
   }
