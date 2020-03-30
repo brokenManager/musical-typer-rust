@@ -10,6 +10,7 @@ pub enum ScoremapError {
   InvalidCommand { line_num: u64, reason: &'static str },
   InvalidPropertyDeifinition { line_num: u64, reason: &'static str },
   InvalidStatementDeifinition { line_num: u64, reason: &'static str },
+  InvalidTimingDeifinition { line_num: u64, reason: &'static str },
 }
 
 const METADATA_KEYS: &[&'static str] = &[
@@ -113,18 +114,41 @@ fn pattern_tests() {
 impl Scoremap {
   pub fn from_file(file: std::fs::File) -> Result<(), ScoremapError> {
     use ScoremapError::*;
+    struct MinuteSecond {
+      minutes: u32,
+      seconds: f64,
+    }
+    impl MinuteSecond {
+      fn new() -> Self {
+        MinuteSecond {
+          minutes: 0,
+          seconds: 0.0,
+        }
+      }
+      fn minutes(&mut self, minutes: u32) {
+        self.minutes = minutes;
+      }
+      fn seconds(&mut self, seconds: f64) {
+        self.seconds = seconds;
+      }
+      fn into_time(&self) -> f64 {
+        self.minutes as f64 * 60.0 + self.seconds
+      }
+    }
 
     let property_reg = Regex::new(PROPERTY).unwrap();
     let comment_reg = Regex::new(COMMENT).unwrap();
     let command_reg = Regex::new(COMMAND).unwrap();
     let hiragana_reg = Regex::new(HIRAGANA).unwrap();
     let caption_reg = Regex::new(CAPTION).unwrap();
+    let seconds_reg = Regex::new(SECONDS).unwrap();
+    let minutes_reg = Regex::new(MINUTES).unwrap();
 
     let mut metadata = ScoremapMetadata::new();
     let mut notes: Vec<Note> = vec![];
     let mut line_num = 0;
     let mut parsing_lyrics = false;
-    let mut line_time = 0.0;
+    let mut line_minute_second = MinuteSecond::new();
 
     use std::io::{BufRead, BufReader};
     let reader = BufReader::new(file);
@@ -133,6 +157,29 @@ impl Scoremap {
       let line = &line.map_err(|_e| UnexceptedEndOfFile)?;
       if comment_reg.is_match(line) {
         continue;
+      }
+      let line_time = line_minute_second.into_time();
+      if let Some(seconds) = seconds_reg.captures(line) {
+        if !parsing_lyrics {
+          return Err(InvalidTimingDeifinition {
+            line_num,
+            reason: "時間指定は歌詞定義の中のみ有効です。",
+          });
+        }
+        let num: f64 =
+          seconds.get(0).unwrap().as_str().parse().unwrap();
+        line_minute_second.seconds(num);
+      }
+      if let Some(minutes) = minutes_reg.captures(line) {
+        if !parsing_lyrics {
+          return Err(InvalidTimingDeifinition {
+            line_num,
+            reason: "時間指定は歌詞定義の中のみ有効です。",
+          });
+        }
+        let num: u32 =
+          minutes.get(0).unwrap().as_str().parse().unwrap();
+        line_minute_second.minutes(num);
       }
       if let Some(command) = command_reg.captures(line) {
         let string = command.get(0).unwrap().as_str();
