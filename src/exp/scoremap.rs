@@ -181,7 +181,7 @@ impl Scoremap {
           &parsed_japanese,
         )?;
         let num: f64 =
-          seconds.get(0).unwrap().as_str().parse().unwrap();
+          seconds.get(1).unwrap().as_str().parse().unwrap();
         line_minute_second.seconds(num);
       }
       if let Some(minutes) = minutes_reg.captures(line) {
@@ -191,11 +191,11 @@ impl Scoremap {
           &parsed_japanese,
         )?;
         let num: u32 =
-          minutes.get(0).unwrap().as_str().parse().unwrap();
+          minutes.get(1).unwrap().as_str().parse().unwrap();
         line_minute_second.minutes(num);
       }
       if let Some(command) = command_reg.captures(line) {
-        let string = command.get(0).unwrap().as_str();
+        let string = command.get(1).unwrap().as_str();
         match string {
           "start" => {
             if parsing_lyrics {
@@ -233,7 +233,7 @@ impl Scoremap {
             reason: "キャプションの指定は歌詞定義の中のみ有効です。",
           });
         }
-        let string = caption.get(0).unwrap().as_str();
+        let string = caption.get(1).unwrap().as_str();
         notes.push(Note::caption(line_time, string));
       }
       if let Some(property) = property_reg.captures(line) {
