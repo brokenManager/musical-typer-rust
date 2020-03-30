@@ -126,7 +126,7 @@ impl Scoremap {
 
     let mut metadata = ScoremapMetadata::new();
     let mut notes: Vec<Note> = vec![];
-    let mut line_num = 0;
+    let mut line_num: u64 = 0;
     let mut parsing_lyrics = false;
     let mut line_minute_second = MinuteSecond::new();
     let mut parsed_japanese: Option<String> = None;
@@ -141,23 +141,21 @@ impl Scoremap {
       }
       let line_time = line_minute_second.into_time();
       if let Some(seconds) = seconds_reg.captures(line) {
-        if !parsing_lyrics {
-          return Err(InvalidTimingDeifinition {
-            line_num,
-            reason: "時間指定は歌詞定義の中のみ有効です。",
-          });
-        }
+        Self::check_before_define_timing(
+          line_num,
+          parsing_lyrics,
+          &parsed_japanese,
+        )?;
         let num: f64 =
           seconds.get(0).unwrap().as_str().parse().unwrap();
         line_minute_second.seconds(num);
       }
       if let Some(minutes) = minutes_reg.captures(line) {
-        if !parsing_lyrics {
-          return Err(InvalidTimingDeifinition {
-            line_num,
-            reason: "時間指定は歌詞定義の中のみ有効です。",
-          });
-        }
+        Self::check_before_define_timing(
+          line_num,
+          parsing_lyrics,
+          &parsed_japanese,
+        )?;
         let num: u32 =
           minutes.get(0).unwrap().as_str().parse().unwrap();
         line_minute_second.minutes(num);
@@ -258,5 +256,27 @@ impl Scoremap {
     }
     Ok(())
     //Ok(Scoremap {})
+  }
+
+  fn check_before_define_timing(
+    line_num: u64,
+    parsing_lyrics: bool,
+    parsed_japanese: &Option<String>,
+  ) -> Result<(), ScoremapError> {
+    use ScoremapError::*;
+
+    if !parsing_lyrics {
+      return Err(InvalidTimingDeifinition {
+        line_num,
+        reason: "時間指定は歌詞定義の中のみ有効です。",
+      });
+    }
+    if parsed_japanese.is_some() {
+      return Err(InvalidStatementDefinition {
+        line_num,
+        reason: "読み仮名が定義されていません。",
+      });
+    }
+    Ok(())
   }
 }
