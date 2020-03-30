@@ -16,36 +16,38 @@ impl Section {
   }
 }
 
-pub enum Note {
-  Sentence {
-    section: Section,
-    is_ended: bool,
-    sentence: StringToInput,
-  },
-  Caption {
-    section: Section,
-    is_ended: bool,
-    caption: String,
-  },
+pub enum NoteContent {
+  Sentence(StringToInput),
+  Caption(String),
+  Blank,
 }
 
+pub type NoteId = String;
+
+pub struct Note {
+  id: NoteId,
+  time: f64,
+  content: NoteContent,
+}
+
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
+
 impl Note {
-  pub fn sentence(
-    section: Section,
-    lyrics: &str,
-  ) -> Result<Note, String> {
-    Ok(Note::Sentence {
-      section,
-      sentence: StringToInput::new(lyrics)?,
-      is_ended: false,
-    })
+  fn new(time: f64, content: NoteContent) -> Self {
+    let id =
+      thread_rng().sample_iter(&Alphanumeric).take(5).collect();
+    Note { id, time, content }
   }
 
-  pub fn caption(section: Section, caption: &str) -> Note {
-    Note::Caption {
-      section,
-      is_ended: false,
-      caption: caption.to_owned(),
-    }
+  pub fn sentence(time: f64, lyrics: &str) -> Result<Self, String> {
+    Ok(Self::new(
+      time,
+      NoteContent::Sentence(StringToInput::new(lyrics)?),
+    ))
+  }
+
+  pub fn caption(time: f64, caption: &str) -> Self {
+    Self::new(time, NoteContent::Caption(caption.to_owned()))
   }
 }
