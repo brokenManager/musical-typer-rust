@@ -55,8 +55,9 @@ const COMMENT: &str = r"^[[:space:]]*(:?#.*)?$";
 const COMMAND: &str =
   r"^[[:space:]]*\[[[:space:]]*(.*)[[:space:]]*\][[:space:]]*$";
 const YOMIGANA: &str = r"^:([あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをんぁぃぅぇぉゃゅょゎっーがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]+)$";
-const CAPTION: &str = r"^>>(.+)$";
-const SECONDS: &str = r"^\*[[:space:]]*((?:[1-9][0-9]*\.[0-9]+)|(?:0\.[0-9]+))[[:space:]]*$";
+const CAPTION: &str = r"^[[:space:]]*>>[[:space:]]*(.+)[[:space:]]*$";
+const SECONDS: &str =
+  r"^\*[[:space:]]*((?:[0-9]+\.[0-9]+)|(?:0\.[0-9]+))[[:space:]]*$";
 const MINUTES: &str = r"^\|[[:space:]]*([1-9][0-9]*)[[:space:]]*$";
 
 fn captures_vec<'a>(this: &'a Regex, text: &'a str) -> Vec<&'a str> {
@@ -131,8 +132,8 @@ fn pattern_tests() {
   assert!(reg.is_match("* 1.423523"));
   assert!(reg.is_match("*0.020"));
   assert!(reg.is_match("* 1223.20"));
+  assert!(reg.is_match("*01.2"));
 
-  assert!(!reg.is_match("*01.2"));
   assert!(!reg.is_match("* 03."));
   assert!(!reg.is_match("*7."));
   assert!(!reg.is_match("*.5"));
@@ -175,24 +176,34 @@ impl Scoremap {
       println!("{}", line);
       let line_time = line_minute_second.into_time();
       if let Some(seconds) = seconds_reg.captures(line) {
-        Self::check_before_define_timing(
-          line_num,
-          parsing_lyrics,
-          &parsed_japanese,
-        )?;
         let num: f64 =
           seconds.get(1).unwrap().as_str().parse().unwrap();
-        line_minute_second.seconds(num);
-      }
-      if let Some(minutes) = minutes_reg.captures(line) {
+        let new_time = line_minute_second.seconds(num);
+        if new_time.into_time() == line_time {
+          continue;
+        }
         Self::check_before_define_timing(
           line_num,
           parsing_lyrics,
           &parsed_japanese,
         )?;
+        line_minute_second = new_time;
+        continue;
+      }
+      if let Some(minutes) = minutes_reg.captures(line) {
         let num: u32 =
           minutes.get(1).unwrap().as_str().parse().unwrap();
-        line_minute_second.minutes(num);
+        let new_time = line_minute_second.minutes(num);
+        if new_time.into_time() == line_time {
+          continue;
+        }
+        Self::check_before_define_timing(
+          line_num,
+          parsing_lyrics,
+          &parsed_japanese,
+        )?;
+        line_minute_second = new_time;
+        continue;
       }
       if let Some(command) = command_reg.captures(line) {
         let string = command.get(1).unwrap().as_str();
@@ -225,6 +236,8 @@ impl Scoremap {
             });
           }
         }
+
+        continue;
       }
       if let Some(caption) = caption_reg.captures(line) {
         if !parsing_lyrics {
@@ -235,6 +248,7 @@ impl Scoremap {
         }
         let string = caption.get(1).unwrap().as_str();
         notes.push(Note::caption(line_time, string));
+        continue;
       }
       if let Some(property) = property_reg.captures(line) {
         if parsing_lyrics {
@@ -262,10 +276,11 @@ impl Scoremap {
         }
         let value = property.get(2).unwrap().as_str();
         metadata.insert(key.to_owned(), value.to_owned());
+        continue;
       }
       if let Some(yomigana) = yomigana_reg.captures(line) {
         let string = yomigana.get(1).unwrap().as_str();
-        if let Some(lyrics) = parsed_japanese {
+        if let Some(ref lyrics) = parsed_japanese {
           notes.push(
             Note::sentence(line_time, &lyrics, string).map_err(
               |_e| InvalidStatementDefinition {
@@ -274,7 +289,8 @@ impl Scoremap {
                   "ふりがなに使われる平仮名の並びが不自然です。",
               },
             )?,
-          )
+          );
+          continue;
         }
         return Err(InvalidStatementDefinition {
           line_num,
@@ -289,7 +305,7 @@ impl Scoremap {
             reason: "歌詞は複数行に分けないでください。",
           });
         }
-        parsed_japanese = Some(line.to_owned())
+        parsed_japanese = Some(line.to_owned());
       }
     }
     Ok(Scoremap { metadata, notes })
