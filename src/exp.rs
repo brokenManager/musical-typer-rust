@@ -1,3 +1,4 @@
+pub mod game_stat;
 pub mod note;
 pub mod roman_char;
 pub mod roman_lexer;
