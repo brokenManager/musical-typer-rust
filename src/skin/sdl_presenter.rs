@@ -64,8 +64,8 @@ impl SDLPresenter {
     let header_dim = Rect::new(0, 0, self.width, 100);
 
     let to_input = StringToInput::new(
-      "千本桜夜ニ紛レ",
-      "senbonzakurayorunimagire",
+      "千本桜　夜ニ紛レ",
+      "せんぼんざくらよるにまぎれ",
     )?;
     let section = Section::new(&to_input, 0.2);
     let section_dim = Rect::new(0, 100, self.width, 200);

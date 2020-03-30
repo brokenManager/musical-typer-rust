@@ -131,7 +131,7 @@ impl RomanStr {
           1
         }
         ['せ', ..] => {
-          romans.push(RomanChar::new(&["sw"]));
+          romans.push(RomanChar::new(&["se"]));
           1
         }
         ['そ', ..] => {
@@ -267,7 +267,7 @@ impl RomanStr {
           1
         }
         ['ん', ..] => {
-          romans.push(RomanChar::new(&["nn"]));
+          romans.push(RomanChar::new(&["n"]));
           1
         }
         ['ぁ', ..] => {

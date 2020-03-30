@@ -15,7 +15,7 @@ impl StringToInput {
     Ok(StringToInput {
       origin: origin.to_owned(),
       will_input: RomanStr::new(to_input)
-        .map_err(|e| format!("{:?}", e))?,
+        .map_err(|e| format!("{:#?}", e))?,
       inputted: String::new(),
     })
   }

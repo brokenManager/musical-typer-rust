@@ -4,8 +4,8 @@ use sdl2::render::{Canvas, RenderTarget};
 
 use super::text::TextBuilder;
 
-const CELL_WIDTH: u32 = 65;
-const CELL_HEIGHT: u32 = 85;
+const CELL_WIDTH: u32 = 60;
+const CELL_HEIGHT: u32 = 70;
 
 pub struct KeyCell {
   center: Point,
@@ -66,7 +66,8 @@ impl Keyboard {
     text_builder: TextBuilder<'a, U>,
     offset: Rect,
   ) -> Result<(), String> {
-    let key_chars_rows = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+    let key_chars_rows =
+      ["1234567890-", "qwertyuiop", "asdfghjkl", "zxcvbnm"];
     let mut y = 0;
     for key_chars_row in key_chars_rows.iter() {
       let mut x = 0;
