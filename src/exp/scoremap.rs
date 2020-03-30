@@ -6,6 +6,7 @@ use super::note::Note;
 pub enum ScoremapError {
   UnexceptedEndOfFile,
   InvalidCommand { line_num: u64, reason: &'static str },
+  InvalidStatementDeifinition { line_num: u64, reason: &'static str },
 }
 
 pub struct ScoremapMetadata {}
@@ -53,6 +54,8 @@ impl Scoremap {
 
     let comment_reg = Regex::new(COMMENT).unwrap();
     let command_reg = Regex::new(COMMAND).unwrap();
+    let hiragana_reg = Regex::new(HIRAGANA).unwrap();
+    let caption_reg = Regex::new(CAPTION).unwrap();
 
     let mut notes: Vec<Note> = vec![];
     let mut line_num = 1;
@@ -66,39 +69,47 @@ impl Scoremap {
       if comment_reg.is_match(line) {
         continue;
       }
-      if command_reg.is_match(line) {
-        if let Some(command) = command_reg.captures(line) {
-          let string = command.get(0).unwrap().as_str();
-          match string {
-            "start" => {
-              if parsing_lyrics {
-                return Err(InvalidCommand {
-                  line_num,
-                  reason:
-                    "start コマンドは end コマンドより前で有効です。",
-                });
-              }
-              parsing_lyrics = true;
-            }
-            "break" => {}
-            "end" => {
-              if !parsing_lyrics {
-                return Err(InvalidCommand {
-                  line_num,
-                  reason:
-                    "end コマンドは start コマンドより後で有効です。",
-                });
-              }
-              parsing_lyrics = false;
-            }
-            _ => {
+      if let Some(command) = command_reg.captures(line) {
+        let string = command.get(0).unwrap().as_str();
+        match string {
+          "start" => {
+            if parsing_lyrics {
               return Err(InvalidCommand {
                 line_num,
-                reason: "start、break、end コマンドのみが有効です。",
+                reason:
+                  "start コマンドは end コマンドより前で有効です。",
               });
             }
+            parsing_lyrics = true;
+          }
+          "break" => {}
+          "end" => {
+            if !parsing_lyrics {
+              return Err(InvalidCommand {
+                line_num,
+                reason:
+                  "end コマンドは start コマンドより後で有効です。",
+              });
+            }
+            parsing_lyrics = false;
+          }
+          _ => {
+            return Err(InvalidCommand {
+              line_num,
+              reason: "start、break、end コマンドのみが有効です。",
+            });
           }
         }
+      }
+      if let Some(caption) = caption_reg.captures(line) {
+        if !parsing_lyrics {
+          return Err(InvalidStatementDeifinition {
+            line_num,
+            reason: "キャプションの指定は歌詞定義の中のみ有効です。",
+          });
+        }
+        let string = caption.get(0).unwrap().as_str();
+        notes.push(Note::caption(line_time, string));
       }
       line_num += 1;
     }
