@@ -9,7 +9,7 @@ pub enum ScoremapError {
   UnexceptedEndOfFile,
   InvalidCommand { line_num: u64, reason: &'static str },
   InvalidPropertyDeifinition { line_num: u64, reason: &'static str },
-  InvalidStatementDeifinition { line_num: u64, reason: &'static str },
+  InvalidStatementDefinition { line_num: u64, reason: &'static str },
   InvalidTimingDeifinition { line_num: u64, reason: &'static str },
 }
 
@@ -34,7 +34,7 @@ const PROPERTY: &str =
 const COMMENT: &str = r"^[[:space:]]*#?.*$";
 const COMMAND: &str =
   r"^[[:space:]]*\[[[:space:]]*(.*)[[:space:]]*\][[:space:]]*$";
-const HIRAGANA: &str = r"^:([あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをんぁぃぅぇぉゃゅょゎっーがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]+)$";
+const YOMIGANA: &str = r"^:([あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをんぁぃぅぇぉゃゅょゎっーがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]+)$";
 const CAPTION: &str = r"^>>(.+)$";
 const SECONDS: &str = r"^\*[[:space:]]*((?:[1-9][0-9]*\.[0-9]+)|(?:0\.[0-9]+))[[:space:]]*$";
 const MINUTES: &str = r"^\|[[:space:]]*([1-9][0-9]*)[[:space:]]*$";
@@ -87,7 +87,7 @@ fn pattern_tests() {
   assert!(reg.is_match("[ break]"));
   assert!(reg.is_match("[ start] "));
 
-  let reg = Regex::new(HIRAGANA).unwrap();
+  let reg = Regex::new(YOMIGANA).unwrap();
   assert!(reg.is_match(":てすと"));
   assert!(reg.is_match(":はんばーがー"));
   assert!(reg.is_match(":ぅゎょぅじょっょぃ"));
@@ -139,7 +139,7 @@ impl Scoremap {
     let property_reg = Regex::new(PROPERTY).unwrap();
     let comment_reg = Regex::new(COMMENT).unwrap();
     let command_reg = Regex::new(COMMAND).unwrap();
-    let hiragana_reg = Regex::new(HIRAGANA).unwrap();
+    let yomigana_reg = Regex::new(YOMIGANA).unwrap();
     let caption_reg = Regex::new(CAPTION).unwrap();
     let seconds_reg = Regex::new(SECONDS).unwrap();
     let minutes_reg = Regex::new(MINUTES).unwrap();
@@ -149,6 +149,7 @@ impl Scoremap {
     let mut line_num = 0;
     let mut parsing_lyrics = false;
     let mut line_minute_second = MinuteSecond::new();
+    let mut parsed_japanese: Option<String> = None;
 
     use std::io::{BufRead, BufReader};
     let reader = BufReader::new(file);
@@ -215,7 +216,7 @@ impl Scoremap {
       }
       if let Some(caption) = caption_reg.captures(line) {
         if !parsing_lyrics {
-          return Err(InvalidStatementDeifinition {
+          return Err(InvalidStatementDefinition {
             line_num,
             reason: "キャプションの指定は歌詞定義の中のみ有効です。",
           });
@@ -245,6 +246,34 @@ impl Scoremap {
         }
         let value = property.get(2).unwrap().as_str();
         metadata.insert(key.to_owned(), value.to_owned());
+      }
+      if let Some(yomigana) = yomigana_reg.captures(line) {
+        let string = yomigana.get(1).unwrap().as_str();
+        if let Some(lyrics) = parsed_japanese {
+          notes.push(
+            Note::sentence(line_time, &lyrics, string).map_err(
+              |_e| InvalidStatementDefinition {
+                line_num,
+                reason:
+                  "ふりがなに使われる平仮名の並びが不自然です。",
+              },
+            )?,
+          )
+        }
+        return Err(InvalidStatementDefinition {
+          line_num,
+          reason: "読み仮名は歌詞より後にしてください。",
+        });
+      }
+      if parsing_lyrics {
+        // どのパターンにも一致しない場合は文指定なので
+        if let Some(_) = parsed_japanese {
+          return Err(InvalidStatementDefinition {
+            line_num,
+            reason: "歌詞は複数行に分けないでください。",
+          });
+        }
+        parsed_japanese = Some(line.to_owned())
       }
     }
     Ok(())

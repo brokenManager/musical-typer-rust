@@ -49,11 +49,12 @@ impl Note {
 
   pub fn sentence(
     time: Seconds,
-    lyrics: &str,
+    origin: &str,
+    yomigana: &str,
   ) -> Result<Self, String> {
     Ok(Self::new(
       time,
-      NoteContent::Sentence(StringToInput::new(lyrics)?),
+      NoteContent::Sentence(StringToInput::new(origin, yomigana)?),
     ))
   }
 

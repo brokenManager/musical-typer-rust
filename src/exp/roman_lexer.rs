@@ -2,15 +2,15 @@ use super::roman_char::RomanChar;
 
 #[derive(Debug)]
 pub enum RomanParseError {
-  IllegalHiragana(String),
+  IllegalYomigana(String),
 }
 
 #[derive(Debug)]
 pub struct RomanStr(Vec<RomanChar>);
 
 impl RomanStr {
-  pub fn new(hiragana: &str) -> Result<RomanStr, RomanParseError> {
-    let chars: Vec<char> = hiragana.chars().collect();
+  pub fn new(yomigana: &str) -> Result<RomanStr, RomanParseError> {
+    let chars: Vec<char> = yomigana.chars().collect();
     let mut parsed: Vec<RomanChar> = vec![];
     Self::parse(&mut parsed, chars.as_slice())?;
     Ok(RomanStr(parsed))
@@ -18,10 +18,10 @@ impl RomanStr {
 
   fn parse<'a>(
     romans: &mut Vec<RomanChar>,
-    mut hiragana: &'a [char],
+    mut yomigana: &'a [char],
   ) -> Result<(), RomanParseError> {
-    while hiragana.len() != 0 {
-      let replaced_count = match hiragana {
+    while yomigana.len() != 0 {
+      let replaced_count = match yomigana {
         // ['っ', 'か', ..] => {
         //   romans.push(RomanChar::new(&["k", "ka"]));
         //   2
@@ -412,13 +412,13 @@ impl RomanStr {
           1
         }
         n => {
-          return Err(RomanParseError::IllegalHiragana(format!(
+          return Err(RomanParseError::IllegalYomigana(format!(
             "{:#?}",
             n
           )));
         }
       };
-      hiragana = hiragana.split_at(replaced_count).1;
+      yomigana = yomigana.split_at(replaced_count).1;
     }
     Ok(())
   }

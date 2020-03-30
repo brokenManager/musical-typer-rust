@@ -7,20 +7,17 @@ use super::text::TextBuilder;
 use crate::exp::string_to_input::StringToInput;
 
 pub struct Section<'a> {
-  japanese: &'a StringToInput,
-  roman: &'a StringToInput,
+  to_input: &'a StringToInput,
   remaining_ratio: f64,
 }
 
 impl<'a> Section<'a> {
   pub fn new(
-    japanese: &'a StringToInput,
-    roman: &'a StringToInput,
+    to_input: &'a StringToInput,
     remaining_ratio: f64,
   ) -> Section<'a> {
     Section {
-      japanese,
-      roman,
+      to_input,
       remaining_ratio: remaining_ratio.max(0.).min(1.),
     }
   }
@@ -45,10 +42,10 @@ impl<'a> Section<'a> {
     const JAPANESE_HEIGHT: u32 = 80;
     let half_x = offset.width() / 2;
 
-    let will_input_japanese = self.japanese.will_input();
+    let will_input_japanese = self.to_input.origin();
     text_builder
       .color(Color::RGB(0, 0, 0))
-      .text(will_input_japanese.as_str())
+      .text(will_input_japanese)
       .build()
       .render(
         &mut canvas,
@@ -62,7 +59,7 @@ impl<'a> Section<'a> {
 
     const ROMAN_GLYPH_WIDTH: u32 = 20;
     const ROMAN_HEIGHT: u32 = 20;
-    let will_input_roman = self.roman.will_input();
+    let will_input_roman = self.to_input.will_input();
     text_builder
       .color(Color::RGB(0, 0, 0))
       .text(will_input_roman.as_str())
