@@ -294,6 +294,22 @@ impl RomanStr {
           romans.push(RomanChar::new(&["xtu", "ltu"]));
           1
         }
+        ['ゃ', ..] => {
+          romans.push(RomanChar::new(&["xya", "lya"]));
+          1
+        }
+        ['ゅ', ..] => {
+          romans.push(RomanChar::new(&["xyu", "lyu"]));
+          1
+        }
+        ['ょ', ..] => {
+          romans.push(RomanChar::new(&["xyo", "lyo"]));
+          1
+        }
+        ['ゎ', ..] => {
+          romans.push(RomanChar::new(&["xwa", "lwa"]));
+          1
+        }
 
         ['が', ..] => {
           romans.push(RomanChar::new(&["ga"]));
