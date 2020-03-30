@@ -5,14 +5,21 @@ pub type Seconds = f64;
 pub type SectionId = String;
 
 pub struct Section {
-  id: SectionId,
-  start: Seconds,
-  end: Seconds,
+  from: NoteId,
+  to: NoteId,
 }
 
 impl Section {
-  pub fn new(id: SectionId, start: Seconds, end: Seconds) -> Section {
-    Section { id, start, end }
+  pub fn new(from: NoteId, to: NoteId) -> Section {
+    Section { from, to }
+  }
+
+  pub fn from(&self) -> NoteId {
+    self.from
+  }
+
+  pub fn to(&self) -> NoteId {
+    self.to
   }
 }
 
@@ -26,7 +33,7 @@ pub type NoteId = String;
 
 pub struct Note {
   id: NoteId,
-  time: f64,
+  time: Seconds,
   content: NoteContent,
 }
 
@@ -40,14 +47,21 @@ impl Note {
     Note { id, time, content }
   }
 
-  pub fn sentence(time: f64, lyrics: &str) -> Result<Self, String> {
+  pub fn sentence(
+    time: Seconds,
+    lyrics: &str,
+  ) -> Result<Self, String> {
     Ok(Self::new(
       time,
       NoteContent::Sentence(StringToInput::new(lyrics)?),
     ))
   }
 
-  pub fn caption(time: f64, caption: &str) -> Self {
+  pub fn caption(time: Seconds, caption: &str) -> Self {
     Self::new(time, NoteContent::Caption(caption.to_owned()))
+  }
+
+  pub fn blank(time: Seconds) -> Self {
+    Self::new(time, NoteContent::Blank)
   }
 }
