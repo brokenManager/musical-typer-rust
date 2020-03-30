@@ -18,6 +18,8 @@ pub struct Scoremap {
 const COMMENT: &str = r"^[[:space:]]*#?.*$";
 const COMMAND: &str =
   r"^[[:space:]]*\[[[:space:]]*(.*)[[:space:]]*\][[:space:]]*$";
+const HIRAGANA: &str = r"^:([あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをんぁぃぅぇぉゃゅょゎっーがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]+)$";
+const CAPTION: &str = r"^>>(.+)$";
 
 #[test]
 fn pattern_tests() {
@@ -34,6 +36,15 @@ fn pattern_tests() {
   assert!(reg.is_match(" [end ] "));
   assert!(reg.is_match("[ break]"));
   assert!(reg.is_match("[ start] "));
+
+  let reg = Regex::new(HIRAGANA).unwrap();
+  assert!(reg.is_match(":てすと"));
+  assert!(reg.is_match(":はんばーがー"));
+  assert!(reg.is_match(":ぅゎょぅじょっょぃ"));
+
+  let reg = Regex::new(CAPTION).unwrap();
+  assert!(reg.is_match(">>テスト"));
+  assert!(reg.is_match(">>HAMBURGER"));
 }
 
 impl Scoremap {
