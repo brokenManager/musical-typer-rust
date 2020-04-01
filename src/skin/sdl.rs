@@ -21,14 +21,14 @@ use keyboard::Keyboard;
 use section::Section;
 use text::TextBuilder;
 
-pub struct SDLPresenter {
+pub struct SDLView {
   width: u32,
   height: u32,
   ctx: Sdl,
   canvas: Canvas<Window>,
 }
 
-impl SDLPresenter {
+impl SDLView {
   pub fn new(width: u32, height: u32) -> Result<Self, String> {
     let ctx = sdl2::init().map_err(|e| e.to_string())?;
 
@@ -45,7 +45,7 @@ impl SDLPresenter {
     canvas.clear();
     canvas.present();
 
-    Ok(SDLPresenter {
+    Ok(SDLView {
       width,
       height,
       ctx,
@@ -119,20 +119,31 @@ impl SDLPresenter {
   }
 }
 
-impl Presenter for SDLPresenter {
+impl Presenter for SDLView {
   fn play_bgm(&mut self, _: &str) {
-    todo!()
+    unimplemented!()
   }
   fn decrease_remaining_time(&mut self, _: f64) {
-    todo!()
+    unimplemented!()
   }
   fn update_string_to_input(&mut self, _: &StringToInput) {
-    todo!()
+    unimplemented!()
   }
   fn mistyped(&mut self) {
-    todo!()
+    unimplemented!()
   }
   fn flush_screen(&mut self) {
-    todo!()
+    unimplemented!()
+  }
+}
+
+use crate::abst::controller::Controller;
+
+impl Controller for SDLView {
+  fn key_press(&mut self) -> char {
+    unimplemented!()
+  }
+  fn elapse_time(&mut self) -> f64 {
+    unimplemented!()
   }
 }
