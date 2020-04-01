@@ -169,7 +169,7 @@ impl Scoremap {
     use std::io::{BufRead, BufReader};
     let reader = BufReader::new(file);
     for (line_num, line) in reader.lines().enumerate() {
-      let line_num = line_num as u64;
+      let line_num = line_num as u64 + 1;
       let line = &line.map_err(|_e| UnexceptedEndOfFile)?;
       if comment_reg.is_match(line) {
         continue;
