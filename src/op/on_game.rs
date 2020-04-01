@@ -1,3 +1,6 @@
+use crate::exp::game_stat::GameActivity;
+use crate::exp::note::{Note, Section};
+use crate::exp::scoremap::Scoremap;
 use crate::exp::string_to_input::StringToInput;
 
 pub trait Controller {
@@ -12,9 +15,31 @@ pub trait Presenter {
   fn flush_screen(&mut self);
 }
 
-pub fn run_game(
-  controller: &mut impl Controller,
-  presenter: &mut impl Presenter,
-) -> Result<(), String> {
-  Ok(())
+pub struct MusicalTyper {
+  activity: GameActivity,
+}
+
+impl MusicalTyper {
+  pub fn new(score: Scoremap) -> Self {
+    let notes = score.notes();
+    let shifted_notes = notes.iter().cloned().skip(1);
+    let sections = notes
+      .iter()
+      .zip(shifted_notes)
+      .map(|(prev, note): (&Note, Note)| {
+        Section::new(prev.id(), note.id())
+      })
+      .collect();
+    MusicalTyper {
+      activity: GameActivity::new(sections),
+    }
+  }
+
+  pub fn run_game(
+    &mut self,
+    controller: &mut impl Controller,
+    presenter: &mut impl Presenter,
+  ) -> Result<(), String> {
+    Ok(())
+  }
 }

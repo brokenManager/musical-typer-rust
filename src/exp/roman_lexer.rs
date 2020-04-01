@@ -5,7 +5,7 @@ pub enum RomanParseError {
   IllegalYomigana(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RomanStr(Vec<RomanChar>);
 
 impl RomanStr {

@@ -325,4 +325,8 @@ impl Scoremap {
     }
     Ok(())
   }
+
+  pub fn notes(&self) -> &[Note] {
+    &self.notes
+  }
 }

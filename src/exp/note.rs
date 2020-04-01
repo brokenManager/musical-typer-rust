@@ -23,7 +23,7 @@ impl Section {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NoteContent {
   Sentence(StringToInput),
   Caption(String),
@@ -32,7 +32,7 @@ pub enum NoteContent {
 
 pub type NoteId = String;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Note {
   id: NoteId,
   time: Seconds,
@@ -58,6 +58,10 @@ impl Note {
       time,
       NoteContent::Sentence(StringToInput::new(origin, yomigana)?),
     ))
+  }
+
+  pub fn id(&self) -> NoteId {
+    self.id.clone()
   }
 
   pub fn caption(time: Seconds, caption: &str) -> Self {
