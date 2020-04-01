@@ -39,11 +39,22 @@ mod TestEnv {
 
   #[test]
   fn op1() {
-    use crate::op::on_game::run_game;
+    use crate::exp::scoremap::Scoremap;
+    use crate::op::on_game::MusicalTyper;
+
+    let test_score = Scoremap::from_file(
+      std::fs::File::open(std::path::Path::new(
+        "examples/sampleScore.tsc",
+      ))
+      .unwrap(),
+    )
+    .unwrap();
+
+    let game = MusicalTyper::new(test_score);
 
     let mut controller = MockController::new();
     let mut presenter = MockPresenter::new();
 
-    run_game(&mut controller, &mut presenter);
+    game.run_game(&mut controller, &mut presenter);
   }
 }
