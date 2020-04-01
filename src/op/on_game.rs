@@ -48,6 +48,7 @@ impl MusicalTyper {
 mod tests {
   use super::Controller;
   use super::Presenter;
+  use crate::exp::string_to_input::StringToInput;
 
   struct KeyPress(f64, &'static str);
 
@@ -94,11 +95,25 @@ mod tests {
     }
   }
 
-  struct MockPresenter;
+  #[derive(Debug, PartialEq)]
+  enum PresentLog {
+    PlayBGM(String),
+    DecreateRemainingTime(f64),
+    UpdateStringToInput(StringToInput),
+    Mistyped,
+  }
+
+  struct MockPresenter {
+    log: Vec<PresentLog>,
+  }
 
   impl MockPresenter {
     fn new() -> Self {
-      MockPresenter
+      MockPresenter { log: vec![] }
+    }
+
+    fn log(&self) -> &[PresentLog] {
+      &self.log
     }
   }
 
@@ -182,5 +197,7 @@ mod tests {
     let mut presenter = MockPresenter::new();
 
     game.run_game(&mut controller, &mut presenter);
+
+    assert_eq!(presenter.log(), &[]);
   }
 }
