@@ -8,8 +8,8 @@ use sdl2::Sdl;
 
 use std::time::Duration;
 
-use crate::abst::presenter::Presenter;
 use crate::exp::string_to_input::StringToInput;
+use crate::op::on_game::{Controller, Presenter};
 
 mod header;
 mod keyboard;
@@ -136,8 +136,6 @@ impl Presenter for SDLView {
     unimplemented!()
   }
 }
-
-use crate::abst::controller::Controller;
 
 impl Controller for SDLView {
   fn key_press(&mut self) -> char {
