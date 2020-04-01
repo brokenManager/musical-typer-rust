@@ -133,7 +133,7 @@ mod tests {
         "example/sampleScore.tsc",
       ))
       .unwrap(),
-      ScoremapLoadConfig::new(),
+      ScoremapLoadConfig::new().ignore_invalid_properties(true),
     )
     .unwrap();
 
