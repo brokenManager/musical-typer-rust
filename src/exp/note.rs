@@ -10,7 +10,7 @@ pub struct Section {
 }
 
 impl Section {
-  pub fn new(from: NoteId, to: NoteId) -> Section {
+  pub fn new(from: NoteId, to: NoteId) -> Self {
     Section { from, to }
   }
 

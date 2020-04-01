@@ -29,10 +29,7 @@ pub struct SDLPresenter {
 }
 
 impl SDLPresenter {
-  pub fn new(
-    width: u32,
-    height: u32,
-  ) -> Result<SDLPresenter, String> {
+  pub fn new(width: u32, height: u32) -> Result<Self, String> {
     let ctx = sdl2::init().map_err(|e| e.to_string())?;
 
     let video = ctx.video().map_err(|e| e.to_string())?;

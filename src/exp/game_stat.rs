@@ -8,7 +8,7 @@ pub struct GameActivity {
 }
 
 impl GameActivity {
-  pub fn new(sections: Vec<Section>) -> GameActivity {
+  pub fn new(sections: Vec<Section>) -> Self {
     GameActivity {
       typed_count: 0,
       mistyped_count: 0,

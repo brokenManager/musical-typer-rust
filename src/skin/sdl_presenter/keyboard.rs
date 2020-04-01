@@ -14,7 +14,7 @@ pub struct KeyCell {
 }
 
 impl KeyCell {
-  fn new(center: Point, key: char, is_pressed: bool) -> KeyCell {
+  fn new(center: Point, key: char, is_pressed: bool) -> Self {
     KeyCell {
       center,
       key,
@@ -54,7 +54,7 @@ pub struct Keyboard {
 }
 
 impl Keyboard {
-  pub fn new(pressed_keys: &[char]) -> Keyboard {
+  pub fn new(pressed_keys: &[char]) -> Self {
     Keyboard {
       pressed_keys: pressed_keys.to_owned(),
     }

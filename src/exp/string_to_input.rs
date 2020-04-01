@@ -8,10 +8,7 @@ pub struct StringToInput {
 }
 
 impl StringToInput {
-  pub fn new(
-    origin: &str,
-    to_input: &str,
-  ) -> Result<StringToInput, String> {
+  pub fn new(origin: &str, to_input: &str) -> Result<Self, String> {
     Ok(StringToInput {
       origin: origin.to_owned(),
       will_input: RomanStr::new(to_input)
@@ -38,7 +35,7 @@ impl StringToInput {
     self.inputted.as_str()
   }
 
-  pub fn advance(self) -> StringToInput {
-    self
+  pub fn advance(self) -> Self {
+    unimplemented!()
   }
 }

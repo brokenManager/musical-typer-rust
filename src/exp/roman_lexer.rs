@@ -9,7 +9,7 @@ pub enum RomanParseError {
 pub struct RomanStr(Vec<RomanChar>);
 
 impl RomanStr {
-  pub fn new(yomigana: &str) -> Result<RomanStr, RomanParseError> {
+  pub fn new(yomigana: &str) -> Result<Self, RomanParseError> {
     let chars: Vec<char> = yomigana.chars().collect();
     let mut parsed: Vec<RomanChar> = vec![];
     Self::parse(&mut parsed, chars.as_slice())?;

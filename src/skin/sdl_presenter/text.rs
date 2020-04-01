@@ -13,7 +13,7 @@ impl<'ttf> Text<'ttf> {
     texture_creator: &'ttf TextureCreator<T>,
     text: &str,
     color: Color,
-  ) -> Text<'ttf> {
+  ) -> Self {
     let surface = font.render(text).blended(color).unwrap();
     let texture = texture_creator
       .create_texture_from_surface(&surface)
@@ -52,7 +52,7 @@ impl<'a, T> TextBuilder<'a, T> {
   pub fn new(
     font: &'a Font<'a, 'static>,
     texture_creator: &'a TextureCreator<T>,
-  ) -> TextBuilder<'a, T> {
+  ) -> Self {
     TextBuilder {
       text: "".to_owned(),
       color: Color::RGB(0, 0, 0),
@@ -61,15 +61,12 @@ impl<'a, T> TextBuilder<'a, T> {
     }
   }
 
-  pub fn text(&mut self, new_text: &str) -> &mut TextBuilder<'a, T> {
+  pub fn text(&mut self, new_text: &str) -> &mut Self {
     self.text = new_text.to_owned();
     self
   }
 
-  pub fn color(
-    &mut self,
-    new_color: Color,
-  ) -> &mut TextBuilder<'a, T> {
+  pub fn color(&mut self, new_color: Color) -> &mut Self {
     self.color = new_color;
     self
   }

@@ -15,7 +15,7 @@ impl<'a> Section<'a> {
   pub fn new(
     to_input: &'a StringToInput,
     remaining_ratio: f64,
-  ) -> Section<'a> {
+  ) -> Self {
     Section {
       to_input,
       remaining_ratio: remaining_ratio.max(0.).min(1.),

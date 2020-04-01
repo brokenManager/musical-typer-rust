@@ -4,7 +4,7 @@ pub struct RomanChar {
 }
 
 impl RomanChar {
-  pub fn new(styles: &[&'static str]) -> RomanChar {
+  pub fn new(styles: &[&'static str]) -> Self {
     RomanChar {
       styles: Vec::from(styles),
     }

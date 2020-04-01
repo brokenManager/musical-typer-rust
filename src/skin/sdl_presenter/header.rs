@@ -9,7 +9,7 @@ pub struct Header {
 }
 
 impl Header {
-  pub fn new(title: &str, author: &str) -> Header {
+  pub fn new(title: &str, author: &str) -> Self {
     Header {
       title: title.to_owned(),
       author: author.to_owned(),

@@ -148,7 +148,7 @@ impl Scoremap {
   pub fn from_file(
     file: std::fs::File,
     config: ScoremapLoadConfig,
-  ) -> Result<Scoremap, ScoremapError> {
+  ) -> Result<Self, ScoremapError> {
     use ScoremapError::*;
 
     let property_reg = Regex::new(PROPERTY).unwrap();
