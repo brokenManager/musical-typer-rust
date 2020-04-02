@@ -17,6 +17,14 @@ impl GameActivity {
     }
   }
 
+  pub fn current_section(&self) -> Option<Section> {
+    if self.typing_section_index < self.sections.len() {
+      Some(self.sections[self.typing_section_index].clone())
+    } else {
+      None
+    }
+  }
+
   pub fn accuracy(&self) -> f64 {
     self.mistyped_count as f64 / self.typed_count as f64
   }

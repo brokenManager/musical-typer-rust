@@ -4,6 +4,7 @@ pub type Seconds = f64;
 
 pub type SectionId = String;
 
+#[derive(Debug, Clone)]
 pub struct Section {
   from: NoteId,
   to: NoteId,

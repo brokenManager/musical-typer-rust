@@ -1,6 +1,6 @@
 use crate::exp::game_stat::GameActivity;
 use crate::exp::note::{Note, Section};
-use crate::exp::scoremap::Scoremap;
+use crate::exp::scoremap::{Scoremap, ScoremapMetadata};
 use crate::exp::string_to_input::StringToInput;
 
 pub trait Controller {
@@ -16,6 +16,7 @@ pub trait Presenter {
 }
 
 pub struct MusicalTyper {
+  score: Scoremap,
   activity: GameActivity,
 }
 
@@ -31,6 +32,7 @@ impl MusicalTyper {
       })
       .collect();
     MusicalTyper {
+      score,
       activity: GameActivity::new(sections),
     }
   }
@@ -40,6 +42,13 @@ impl MusicalTyper {
     controller: &mut impl Controller,
     presenter: &mut impl Presenter,
   ) -> Result<(), String> {
+    let metadata = self.score.metadata();
+    if let Some(ref bgm) = metadata.get("bgm") {
+      presenter.play_bgm(bgm);
+    }
+    while let Some(section) = self.activity.current_section() {
+      let delta_time = controller.elapse_time();
+    }
     Ok(())
   }
 }
@@ -103,6 +112,8 @@ mod tests {
     Mistyped,
   }
 
+  use PresentLog::*;
+
   struct MockPresenter {
     log: Vec<PresentLog>,
   }
@@ -119,23 +130,18 @@ mod tests {
 
   impl Presenter for MockPresenter {
     fn play_bgm(&mut self, name: &str) {
-      unimplemented!()
+      self.log.push(PlayBGM(name.to_owned()));
     }
     fn decrease_remaining_time(&mut self, delta_time: f64) {
-      unimplemented!()
+      self.log.push(DecreateRemainingTime(delta_time));
     }
-    fn update_string_to_input(
-      &mut self,
-      string: &crate::exp::string_to_input::StringToInput,
-    ) {
-      unimplemented!()
+    fn update_string_to_input(&mut self, string: &StringToInput) {
+      self.log.push(UpdateStringToInput(string.clone()));
     }
     fn mistyped(&mut self) {
-      unimplemented!()
+      self.log.push(Mistyped)
     }
-    fn flush_screen(&mut self) {
-      unimplemented!()
-    }
+    fn flush_screen(&mut self) {}
   }
 
   #[test]
@@ -196,8 +202,21 @@ mod tests {
     ]);
     let mut presenter = MockPresenter::new();
 
-    game.run_game(&mut controller, &mut presenter);
+    game.run_game(&mut controller, &mut presenter).unwrap();
 
-    assert_eq!(presenter.log(), &[]);
+    assert_eq!(
+      presenter.log(),
+      &[
+        PlayBGM("kkiminochikara-edited.wav".to_owned()),
+        DecreateRemainingTime(3.0),
+        UpdateStringToInput(
+          StringToInput::new(
+            "もうダメだ そんな時は",
+            "もうだめだそんなときは"
+          )
+          .unwrap()
+        )
+      ]
+    );
   }
 }

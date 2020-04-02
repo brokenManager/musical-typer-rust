@@ -326,6 +326,10 @@ impl Scoremap {
     Ok(())
   }
 
+  pub fn metadata(&self) -> &ScoremapMetadata {
+    &self.metadata
+  }
+
   pub fn notes(&self) -> &[Note] {
     &self.notes
   }
