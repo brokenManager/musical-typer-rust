@@ -27,26 +27,28 @@ impl RomanChar {
     }
   }
 
-  fn standard_style(&self) -> &str {
-    self.styles[0]
-  }
-
   pub fn styles(&self) -> &[&str] {
     &self.styles
   }
 
   pub fn determined_style(&self) -> &str {
-    self.determined_style.unwrap_or(self.styles[0])
+    self.determined_style.unwrap_or(self.styles()[0])
   }
 
-  pub fn input(&mut self, typed: char) {
+  pub fn input(&mut self, typed: char) -> bool {
     let to_test = [self.inputted.clone(), typed.to_string()].concat();
     if let Some(determined) = self.determine(&to_test) {
       self.determined_style = Some(determined);
       self.inputted = to_test;
+      true
     } else {
       self.determined_style = None;
+      false
     }
+  }
+
+  pub fn completed_input(&self) -> bool {
+    self.determined_style().len() == self.inputted.len()
   }
 }
 
@@ -54,13 +56,13 @@ impl RomanChar {
 fn tea() {
   let mut tea = RomanChar::new(&["cha", "cya", "tya"]);
   assert_eq!("cha", tea.determined_style());
-  tea.input('c');
+  assert!(tea.input('c'));
   assert_eq!("cha", tea.determined_style());
-  tea.input('y');
+  assert!(tea.input('y'));
   assert_eq!("cya", tea.determined_style());
 
   let mut tea = RomanChar::new(&["cha", "cya", "tya"]);
   assert_eq!("cha", tea.determined_style());
-  tea.input('t');
+  assert!(tea.input('t'));
   assert_eq!("tya", tea.determined_style());
 }
