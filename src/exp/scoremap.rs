@@ -45,8 +45,8 @@ pub type ScoremapMetadata = HashMap<String, String>;
 
 #[derive(Debug)]
 pub struct Scoremap {
-  metadata: ScoremapMetadata,
-  notes: Vec<Note>,
+  pub metadata: ScoremapMetadata,
+  pub notes: Vec<Note>,
 }
 
 const PROPERTY: &str =
@@ -324,13 +324,5 @@ impl Scoremap {
       });
     }
     Ok(())
-  }
-
-  pub fn metadata(&self) -> &ScoremapMetadata {
-    &self.metadata
-  }
-
-  pub fn notes(&self) -> &[Note] {
-    &self.notes
   }
 }

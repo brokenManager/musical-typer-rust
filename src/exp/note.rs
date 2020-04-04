@@ -6,27 +6,28 @@ pub type SectionId = String;
 
 #[derive(Debug, Clone)]
 pub struct Section {
-  from: NoteId,
-  to: NoteId,
+  pub foreign_note: NoteId,
+  pub from: Seconds,
+  pub to: Seconds,
 }
 
 impl Section {
-  pub fn new(from: NoteId, to: NoteId) -> Self {
-    Section { from, to }
-  }
-
-  pub fn from(&self) -> &str {
-    &self.from
-  }
-
-  pub fn to(&self) -> &str {
-    &self.to
+  pub fn new(
+    foreign_note: NoteId,
+    from: Seconds,
+    to: Seconds,
+  ) -> Self {
+    Section {
+      foreign_note,
+      from,
+      to,
+    }
   }
 }
 
 #[derive(Debug, Clone)]
 pub enum NoteContent {
-  Sentence(Sentence),
+  Sentence { sentence: Sentence, succeed: bool },
   Caption(String),
   Blank,
 }
@@ -57,12 +58,11 @@ impl Note {
   ) -> Result<Self, String> {
     Ok(Self::new(
       time,
-      NoteContent::Sentence(Sentence::new(origin, yomigana)?),
+      NoteContent::Sentence {
+        sentence: Sentence::new(origin, yomigana)?,
+        succeed: false,
+      },
     ))
-  }
-
-  pub fn id(&self) -> NoteId {
-    self.id.clone()
   }
 
   pub fn caption(time: Seconds, caption: &str) -> Self {
@@ -71,5 +71,23 @@ impl Note {
 
   pub fn blank(time: Seconds) -> Self {
     Self::new(time, NoteContent::Blank)
+  }
+
+  pub fn id(&self) -> NoteId {
+    self.id.clone()
+  }
+
+  pub fn time(&self) -> Seconds {
+    self.time
+  }
+
+  pub fn input(&mut self, typed: char) {
+    use NoteContent::Sentence;
+
+    if let Sentence { sentence, succeed } = &mut self.content {
+      if sentence.input(typed) {
+        *succeed = true;
+      }
+    }
   }
 }

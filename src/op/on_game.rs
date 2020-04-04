@@ -1,6 +1,5 @@
 use crate::exp::game_stat::GameActivity;
-use crate::exp::note::{Note, Section};
-use crate::exp::scoremap::{Scoremap, ScoremapMetadata};
+use crate::exp::scoremap::Scoremap;
 use crate::exp::sentence::Sentence;
 
 pub trait Controller {
@@ -22,19 +21,8 @@ pub struct MusicalTyper {
 
 impl MusicalTyper {
   pub fn new(score: Scoremap) -> Self {
-    let notes = score.notes();
-    let shifted_notes = notes.iter().cloned().skip(1);
-    let sections = notes
-      .iter()
-      .zip(shifted_notes)
-      .map(|(prev, note): (&Note, Note)| {
-        Section::new(prev.id(), note.id())
-      })
-      .collect();
-    MusicalTyper {
-      score,
-      activity: GameActivity::new(sections),
-    }
+    let activity = GameActivity::new(&score.notes);
+    MusicalTyper { score, activity }
   }
 
   pub fn run_game(
@@ -42,7 +30,7 @@ impl MusicalTyper {
     controller: &mut impl Controller,
     presenter: &mut impl Presenter,
   ) -> Result<(), String> {
-    let metadata = self.score.metadata();
+    let metadata = &self.score.metadata;
     if let Some(ref bgm) = metadata.get("bgm") {
       presenter.play_bgm(bgm);
     }
