@@ -1,3 +1,5 @@
+#![feature(or_patterns)]
+
 mod exp;
 mod op;
 mod skin;

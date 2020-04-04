@@ -1,4 +1,4 @@
-use super::string_to_input::StringToInput;
+use super::sentence::Sentence;
 
 pub type Seconds = f64;
 
@@ -26,7 +26,7 @@ impl Section {
 
 #[derive(Debug, Clone)]
 pub enum NoteContent {
-  Sentence(StringToInput),
+  Sentence(Sentence),
   Caption(String),
   Blank,
 }
@@ -57,7 +57,7 @@ impl Note {
   ) -> Result<Self, String> {
     Ok(Self::new(
       time,
-      NoteContent::Sentence(StringToInput::new(origin, yomigana)?),
+      NoteContent::Sentence(Sentence::new(origin, yomigana)?),
     ))
   }
 

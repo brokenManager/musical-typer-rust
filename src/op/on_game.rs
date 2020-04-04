@@ -1,7 +1,7 @@
 use crate::exp::game_stat::GameActivity;
 use crate::exp::note::{Note, Section};
 use crate::exp::scoremap::{Scoremap, ScoremapMetadata};
-use crate::exp::string_to_input::StringToInput;
+use crate::exp::sentence::Sentence;
 
 pub trait Controller {
   fn key_press(&mut self) -> char;
@@ -10,7 +10,7 @@ pub trait Controller {
 pub trait Presenter {
   fn play_bgm(&mut self, name: &str);
   fn decrease_remaining_time(&mut self, delta_time: f64);
-  fn update_string_to_input(&mut self, string: &StringToInput);
+  fn update_sentence(&mut self, string: &Sentence);
   fn mistyped(&mut self);
   fn flush_screen(&mut self);
 }
@@ -57,7 +57,7 @@ impl MusicalTyper {
 mod tests {
   use super::Controller;
   use super::Presenter;
-  use crate::exp::string_to_input::StringToInput;
+  use crate::exp::sentence::Sentence;
 
   struct KeyPress(f64, &'static str);
 
@@ -108,7 +108,7 @@ mod tests {
   enum PresentLog {
     PlayBGM(String),
     DecreateRemainingTime(f64),
-    UpdateStringToInput(StringToInput),
+    UpdateSentence(Sentence),
     Mistyped,
   }
 
@@ -135,8 +135,8 @@ mod tests {
     fn decrease_remaining_time(&mut self, delta_time: f64) {
       self.log.push(DecreateRemainingTime(delta_time));
     }
-    fn update_string_to_input(&mut self, string: &StringToInput) {
-      self.log.push(UpdateStringToInput(string.clone()));
+    fn update_sentence(&mut self, string: &Sentence) {
+      self.log.push(UpdateSentence(string.clone()));
     }
     fn mistyped(&mut self) {
       self.log.push(Mistyped)
@@ -209,8 +209,8 @@ mod tests {
       &[
         PlayBGM("kkiminochikara-edited.wav".to_owned()),
         DecreateRemainingTime(3.0),
-        UpdateStringToInput(
-          StringToInput::new(
+        UpdateSentence(
+          Sentence::new(
             "もうダメだ そんな時は",
             "もうだめだそんなときは"
           )

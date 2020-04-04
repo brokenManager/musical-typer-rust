@@ -4,18 +4,15 @@ use sdl2::render::{Canvas, RenderTarget};
 
 use super::text::TextBuilder;
 
-use crate::exp::string_to_input::StringToInput;
+use crate::exp::sentence::Sentence;
 
 pub struct Section<'a> {
-  to_input: &'a StringToInput,
+  to_input: &'a Sentence,
   remaining_ratio: f64,
 }
 
 impl<'a> Section<'a> {
-  pub fn new(
-    to_input: &'a StringToInput,
-    remaining_ratio: f64,
-  ) -> Self {
+  pub fn new(to_input: &'a Sentence, remaining_ratio: f64) -> Self {
     Section {
       to_input,
       remaining_ratio: remaining_ratio.max(0.).min(1.),

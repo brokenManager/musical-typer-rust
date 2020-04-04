@@ -8,7 +8,7 @@ use sdl2::Sdl;
 
 use std::time::Duration;
 
-use crate::exp::string_to_input::StringToInput;
+use crate::exp::sentence::Sentence;
 use crate::op::on_game::{Controller, Presenter};
 
 mod header;
@@ -60,7 +60,7 @@ impl SDLView {
     let header = Header::new("Music Name", "Composer");
     let header_dim = Rect::new(0, 0, self.width, 100);
 
-    let to_input = StringToInput::new(
+    let to_input = Sentence::new(
       "千本桜　夜ニ紛レ",
       "せんぼんざくらよるにまぎれ",
     )?;
@@ -126,7 +126,7 @@ impl Presenter for SDLView {
   fn decrease_remaining_time(&mut self, _: f64) {
     unimplemented!()
   }
-  fn update_string_to_input(&mut self, _: &StringToInput) {
+  fn update_sentence(&mut self, _: &Sentence) {
     unimplemented!()
   }
   fn mistyped(&mut self) {
