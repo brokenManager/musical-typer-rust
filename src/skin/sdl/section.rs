@@ -56,7 +56,7 @@ impl<'a> Section<'a> {
 
     const ROMAN_GLYPH_WIDTH: u32 = 20;
     const ROMAN_HEIGHT: u32 = 20;
-    let will_input_roman = self.to_input.will_input();
+    let will_input_roman = self.to_input.hiragana().will_input();
     text_builder
       .color(Color::RGB(0, 0, 0))
       .text(will_input_roman.as_str())
