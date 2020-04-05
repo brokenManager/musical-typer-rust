@@ -224,21 +224,24 @@ mod tests {
 
     game.run_game(&mut controller, &mut presenter)?;
 
-    assert_eq!(
-      &[
-        PlayBGM("kkiminochikara-edited.wav".to_owned()),
-        DecreaseRemainingTime(3.0),
-        DecreaseRemainingTime(3.0),
-        UpdateSentence(
-          Sentence::new(
-            "もうダメだ そんな時は",
-            "もうだめだそんなときは"
-          )
-          .unwrap()
+    let expected_log = &[
+      PlayBGM("kkiminochikara-edited.wav".to_owned()),
+      DecreaseRemainingTime(3.0),
+      DecreaseRemainingTime(3.0),
+      UpdateSentence(
+        Sentence::new(
+          "もうダメだ そんな時は",
+          "もうだめだそんなときは",
         )
-      ],
-      presenter.logs(),
-    );
+        .unwrap(),
+      ),
+    ];
+    for (expected, actual) in
+      expected_log.iter().zip(presenter.logs().iter())
+    {
+      assert_eq!(expected, actual);
+    }
+    assert_eq!(expected_log.len(), presenter.logs().len());
 
     Ok(())
   }
