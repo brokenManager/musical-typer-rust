@@ -14,9 +14,9 @@ pub struct GameActivity {
   state: State,
   succeed_count: u32,
   mistyped_count: u32,
-  typing_section_index: usize,
   notes: BTreeMap<String, Note>,
   sections: Vec<Section>,
+  current_section: Option<Section>,
 }
 
 impl GameActivity {
@@ -37,18 +37,26 @@ impl GameActivity {
       state: State::BeforeStart,
       succeed_count: 0,
       mistyped_count: 0,
-      typing_section_index: 0,
       notes: notes_map,
       sections,
+      current_section: None,
     }
   }
 
   pub fn current_section(&self) -> Option<Section> {
-    if self.typing_section_index < self.sections.len() {
-      Some(self.sections[self.typing_section_index].clone())
-    } else {
-      None
-    }
+    self.current_section.clone()
+  }
+
+  fn current_note_mut(&mut self) -> Option<&mut Note> {
+    self.current_section().and_then(move |section| {
+      self.notes.get_mut(&section.foreign_note)
+    })
+  }
+
+  pub fn current_note(&self) -> Option<&Note> {
+    self
+      .current_section()
+      .and_then(|section| self.notes.get(&section.foreign_note))
   }
 
   pub fn accuracy(&self) -> f64 {
@@ -58,14 +66,9 @@ impl GameActivity {
 
   pub fn update_time(&mut self, time: Seconds) {
     self.state = State::OnGame;
-    for (i, section) in self
-      .sections
-      .iter()
-      .skip(self.typing_section_index)
-      .enumerate()
-    {
+    for section in self.sections.iter() {
       if section.from <= time && time <= section.to {
-        self.typing_section_index = i;
+        self.current_section = Some(section.clone());
         return;
       }
     }
@@ -76,9 +79,7 @@ impl GameActivity {
     if let State::OnGame = self.state {
       return;
     }
-    let note_id =
-      &self.sections[self.typing_section_index].foreign_note;
-    if let Some(note) = self.notes.get_mut(note_id) {
+    if let Some(note) = self.current_note_mut() {
       use TypeResult::*;
       match note.input(typed) {
         Succeed => {
@@ -93,9 +94,7 @@ impl GameActivity {
   }
 
   pub fn current_sentence(&self) -> Option<&Sentence> {
-    let note_id =
-      &self.sections[self.typing_section_index].foreign_note;
-    self.notes.get(note_id).and_then(|note| {
+    self.current_note().and_then(|note| {
       if let NoteContent::Sentence { sentence, .. } = note.content() {
         Some(sentence)
       } else {

@@ -40,7 +40,11 @@ impl MusicalTyper {
     let metadata = &self.score.metadata;
     if let Some(ref bgm) = metadata.get("bgm") {
       presenter.play_bgm(bgm);
+    } else {
+      return Err("no BGM is found".to_owned());
     }
+
+    self.activity.update_time(0.0);
     while let Some(Section {
       foreign_note,
       from,
@@ -86,6 +90,7 @@ mod tests {
     fn key_press(&mut self) -> Vec<char> {
       let res = self.key_press_schedule[0].1.chars().collect();
       self.key_press_schedule = &self.key_press_schedule[1..];
+      println!("{}", self.key_press_schedule.len());
       res
     }
     fn elapse_time(&mut self) -> f64 {
@@ -140,7 +145,6 @@ mod tests {
 
   #[test]
   fn op1() {
-    use crate::exp::scoremap::lexer::ScoremapLoadConfig;
     use crate::exp::scoremap::Scoremap;
     use crate::op::on_game::MusicalTyper;
 
@@ -149,7 +153,7 @@ mod tests {
         "example/sampleScore.tsc",
       ))
       .unwrap(),
-      ScoremapLoadConfig::new().ignore_invalid_properties(true),
+      |config| config.ignore_invalid_properties(true),
     )
     .unwrap();
 
