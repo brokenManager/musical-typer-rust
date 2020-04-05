@@ -72,6 +72,7 @@ impl GameActivity {
         return;
       }
     }
+    self.current_section = None;
     self.state = State::GameOver;
   }
 

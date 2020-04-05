@@ -1,7 +1,7 @@
 use crate::exp::game_activity::GameActivity;
 use crate::exp::minute_second::Seconds;
 use crate::exp::note::Section;
-use crate::exp::scoremap::Scoremap;
+use crate::exp::scoremap::{Scoremap, ScoremapError};
 use crate::exp::sentence::Sentence;
 
 pub trait Controller {
@@ -14,6 +14,27 @@ pub trait Presenter {
   fn update_sentence(&mut self, string: &Sentence);
   fn mistyped(&mut self);
   fn flush_screen(&mut self);
+}
+
+#[derive(Debug)]
+pub enum MusicalTyperError {
+  SongDataNotFound,
+  FileReadError { reason: String },
+  ScoremapBuildError(ScoremapError),
+}
+
+impl From<std::io::Error> for MusicalTyperError {
+  fn from(err: std::io::Error) -> Self {
+    MusicalTyperError::FileReadError {
+      reason: err.to_string(),
+    }
+  }
+}
+
+impl From<ScoremapError> for MusicalTyperError {
+  fn from(err: ScoremapError) -> Self {
+    MusicalTyperError::ScoremapBuildError(err)
+  }
 }
 
 pub struct MusicalTyper {
@@ -36,12 +57,14 @@ impl MusicalTyper {
     &mut self,
     controller: &mut impl Controller,
     presenter: &mut impl Presenter,
-  ) -> Result<(), String> {
+  ) -> Result<(), MusicalTyperError> {
+    use MusicalTyperError::*;
+
     let metadata = &self.score.metadata;
-    if let Some(ref bgm) = metadata.get("song_data") {
-      presenter.play_bgm(bgm);
+    if let Some(ref song_data) = metadata.get("song_data") {
+      presenter.play_bgm(song_data);
     } else {
-      return Err("no BGM is found".to_owned());
+      return Err(SongDataNotFound);
     }
 
     self.activity.update_time(0.0);
@@ -70,8 +93,7 @@ impl MusicalTyper {
 
 #[cfg(test)]
 mod tests {
-  use super::Controller;
-  use super::Presenter;
+  use super::{Controller, MusicalTyperError, Presenter};
   use crate::exp::sentence::Sentence;
 
   struct KeyPress(f64, &'static str);
@@ -90,7 +112,6 @@ mod tests {
     fn key_press(&mut self) -> Vec<char> {
       let res = self.key_press_schedule[0].1.chars().collect();
       self.key_press_schedule = &self.key_press_schedule[1..];
-      println!("{}", self.key_press_schedule.len());
       res
     }
     fn elapse_time(&mut self) -> f64 {
@@ -144,18 +165,16 @@ mod tests {
   }
 
   #[test]
-  fn op1() {
+  fn op1() -> Result<(), MusicalTyperError> {
     use crate::exp::scoremap::Scoremap;
     use crate::op::on_game::MusicalTyper;
 
     let test_score = Scoremap::from_file(
       std::fs::File::open(std::path::Path::new(
         "example/sampleScore.tsc",
-      ))
-      .unwrap(),
+      ))?,
       |config| config.ignore_invalid_properties(true),
-    )
-    .unwrap();
+    )?;
 
     let mut game = MusicalTyper::new(test_score);
 
@@ -199,13 +218,13 @@ mod tests {
       KeyPress(4.0, "kiminochikaraninaru"),
       KeyPress(4.0, "namidanoatomomunenoitamimo"),
       KeyPress(4.0, "kiminochikaraninaru"),
+      KeyPress(5.0, ""),
     ]);
     let mut presenter = MockPresenter::new();
 
-    game.run_game(&mut controller, &mut presenter).unwrap();
+    game.run_game(&mut controller, &mut presenter)?;
 
     assert_eq!(
-      presenter.logs(),
       &[
         PlayBGM("kkiminochikara-edited.wav".to_owned()),
         DecreaseRemainingTime(3.0),
@@ -217,7 +236,10 @@ mod tests {
           )
           .unwrap()
         )
-      ]
+      ],
+      presenter.logs(),
     );
+
+    Ok(())
   }
 }
