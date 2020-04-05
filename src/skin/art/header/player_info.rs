@@ -1,0 +1,1 @@
+// Shows player's points
