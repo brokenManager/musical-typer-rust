@@ -9,7 +9,7 @@ const COMMAND: &str =
   r"^[[:space:]]*\[[[:space:]]*(.*)[[:space:]]*\][[:space:]]*$";
 const YOMIGANA: &str = r"^:([あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをんぁぃぅぇぉゃゅょゎっーがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]+)$";
 const CAPTION: &str = r"^[[:space:]]*>>[[:space:]]*(.+)[[:space:]]*$";
-const SECTION: &str = r"@[[:space:]]*>>[[:space:]]*(.+)[[:space:]]*$";
+const SECTION: &str = r"@[[:space:]]*[[:space:]]*(.+)[[:space:]]*$";
 const SECONDS: &str =
   r"^\*[[:space:]]*((?:[0-9]+\.[0-9]+)|(?:0\.[0-9]+))[[:space:]]*$";
 const MINUTES: &str = r"^\|[[:space:]]*([1-9][0-9]*)[[:space:]]*$";
@@ -95,6 +95,10 @@ fn pattern_tests() {
   let reg = Regex::new(MINUTES).unwrap();
   assert!(reg.is_match("|3"));
   assert!(reg.is_match("| 4"));
+
+  let reg = Regex::new(SECTION).unwrap();
+  assert!(reg.is_match("@Aメロ"));
+  assert!(reg.is_match("@ †ラップ† "));
 }
 
 const METADATA_KEYS: &[&'static str] = &[
