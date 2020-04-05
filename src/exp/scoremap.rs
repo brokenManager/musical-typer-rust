@@ -40,7 +40,7 @@ impl Scoremap {
     )
     .map_err(|e| LexError(e))?;
 
-    Ok(parser::parse(tokens.into_iter()).map_err(|e| ParseError(e))?)
+    Ok(parser::parse(&tokens).map_err(|e| ParseError(e))?)
   }
 
   pub fn from_file<C>(
@@ -60,7 +60,7 @@ impl Scoremap {
     )
     .map_err(|e| LexError(e))?;
 
-    Ok(parser::parse(tokens.into_iter()).map_err(|e| ParseError(e))?)
+    Ok(parser::parse(&tokens).map_err(|e| ParseError(e))?)
   }
 }
 

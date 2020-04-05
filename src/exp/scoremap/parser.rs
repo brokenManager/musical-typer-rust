@@ -25,7 +25,7 @@ pub enum ScoremapParseError {
 }
 
 pub fn parse(
-  tokens: impl Iterator<Item = Token>,
+  mut tokens: &[Token],
 ) -> Result<Scoremap, ScoremapParseError> {
   use ScoremapParseError::*;
 
@@ -35,64 +35,84 @@ pub fn parse(
   let mut line_minute_second = MinuteSecond::new();
   let mut parsed_japanese: Option<String> = None;
 
-  for token in tokens.into_iter() {
-    let Token { line_num, content } = token;
+  while 1 <= tokens.len() {
+    println!("{:?}", tokens);
+    let Token { line_num, content } = &tokens[0];
+    let line_num = *line_num;
     let line_time = line_minute_second.to_seconds();
+    match tokens {
+      [Token {
+        content: TokenContent::Minutes(minutes),
+        ..
+      }, Token {
+        content: TokenContent::Seconds(seconds),
+        ..
+      }, ..] => {
+        // 分と秒の同時更新
+        let new_time =
+          line_minute_second.minutes(*minutes).seconds(*seconds);
+        if new_time.to_seconds() <= line_time {
+          // 同じかそれ以前の時間指定は無視
+          tokens = &tokens[2..];
+          continue;
+        }
+        line_minute_second = new_time;
+        tokens = &tokens[2..];
+        continue;
+      }
+      _ => {}
+    }
     match content {
       TokenContent::Seconds(seconds) => {
-        let new_time = line_minute_second.seconds(seconds);
-        if new_time.to_seconds() == line_time {
-          // 最初の 0 秒の時間指定は無視
+        let new_time = line_minute_second.seconds(*seconds);
+        if new_time.to_seconds() <= line_time {
+          // 同じかそれ以前の時間指定は無視
+          tokens = &tokens[1..];
           continue;
         }
         check_before_define_timing(line_num, parsing_lyrics)?;
-        if parsed_japanese.is_none() {
-          // 歌詞が無いので、空白ノーツを追加
-          notes.push(Note::blank(line_time));
+        if let Some(last) = notes.last() {
+          if last.time() != line_time {
+            // 歌詞が定義されなかったので、空白ノーツを追加
+            notes.push(Note::blank(line_time));
+          }
         }
-
         parsed_japanese = None;
         line_minute_second = new_time;
+        tokens = &tokens[1..];
       }
-      TokenContent::Minutes(minutes) => {
-        let new_time = line_minute_second.minutes(minutes);
-        if new_time.to_seconds() == line_time {
-          continue;
-        }
-        check_before_define_timing(line_num, parsing_lyrics)?;
-
-        parsed_japanese = None;
-        line_minute_second = new_time;
-      }
-      TokenContent::Command(command) => match command.as_str() {
-        "start" => {
-          if parsing_lyrics {
+      TokenContent::Command(command) => {
+        match command.as_str() {
+          "start" => {
+            if parsing_lyrics {
+              return Err(InvalidCommand {
+                line_num,
+                reason:
+                  "start コマンドは end コマンドより前で有効です。",
+              });
+            }
+            parsing_lyrics = true;
+          }
+          "break" => {}
+          "end" => {
+            if !parsing_lyrics {
+              return Err(InvalidCommand {
+                line_num,
+                reason:
+                  "end コマンドは start コマンドより後で有効です。",
+              });
+            }
+            parsing_lyrics = false;
+          }
+          _ => {
             return Err(InvalidCommand {
               line_num,
-              reason:
-                "start コマンドは end コマンドより前で有効です。",
+              reason: "start、break、end コマンドのみが有効です。",
             });
           }
-          parsing_lyrics = true;
-        }
-        "break" => {}
-        "end" => {
-          if !parsing_lyrics {
-            return Err(InvalidCommand {
-              line_num,
-              reason:
-                "end コマンドは start コマンドより後で有効です。",
-            });
-          }
-          parsing_lyrics = false;
-        }
-        _ => {
-          return Err(InvalidCommand {
-            line_num,
-            reason: "start、break、end コマンドのみが有効です。",
-          });
-        }
-      },
+        };
+        tokens = &tokens[1..];
+      }
       TokenContent::Caption(caption) => {
         if !parsing_lyrics {
           return Err(InvalidStatementDefinition {
@@ -101,6 +121,7 @@ pub fn parse(
           });
         }
         notes.push(Note::caption(line_time, caption.as_str()));
+        tokens = &tokens[1..];
       }
       TokenContent::Property { key, value } => {
         if parsing_lyrics {
@@ -109,15 +130,17 @@ pub fn parse(
             reason: "プロパティの指定は歌詞定義の外のみ有効です。",
           });
         }
-        metadata.insert(key, value);
+        metadata.insert(key.clone(), value.clone());
+        tokens = &tokens[1..];
       }
       TokenContent::Yomigana(yomigana) => {
         if let Some(ref lyrics) = parsed_japanese {
           notes.push(Note::sentence(
             line_time,
-            Sentence::from(lyrics.as_str(), yomigana),
+            Sentence::from(lyrics.as_str(), yomigana.clone()),
           ));
           parsed_japanese = None;
+          tokens = &tokens[1..];
           continue;
         }
         return Err(InvalidStatementDefinition {
@@ -125,15 +148,20 @@ pub fn parse(
           reason: "読み仮名は歌詞より後にしてください。",
         });
       }
-      TokenContent::Section(_) => {}
+      TokenContent::Section(_) => {
+        tokens = &tokens[1..];
+      }
       TokenContent::Lyrics(lyrics) => {
         if let Some(prev_lyrics) = parsed_japanese {
           parsed_japanese =
             Some(format!("{}{}", prev_lyrics, lyrics));
+          tokens = &tokens[1..];
           continue;
         }
         parsed_japanese = Some(lyrics.to_owned());
+        tokens = &tokens[1..];
       }
+      _ => unreachable!(),
     }
   }
   Ok(Scoremap { metadata, notes })

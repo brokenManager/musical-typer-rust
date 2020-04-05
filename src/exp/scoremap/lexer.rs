@@ -123,6 +123,7 @@ pub enum ScoremapLexError {
   },
 }
 
+#[derive(Debug)]
 pub enum TokenContent {
   Property { key: String, value: String },
   Command(String),
@@ -134,6 +135,7 @@ pub enum TokenContent {
   Minutes(u32),
 }
 
+#[derive(Debug)]
 pub struct Token {
   pub line_num: usize,
   pub content: TokenContent,
