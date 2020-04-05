@@ -5,14 +5,13 @@ mod op;
 mod skin;
 
 fn main() {
-  use exp::scoremap::lexer::ScoremapLoadConfig;
   use exp::scoremap::Scoremap;
   let score = Scoremap::from_file(
     std::fs::File::open(std::path::Path::new(
       "example/sampleScore.tsc",
     ))
     .unwrap(),
-    ScoremapLoadConfig::new().ignore_invalid_properties(false),
+    |config| config.ignore_invalid_properties(true),
   )
   .unwrap();
 

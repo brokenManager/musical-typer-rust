@@ -23,16 +23,22 @@ pub struct Scoremap {
 }
 
 impl Scoremap {
-  pub fn from_file(
+  pub fn from_file<C>(
     file: std::fs::File,
-    config: lexer::ScoremapLoadConfig,
-  ) -> Result<Self, ScoremapError> {
+    configurator: C,
+  ) -> Result<Self, ScoremapError>
+  where
+    C: FnOnce(lexer::ScoremapLoadConfig) -> lexer::ScoremapLoadConfig,
+  {
     use ScoremapError::*;
 
     use std::io::BufReader;
     let reader = BufReader::new(file);
-    let tokens =
-      lexer::lex(config, reader).map_err(|e| LexError(e))?;
+    let tokens = lexer::lex(
+      configurator(lexer::ScoremapLoadConfig::new()),
+      reader,
+    )
+    .map_err(|e| LexError(e))?;
 
     Ok(parser::parse(tokens.into_iter()).map_err(|e| ParseError(e))?)
   }
