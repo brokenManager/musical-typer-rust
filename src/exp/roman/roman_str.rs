@@ -38,10 +38,6 @@ impl RomanStr {
     })
   }
 
-  pub fn exprs(&self) -> &Vec<RomanChar> {
-    &self.chars
-  }
-
   pub fn inputted(&self) -> &str {
     &self.inputted
   }

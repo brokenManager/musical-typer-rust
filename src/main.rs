@@ -5,7 +5,8 @@ mod op;
 mod skin;
 
 fn main() {
-  use exp::scoremap::{Scoremap, ScoremapLoadConfig};
+  use exp::scoremap::lexer::ScoremapLoadConfig;
+  use exp::scoremap::Scoremap;
   let score = Scoremap::from_file(
     std::fs::File::open(std::path::Path::new(
       "example/sampleScore.tsc",

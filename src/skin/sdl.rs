@@ -138,7 +138,7 @@ impl Presenter for SDLView {
 }
 
 impl Controller for SDLView {
-  fn key_press(&mut self) -> char {
+  fn key_press(&mut self) -> Vec<char> {
     unimplemented!()
   }
   fn elapse_time(&mut self) -> f64 {

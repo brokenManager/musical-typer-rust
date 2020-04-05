@@ -4,7 +4,7 @@ use crate::exp::scoremap::Scoremap;
 use crate::exp::sentence::Sentence;
 
 pub trait Controller {
-  fn key_press(&mut self) -> char;
+  fn key_press(&mut self) -> Vec<char>;
   fn elapse_time(&mut self) -> f64;
 }
 pub trait Presenter {
@@ -50,8 +50,9 @@ impl MusicalTyper {
       self.accumulated_time += delta_time;
       self.activity.update_time(self.accumulated_time);
 
-      let typed = controller.key_press();
-      self.activity.input(typed);
+      for typed in controller.key_press().iter() {
+        self.activity.input(*typed);
+      }
 
       presenter.decrease_remaining_time(delta_time);
       if let Some(sentence) = self.activity.current_sentence() {
@@ -71,58 +72,30 @@ mod tests {
   struct KeyPress(f64, &'static str);
 
   struct MockController {
-    key_press_index: usize,
-    key_char_index: usize,
-    called_key_press: bool,
-    called_elapse_time: bool,
     key_press_schedule: &'static [KeyPress],
   }
 
   impl MockController {
     fn new(key_press_schedule: &'static [KeyPress]) -> Self {
-      MockController {
-        key_press_index: 0,
-        key_char_index: 0,
-        called_key_press: false,
-        called_elapse_time: false,
-        key_press_schedule,
-      }
+      MockController { key_press_schedule }
     }
   }
 
   impl Controller for MockController {
-    fn key_press(&mut self) -> char {
-      if self.key_press_schedule.len() <= self.key_press_index {
-        panic!();
-      }
-      self.called_key_press = true;
-      let res = self.key_press_schedule[self.key_press_index].1;
-      if self.called_key_press && self.called_elapse_time {
-        self.key_press_index += 1;
-        self.called_key_press = false;
-        self.called_elapse_time = false;
-      }
-      res.chars().nth(self.key_char_index).unwrap_or_default()
+    fn key_press(&mut self) -> Vec<char> {
+      let res = self.key_press_schedule[0].1.chars().collect();
+      self.key_press_schedule = &self.key_press_schedule[1..];
+      res
     }
     fn elapse_time(&mut self) -> f64 {
-      if self.key_press_schedule.len() <= self.key_press_index {
-        panic!();
-      }
-      self.called_elapse_time = true;
-      let res = self.key_press_schedule[self.key_press_index].0;
-      if self.called_key_press && self.called_elapse_time {
-        self.key_press_index += 1;
-        self.called_key_press = false;
-        self.called_elapse_time = false;
-      }
-      res
+      self.key_press_schedule[0].0
     }
   }
 
   #[derive(Debug, PartialEq)]
   enum PresentLog {
     PlayBGM(String),
-    DecreateRemainingTime(f64),
+    DecreaseRemainingTime(f64),
     UpdateSentence(Sentence),
     Mistyped,
   }
@@ -153,7 +126,7 @@ mod tests {
       self.log(PlayBGM(name.to_owned()));
     }
     fn decrease_remaining_time(&mut self, delta_time: f64) {
-      self.log(DecreateRemainingTime(delta_time));
+      self.log(DecreaseRemainingTime(delta_time));
     }
     fn update_sentence(&mut self, string: &Sentence) {
       self.log(UpdateSentence(string.clone()));
@@ -166,7 +139,8 @@ mod tests {
 
   #[test]
   fn op1() {
-    use crate::exp::scoremap::{Scoremap, ScoremapLoadConfig};
+    use crate::exp::scoremap::lexer::ScoremapLoadConfig;
+    use crate::exp::scoremap::Scoremap;
     use crate::op::on_game::MusicalTyper;
 
     let test_score = Scoremap::from_file(
@@ -228,7 +202,7 @@ mod tests {
       presenter.logs(),
       &[
         PlayBGM("kkiminochikara-edited.wav".to_owned()),
-        DecreateRemainingTime(3.0),
+        DecreaseRemainingTime(3.0),
         UpdateSentence(
           Sentence::new(
             "もうダメだ そんな時は",

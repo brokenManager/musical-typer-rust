@@ -24,6 +24,13 @@ impl Sentence {
     })
   }
 
+  pub fn from(origin: &str, yomigana: RomanStr) -> Self {
+    Sentence {
+      origin: origin.to_owned(),
+      hiragana: yomigana,
+    }
+  }
+
   pub fn origin(&self) -> &str {
     &self.origin
   }

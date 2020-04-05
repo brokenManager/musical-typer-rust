@@ -57,18 +57,14 @@ impl Note {
     Note { id, time, content }
   }
 
-  pub fn sentence(
-    time: Seconds,
-    origin: &str,
-    yomigana: &str,
-  ) -> Result<Self, String> {
-    Ok(Self::new(
+  pub fn sentence(time: Seconds, sentence: Sentence) -> Self {
+    Self::new(
       time,
       NoteContent::Sentence {
-        sentence: Sentence::new(origin, yomigana)?,
+        sentence,
         succeed: false,
       },
-    ))
+    )
   }
 
   pub fn caption(time: Seconds, caption: &str) -> Self {
