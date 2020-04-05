@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, RenderTarget};
 
-use super::text::TextBuilder;
+use super::text::{TextBuilder, TextError};
 
 use crate::exp::sentence::Sentence;
 
@@ -24,16 +24,18 @@ impl<'a> Section<'a> {
     mut canvas: &mut Canvas<T>,
     mut text_builder: TextBuilder<'a, U>,
     offset: Rect,
-  ) -> Result<(), String> {
+  ) -> Result<(), TextError> {
     let remaining_width =
       (offset.width() as f64 * self.remaining_ratio) as u32;
     canvas.set_draw_color(Color::RGB(203, 193, 176));
-    canvas.fill_rect(Rect::new(
-      offset.x(),
-      offset.y(),
-      remaining_width,
-      offset.height(),
-    ))?;
+    canvas
+      .fill_rect(Rect::new(
+        offset.x(),
+        offset.y(),
+        remaining_width,
+        offset.height(),
+      ))
+      .map_err(|e| TextError::RenderError(e))?;
 
     const JAPANESE_GLYPH_WIDTH: u32 = 20;
     const JAPANESE_HEIGHT: u32 = 80;
@@ -43,7 +45,7 @@ impl<'a> Section<'a> {
     text_builder
       .color(Color::RGB(0, 0, 0))
       .text(will_input_japanese)
-      .build()
+      .build()?
       .render(
         &mut canvas,
         Rect::new(
@@ -60,7 +62,7 @@ impl<'a> Section<'a> {
     text_builder
       .color(Color::RGB(0, 0, 0))
       .text(will_input_roman.as_str())
-      .build()
+      .build()?
       .render(
         &mut canvas,
         Rect::new(

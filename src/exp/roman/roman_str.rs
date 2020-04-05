@@ -68,8 +68,8 @@ impl RomanStr {
 }
 
 #[test]
-fn hello() {
-  let mut hello = RomanStr::new("こんにちは").unwrap();
+fn hello() -> Result<(), RomanParseError> {
+  let mut hello = RomanStr::new("こんにちは")?;
   assert_eq!(hello.inputted(), "");
   assert_eq!(hello.will_input(), "konnnitiha");
   assert!(hello.input('k'));
@@ -102,11 +102,12 @@ fn hello() {
   assert!(hello.input('a'));
   assert_eq!(hello.inputted(), "konnnitiha");
   assert_eq!(hello.will_input(), "");
+  Ok(())
 }
 
 #[test]
-fn toy() {
-  let mut hello = RomanStr::new("おもちゃ").unwrap();
+fn toy() -> Result<(), RomanParseError> {
+  let mut hello = RomanStr::new("おもちゃ")?;
   assert_eq!(hello.inputted(), "");
   assert_eq!(hello.will_input(), "omocha");
   assert!(hello.input('o'));
@@ -127,4 +128,5 @@ fn toy() {
   assert!(hello.input('a'));
   assert_eq!(hello.inputted(), "omotya");
   assert_eq!(hello.will_input(), "");
+  Ok(())
 }

@@ -14,41 +14,52 @@ const SECONDS: &str =
   r"^\*[[:space:]]*((?:[0-9]+\.[0-9]+)|(?:0\.[0-9]+))[[:space:]]*$";
 const MINUTES: &str = r"^\|[[:space:]]*([1-9][0-9]*)[[:space:]]*$";
 
-fn captures_vec<'a>(this: &'a Regex, text: &'a str) -> Vec<&'a str> {
-  this
-    .captures(text)
-    .unwrap()
-    .iter()
-    .skip(1)
-    .map(|capture| capture.unwrap().as_str())
-    .collect::<Vec<_>>()
+fn captures_vec<'a>(
+  this: &'a Regex,
+  text: &'a str,
+) -> Result<Vec<&'a str>, ScoremapLexError> {
+  Ok(
+    this
+      .captures(text)
+      .ok_or(ScoremapLexError::CaptureFailure)?
+      .iter()
+      .skip(1)
+      .map(|m: Option<regex::Match>| m.map_or("", |m| m.as_str()))
+      .collect::<Vec<_>>(),
+  )
+}
+
+impl From<regex::Error> for ScoremapLexError {
+  fn from(err: regex::Error) -> ScoremapLexError {
+    ScoremapLexError::InternalRegexCompileFailure(err)
+  }
 }
 
 #[test]
-fn pattern_tests() {
-  let reg = Regex::new(PROPERTY).unwrap();
+fn pattern_tests() -> Result<(), ScoremapLexError> {
+  let reg = Regex::new(PROPERTY)?;
   assert_eq!(
-    captures_vec(&reg, ":title        キミのチカラ"),
+    captures_vec(&reg, ":title        キミのチカラ")?,
     vec!["title", "キミのチカラ"]
   );
   assert_eq!(
-    captures_vec(&reg, ":song_author  佐々木英州"),
+    captures_vec(&reg, ":song_author  佐々木英州")?,
     vec!["song_author", "佐々木英州"]
   );
   assert_eq!(
-    captures_vec(&reg, ":singer       初音ミク"),
+    captures_vec(&reg, ":singer       初音ミク")?,
     vec!["singer", "初音ミク"]
   );
   assert_eq!(
-    captures_vec(&reg, ":score_author Colk"),
+    captures_vec(&reg, ":score_author Colk")?,
     vec!["score_author", "Colk"]
   );
   assert_eq!(
-    captures_vec(&reg, ":song_data    kkiminochikara-edited.wav"),
+    captures_vec(&reg, ":song_data    kkiminochikara-edited.wav")?,
     vec!["song_data", "kkiminochikara-edited.wav"]
   );
 
-  let reg = Regex::new(COMMENT).unwrap();
+  let reg = Regex::new(COMMENT)?;
   assert!(reg.is_match("# This is a comment. "));
   assert!(reg.is_match("  # Indented!"));
   assert!(reg.is_match(""));
@@ -63,7 +74,7 @@ fn pattern_tests() {
   assert!(!reg.is_match("*7."));
   assert!(!reg.is_match("|3"));
 
-  let reg = Regex::new(COMMAND).unwrap();
+  let reg = Regex::new(COMMAND)?;
   assert!(reg.is_match("[start]"));
   assert!(reg.is_match(" [ end ] "));
   assert!(reg.is_match("[break] "));
@@ -72,16 +83,16 @@ fn pattern_tests() {
   assert!(reg.is_match("[ break]"));
   assert!(reg.is_match("[ start] "));
 
-  let reg = Regex::new(YOMIGANA).unwrap();
+  let reg = Regex::new(YOMIGANA)?;
   assert!(reg.is_match(":てすと"));
   assert!(reg.is_match(":はんばーがー"));
   assert!(reg.is_match(":ぅゎょぅじょっょぃ"));
 
-  let reg = Regex::new(CAPTION).unwrap();
+  let reg = Regex::new(CAPTION)?;
   assert!(reg.is_match(">>テスト"));
   assert!(reg.is_match(">>HAMBURGER"));
 
-  let reg = Regex::new(SECONDS).unwrap();
+  let reg = Regex::new(SECONDS)?;
   assert!(reg.is_match("*2.0"));
   assert!(reg.is_match("* 1.423523"));
   assert!(reg.is_match("*0.020"));
@@ -92,13 +103,15 @@ fn pattern_tests() {
   assert!(!reg.is_match("*7."));
   assert!(!reg.is_match("*.5"));
 
-  let reg = Regex::new(MINUTES).unwrap();
+  let reg = Regex::new(MINUTES)?;
   assert!(reg.is_match("|3"));
   assert!(reg.is_match("| 4"));
 
-  let reg = Regex::new(SECTION).unwrap();
+  let reg = Regex::new(SECTION)?;
   assert!(reg.is_match("@Aメロ"));
   assert!(reg.is_match("@ †ラップ† "));
+
+  Ok(())
 }
 
 const METADATA_KEYS: &[&'static str] = &[
@@ -112,6 +125,9 @@ const METADATA_KEYS: &[&'static str] = &[
 
 #[derive(Debug)]
 pub enum ScoremapLexError {
+  InternalRegexCompileFailure(regex::Error),
+  CaptureFailure,
+  ParsingNumberFailure,
   UnexceptedEndOfFile,
   InvalidPropertyDeifinition {
     line_num: usize,
@@ -170,14 +186,14 @@ where
   use ScoremapLexError::*;
   use TokenContent::*;
 
-  let property_reg = Regex::new(PROPERTY).unwrap();
-  let comment_reg = Regex::new(COMMENT).unwrap();
-  let command_reg = Regex::new(COMMAND).unwrap();
-  let yomigana_reg = Regex::new(YOMIGANA).unwrap();
-  let caption_reg = Regex::new(CAPTION).unwrap();
-  let section_reg = Regex::new(SECTION).unwrap();
-  let seconds_reg = Regex::new(SECONDS).unwrap();
-  let minutes_reg = Regex::new(MINUTES).unwrap();
+  let property_reg = Regex::new(PROPERTY)?;
+  let comment_reg = Regex::new(COMMENT)?;
+  let command_reg = Regex::new(COMMAND)?;
+  let yomigana_reg = Regex::new(YOMIGANA)?;
+  let caption_reg = Regex::new(CAPTION)?;
+  let section_reg = Regex::new(SECTION)?;
+  let seconds_reg = Regex::new(SECONDS)?;
+  let minutes_reg = Regex::new(MINUTES)?;
 
   let mut tokens: Vec<Token> = vec![];
 
@@ -188,8 +204,12 @@ where
       continue;
     }
     if let Some(seconds) = seconds_reg.captures(line) {
-      let num: f64 =
-        seconds.get(1).unwrap().as_str().parse().unwrap();
+      let num: f64 = seconds
+        .get(1)
+        .ok_or(CaptureFailure)?
+        .as_str()
+        .parse()
+        .map_err(|_e| ParsingNumberFailure)?;
       tokens.push(Token {
         line_num,
         content: Seconds(num),
@@ -197,8 +217,12 @@ where
       continue;
     }
     if let Some(minutes) = minutes_reg.captures(line) {
-      let num: u32 =
-        minutes.get(1).unwrap().as_str().parse().unwrap();
+      let num: u32 = minutes
+        .get(1)
+        .ok_or(CaptureFailure)?
+        .as_str()
+        .parse()
+        .map_err(|_e| ParsingNumberFailure)?;
       tokens.push(Token {
         line_num,
         content: Minutes(num),
@@ -206,7 +230,7 @@ where
       continue;
     }
     if let Some(command) = command_reg.captures(line) {
-      let string = command.get(1).unwrap().as_str();
+      let string = command.get(1).ok_or(CaptureFailure)?.as_str();
       tokens.push(Token {
         line_num,
         content: Command(string.to_owned()),
@@ -214,7 +238,7 @@ where
       continue;
     }
     if let Some(caption) = caption_reg.captures(line) {
-      let string = caption.get(1).unwrap().as_str();
+      let string = caption.get(1).ok_or(CaptureFailure)?.as_str();
       tokens.push(Token {
         line_num,
         content: Caption(string.to_owned()),
@@ -228,7 +252,8 @@ where
           reason: "プロパティの指定が正しくありません。",
         });
       }
-      let key = property.get(1).unwrap().as_str().to_owned();
+      let key =
+        property.get(1).ok_or(CaptureFailure)?.as_str().to_owned();
       if !METADATA_KEYS.contains(&key.as_str()) {
         if config.ignore_invalid_properties {
           println!("未対応のプロパティがありました。無視します。");
@@ -239,7 +264,8 @@ where
           reason: "未対応のプロパティです。",
         });
       }
-      let value = property.get(2).unwrap().as_str().to_owned();
+      let value =
+        property.get(2).ok_or(CaptureFailure)?.as_str().to_owned();
       tokens.push(Token {
         line_num,
         content: Property { key, value },
@@ -247,7 +273,7 @@ where
       continue;
     }
     if let Some(yomigana) = yomigana_reg.captures(line) {
-      let string = yomigana.get(1).unwrap().as_str();
+      let string = yomigana.get(1).ok_or(CaptureFailure)?.as_str();
       tokens.push(Token {
         line_num,
         content: Yomigana(RomanStr::new(string).map_err(|_e| {
@@ -261,7 +287,7 @@ where
       continue;
     }
     if let Some(section) = section_reg.captures(line) {
-      let string = section.get(1).unwrap().as_str();
+      let string = section.get(1).ok_or(CaptureFailure)?.as_str();
       tokens.push(Token {
         line_num,
         content: Section(string.to_owned()),

@@ -429,13 +429,12 @@ pub fn parse<'a>(
 }
 
 #[test]
-fn jojo() {
+fn jojo() -> Result<(), RomanParseError> {
   let mut parsed: Vec<RomanChar> = vec![];
   parse(
     &mut parsed,
     "そのちのさだめ".chars().collect::<Vec<char>>().as_slice(),
-  )
-  .unwrap();
+  )?;
   assert!(parsed
     .iter()
     .zip(&[
@@ -459,4 +458,5 @@ fn jojo() {
       }
       true
     }));
+  Ok(())
 }

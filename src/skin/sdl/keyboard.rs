@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 use sdl2::render::{Canvas, RenderTarget};
 
-use super::text::TextBuilder;
+use super::text::{TextBuilder, TextError};
 
 const CELL_WIDTH: u32 = 60;
 const CELL_HEIGHT: u32 = 70;
@@ -26,24 +26,28 @@ impl KeyCell {
     self,
     mut canvas: &mut Canvas<T>,
     mut text_builder: TextBuilder<'a, U>,
-  ) -> Result<(), String> {
+  ) -> Result<(), TextError> {
     const GREEN: Color = Color::RGB(20, 76, 64);
     const BACK: Color = Color::RGB(253, 243, 226);
     const BLACK: Color = Color::RGB(0, 0, 0);
     let client =
       Rect::from_center(self.center, CELL_WIDTH, CELL_HEIGHT);
     canvas.set_draw_color(if self.is_pressed { GREEN } else { BACK });
-    canvas.fill_rect(client)?;
+    canvas
+      .fill_rect(client)
+      .map_err(|e| TextError::RenderError(e))?;
     canvas.set_draw_color(BLACK);
-    canvas.draw_rect(Rect::from_center(
-      self.center,
-      CELL_WIDTH,
-      CELL_HEIGHT,
-    ))?;
+    canvas
+      .draw_rect(Rect::from_center(
+        self.center,
+        CELL_WIDTH,
+        CELL_HEIGHT,
+      ))
+      .map_err(|e| TextError::RenderError(e))?;
     text_builder
       .color(if self.is_pressed { BACK } else { BLACK })
       .text(&self.key.to_string())
-      .build()
+      .build()?
       .render(&mut canvas, client)?;
     Ok(())
   }
@@ -65,7 +69,7 @@ impl Keyboard {
     mut canvas: &mut Canvas<T>,
     text_builder: TextBuilder<'a, U>,
     offset: Rect,
-  ) -> Result<(), String> {
+  ) -> Result<(), TextError> {
     let key_chars_rows =
       ["1234567890-", "qwertyuiop", "asdfghjkl", "zxcvbnm"];
     let mut y = 0;

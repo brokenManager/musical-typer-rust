@@ -19,7 +19,24 @@ mod text;
 use header::Header;
 use keyboard::Keyboard;
 use section::Section;
-use text::TextBuilder;
+use text::{TextBuilder, TextError};
+
+#[derive(Debug)]
+pub enum ViewError {
+  InitError { message: String },
+  FontError { message: String },
+  TextError(TextError),
+  RenderError(String),
+}
+
+impl From<TextError> for ViewError {
+  fn from(err: TextError) -> Self {
+    match err {
+      TextError::RenderError(e) => ViewError::RenderError(e),
+      _ => ViewError::TextError(err),
+    }
+  }
+}
 
 pub struct SDLView {
   width: u32,
@@ -56,13 +73,15 @@ impl SDLView {
   fn render<'a, T>(
     &mut self,
     builder: TextBuilder<'a, T>,
-  ) -> Result<(), String> {
+  ) -> Result<(), ViewError> {
     let header = Header::new("Music Name", "Composer");
     let header_dim = Rect::new(0, 0, self.width, 100);
 
     let to_input =
       Sentence::new("千本桜　夜ニ紛レ", "せんぼんざくらよるにまぎれ")
-        .map_err(|e| format!("{:?}", e))?;
+        .map_err(|e| ViewError::InitError {
+          message: format!("{:?}", e),
+        })?;
     let section = Section::new(&to_input, 0.2);
     let section_dim = Rect::new(0, 100, self.width, 200);
 
@@ -75,33 +94,49 @@ impl SDLView {
 
     header.draw(&mut self.canvas, builder.clone())?;
     self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-    self.canvas.draw_rect(header_dim)?;
+    self
+      .canvas
+      .draw_rect(header_dim)
+      .map_err(|e| ViewError::RenderError(e))?;
 
     section.draw(&mut self.canvas, builder.clone(), section_dim)?;
     self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-    self.canvas.draw_rect(section_dim)?;
+    self
+      .canvas
+      .draw_rect(section_dim)
+      .map_err(|e| ViewError::RenderError(e))?;
 
     keyboard.draw(&mut self.canvas, builder.clone(), keyboard_dim)?;
     self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-    self.canvas.draw_rect(keyboard_dim)?;
+    self
+      .canvas
+      .draw_rect(keyboard_dim)
+      .map_err(|e| ViewError::RenderError(e))?;
     Ok(())
   }
 
-  pub fn run(&mut self) -> Result<(), String> {
+  pub fn run(&mut self) -> Result<(), ViewError> {
     let texture_creator = self.canvas.texture_creator();
 
-    let ttf = sdl2::ttf::init().map_err(|e| e.to_string())?;
+    let ttf =
+      sdl2::ttf::init().map_err(|e| ViewError::InitError {
+        message: e.to_string(),
+      })?;
     let font = ttf
       .load_font(
         std::path::Path::new("./asset/mplus-1m-medium.ttf"),
         128,
       )
-      .map_err(|e| e.to_string())?;
+      .map_err(|e| ViewError::FontError {
+        message: e.to_string(),
+      })?;
 
     let builder = TextBuilder::new(&font, &texture_creator);
 
     let mut poller =
-      self.ctx.event_pump().map_err(|e| e.to_string())?;
+      self.ctx.event_pump().map_err(|e| ViewError::InitError {
+        message: e.to_string(),
+      })?;
     'main: loop {
       for event in poller.poll_iter() {
         use sdl2::event::Event::*;
