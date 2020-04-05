@@ -38,7 +38,7 @@ impl MusicalTyper {
     presenter: &mut impl Presenter,
   ) -> Result<(), String> {
     let metadata = &self.score.metadata;
-    if let Some(ref bgm) = metadata.get("bgm") {
+    if let Some(ref bgm) = metadata.get("song_data") {
       presenter.play_bgm(bgm);
     } else {
       return Err("no BGM is found".to_owned());
