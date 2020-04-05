@@ -40,6 +40,10 @@ pub fn parse(
     let line_time = line_minute_second.to_seconds();
     match content {
       TokenContent::Seconds(seconds) => {
+        if parsed_japanese.is_none() {
+          // 歌詞が無いので、空白ノーツを追加
+          notes.push(Note::blank(line_time));
+        }
         let new_time = line_minute_second.seconds(seconds);
         if new_time.to_seconds() == line_time {
           continue;
