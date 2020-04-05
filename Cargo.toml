@@ -13,8 +13,4 @@ use_sdl2_mac_framework = ["sdl2/use_mac_framework"]
 [dependencies]
 regex = "1.3.6"
 rand = "0.7.3"
-
-[dependencies.sdl2]
-version = "0.33.0"
-default-features = false
-features = ["ttf"]
+sdl2 = { version = "0.33.0", default-features = false, features = ["ttf", "mixer"]}
