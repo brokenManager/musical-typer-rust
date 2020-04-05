@@ -1,5 +1,6 @@
 use crate::exp::game_activity::GameActivity;
-use crate::exp::note::{Seconds, Section};
+use crate::exp::minute_second::Seconds;
+use crate::exp::note::Section;
 use crate::exp::scoremap::Scoremap;
 use crate::exp::sentence::Sentence;
 

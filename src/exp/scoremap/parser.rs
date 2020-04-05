@@ -37,11 +37,11 @@ pub fn parse(
 
   for token in tokens.into_iter() {
     let Token { line_num, content } = token;
-    let line_time = line_minute_second.into_time();
+    let line_time = line_minute_second.to_seconds();
     match content {
       TokenContent::Seconds(seconds) => {
         let new_time = line_minute_second.seconds(seconds);
-        if new_time.into_time() == line_time {
+        if new_time.to_seconds() == line_time {
           continue;
         }
         check_before_define_timing(line_num, parsing_lyrics)?;
@@ -51,7 +51,7 @@ pub fn parse(
       }
       TokenContent::Minutes(minutes) => {
         let new_time = line_minute_second.minutes(minutes);
-        if new_time.into_time() == line_time {
+        if new_time.to_seconds() == line_time {
           continue;
         }
         check_before_define_timing(line_num, parsing_lyrics)?;

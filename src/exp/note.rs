@@ -1,6 +1,5 @@
+use super::minute_second::Seconds;
 use super::sentence::Sentence;
-
-pub type Seconds = f64;
 
 pub type SectionId = String;
 

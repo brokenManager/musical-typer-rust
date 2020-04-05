@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 
-use super::note::{Note, NoteContent, Seconds, Section, TypeResult};
+use super::minute_second::Seconds;
+use super::note::{Note, NoteContent, Section, TypeResult};
 use super::sentence::Sentence;
 
 enum State {

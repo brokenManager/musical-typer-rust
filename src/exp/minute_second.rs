@@ -1,6 +1,8 @@
+pub type Seconds = f64;
+
 pub struct MinuteSecond {
   minutes: u32,
-  seconds: f64,
+  seconds: Seconds,
 }
 
 impl MinuteSecond {
@@ -22,7 +24,7 @@ impl MinuteSecond {
       seconds,
     }
   }
-  pub fn into_time(&self) -> f64 {
+  pub fn to_seconds(&self) -> Seconds {
     self.minutes as f64 * 60.0 + self.seconds
   }
 }
