@@ -160,6 +160,7 @@ mod tests {
     let mut game = MusicalTyper::new(test_score);
 
     let mut controller = MockController::new(&[
+      KeyPress(3.0, ""),
       KeyPress(3.0, "moudamedasonnnatokiha"),
       KeyPress(3.5, "anosorawomiagetegorann"),
       KeyPress(4.5, "yorunoyamiwoosiagete"),
@@ -207,6 +208,7 @@ mod tests {
       presenter.logs(),
       &[
         PlayBGM("kkiminochikara-edited.wav".to_owned()),
+        DecreaseRemainingTime(3.0),
         DecreaseRemainingTime(3.0),
         UpdateSentence(
           Sentence::new(
