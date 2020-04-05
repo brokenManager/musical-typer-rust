@@ -25,6 +25,12 @@ impl Section {
   }
 }
 
+pub enum TypeResult {
+  Succeed,
+  Mistaken,
+  Vacant,
+}
+
 #[derive(Debug, Clone)]
 pub enum NoteContent {
   Sentence { sentence: Sentence, succeed: bool },
@@ -81,13 +87,23 @@ impl Note {
     self.time
   }
 
-  pub fn input(&mut self, typed: char) {
+  pub fn input(&mut self, typed: char) -> TypeResult {
     use NoteContent::Sentence;
+    use TypeResult::*;
 
     if let Sentence { sentence, succeed } = &mut self.content {
       if sentence.input(typed) {
         *succeed = true;
+        Succeed
+      } else {
+        Mistaken
       }
+    } else {
+      Vacant
     }
+  }
+
+  pub fn content(&self) -> &NoteContent {
+    &self.content
   }
 }

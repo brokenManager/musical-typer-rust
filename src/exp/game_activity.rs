@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 
-use super::note::{Note, Seconds, Section};
+use super::note::{Note, NoteContent, Seconds, Section, TypeResult};
+use super::sentence::Sentence;
 
 enum State {
   BeforeStart,
@@ -10,7 +11,7 @@ enum State {
 
 pub struct GameActivity {
   state: State,
-  typed_count: u32,
+  succeed_count: u32,
   mistyped_count: u32,
   typing_section_index: usize,
   notes: BTreeMap<String, Note>,
@@ -33,7 +34,7 @@ impl GameActivity {
     }
     GameActivity {
       state: State::BeforeStart,
-      typed_count: 0,
+      succeed_count: 0,
       mistyped_count: 0,
       typing_section_index: 0,
       notes: notes_map,
@@ -50,12 +51,18 @@ impl GameActivity {
   }
 
   pub fn accuracy(&self) -> f64 {
-    self.mistyped_count as f64 / self.typed_count as f64
+    let typed_count = self.succeed_count + self.mistyped_count;
+    self.mistyped_count as f64 / typed_count as f64
   }
 
   pub fn update_time(&mut self, time: Seconds) {
     self.state = State::OnGame;
-    for (i, section) in self.sections.iter().enumerate() {
+    for (i, section) in self
+      .sections
+      .iter()
+      .skip(self.typing_section_index)
+      .enumerate()
+    {
       if section.from <= time && time <= section.to {
         self.typing_section_index = i;
         return;
@@ -71,7 +78,28 @@ impl GameActivity {
     let note_id =
       &self.sections[self.typing_section_index].foreign_note;
     if let Some(note) = self.notes.get_mut(note_id) {
-      note.input(typed);
+      use TypeResult::*;
+      match note.input(typed) {
+        Succeed => {
+          self.succeed_count += 1;
+        }
+        Mistaken => {
+          self.mistyped_count += 1;
+        }
+        Vacant => {}
+      }
     }
+  }
+
+  pub fn current_sentence(&self) -> Option<&Sentence> {
+    let note_id =
+      &self.sections[self.typing_section_index].foreign_note;
+    self.notes.get(note_id).and_then(|note| {
+      if let NoteContent::Sentence { sentence, .. } = note.content() {
+        Some(sentence)
+      } else {
+        None
+      }
+    })
   }
 }

@@ -1,8 +1,17 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct RomanChar {
   styles: Vec<&'static str>,
   determined_style: Option<&'static str>,
   inputted: String,
+}
+
+impl std::fmt::Debug for RomanChar {
+  fn fmt(
+    &self,
+    mut f: &mut std::fmt::Formatter<'_>,
+  ) -> std::fmt::Result {
+    write!(&mut f, "{}", self.determined_style())
+  }
 }
 
 impl RomanChar {

@@ -1,11 +1,29 @@
 use super::roman_char::RomanChar;
 use super::roman_lexer::{parse, RomanParseError};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct RomanStr {
   chars: Vec<RomanChar>,
   inputting_char: usize,
   inputted: String,
+}
+
+impl std::fmt::Debug for RomanStr {
+  fn fmt(
+    &self,
+    mut f: &mut std::fmt::Formatter<'_>,
+  ) -> std::fmt::Result {
+    write!(
+      &mut f,
+      "{:?}",
+      self
+        .chars
+        .iter()
+        .map(|c: &RomanChar| format!("{:?}", c))
+        .collect::<Vec<String>>()
+        .join(" ")
+    )
+  }
 }
 
 impl RomanStr {

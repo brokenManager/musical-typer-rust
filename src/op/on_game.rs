@@ -1,4 +1,5 @@
-use crate::exp::game_stat::GameActivity;
+use crate::exp::game_activity::GameActivity;
+use crate::exp::note::{Seconds, Section};
 use crate::exp::scoremap::Scoremap;
 use crate::exp::sentence::Sentence;
 
@@ -17,12 +18,17 @@ pub trait Presenter {
 pub struct MusicalTyper {
   score: Scoremap,
   activity: GameActivity,
+  accumulated_time: Seconds,
 }
 
 impl MusicalTyper {
   pub fn new(score: Scoremap) -> Self {
     let activity = GameActivity::new(&score.notes);
-    MusicalTyper { score, activity }
+    MusicalTyper {
+      score,
+      activity,
+      accumulated_time: 0.0,
+    }
   }
 
   pub fn run_game(
@@ -34,8 +40,23 @@ impl MusicalTyper {
     if let Some(ref bgm) = metadata.get("bgm") {
       presenter.play_bgm(bgm);
     }
-    while let Some(section) = self.activity.current_section() {
+    while let Some(Section {
+      foreign_note,
+      from,
+      to,
+    }) = self.activity.current_section()
+    {
       let delta_time = controller.elapse_time();
+      self.accumulated_time += delta_time;
+      self.activity.update_time(self.accumulated_time);
+
+      let typed = controller.key_press();
+      self.activity.input(typed);
+
+      presenter.decrease_remaining_time(delta_time);
+      if let Some(sentence) = self.activity.current_sentence() {
+        presenter.update_sentence(sentence);
+      }
     }
     Ok(())
   }
@@ -71,6 +92,9 @@ mod tests {
 
   impl Controller for MockController {
     fn key_press(&mut self) -> char {
+      if self.key_press_schedule.len() <= self.key_press_index {
+        panic!();
+      }
       self.called_key_press = true;
       let res = self.key_press_schedule[self.key_press_index].1;
       if self.called_key_press && self.called_elapse_time {
@@ -81,6 +105,9 @@ mod tests {
       res.chars().nth(self.key_char_index).unwrap_or_default()
     }
     fn elapse_time(&mut self) -> f64 {
+      if self.key_press_schedule.len() <= self.key_press_index {
+        panic!();
+      }
       self.called_elapse_time = true;
       let res = self.key_press_schedule[self.key_press_index].0;
       if self.called_key_press && self.called_elapse_time {
@@ -111,23 +138,28 @@ mod tests {
       MockPresenter { log: vec![] }
     }
 
-    fn log(&self) -> &[PresentLog] {
+    fn log(&mut self, log: PresentLog) {
+      println!("{:#?}", log);
+      self.log.push(log);
+    }
+
+    fn logs(&self) -> &[PresentLog] {
       &self.log
     }
   }
 
   impl Presenter for MockPresenter {
     fn play_bgm(&mut self, name: &str) {
-      self.log.push(PlayBGM(name.to_owned()));
+      self.log(PlayBGM(name.to_owned()));
     }
     fn decrease_remaining_time(&mut self, delta_time: f64) {
-      self.log.push(DecreateRemainingTime(delta_time));
+      self.log(DecreateRemainingTime(delta_time));
     }
     fn update_sentence(&mut self, string: &Sentence) {
-      self.log.push(UpdateSentence(string.clone()));
+      self.log(UpdateSentence(string.clone()));
     }
     fn mistyped(&mut self) {
-      self.log.push(Mistyped)
+      self.log(Mistyped)
     }
     fn flush_screen(&mut self) {}
   }
@@ -150,50 +182,50 @@ mod tests {
 
     let mut controller = MockController::new(&[
       KeyPress(3.0, "moudamedasonnnatokiha"),
-      KeyPress(6.5, "anosorawomiagetegorann"),
-      KeyPress(11.0, "yorunoyamiwoosiagete"),
-      KeyPress(14.5, "taiyougamatahohoemikureru"),
-      KeyPress(19.0, "maedakemitetemortukarerune"),
-      KeyPress(22.5, "tamanihatatidomatteiinndayo"),
-      KeyPress(27.0, "muneippaikuukisuttara"),
-      KeyPress(30.75, "mataashiwohumidasouyo"),
-      KeyPress(35.0, "bokuranoyumesorawokoete"),
-      KeyPress(39.0, "hateshinakuhirogatteikuyo"),
-      KeyPress(43.0, "namidanoatomomunenoitamimo"),
-      KeyPress(47.0, "kiminochikaraninaru"),
-      KeyPress(51.0, "maltukuradanagedasumaeni"),
-      KeyPress(54.0, "anosorawomiagetegorann"),
-      KeyPress(59.0, "yorunoyamimewokoraseba"),
-      KeyPress(62.5, "hoshitachinodannsupa-texi-"),
-      KeyPress(67.0, "tuyogaribakarijatukarerune"),
-      KeyPress(71.0, "namidawokoboshitemoiinndayo"),
-      KeyPress(75.0, "omoikirinaitaatoniha"),
-      KeyPress(78.75, "mataegaowomisetene"),
-      KeyPress(83.0, "minnnanoyumetokiwokoete"),
-      KeyPress(87.0, "dokomademotunagaxtuteikuyo"),
-      KeyPress(91.0, "namidanoatomomunenoitamimo"),
-      KeyPress(95.0, "kiminochikaraninaru"),
-      KeyPress(99.0, "sukoshidutumaenisusumou"),
-      KeyPress(103.0, "miraihazuttomatteirukara"),
-      KeyPress(107.0, "omoikirinaitayorusase"),
-      KeyPress(110.5, "itukaomoidenikawaruyo"),
-      KeyPress(117.0, "bokuranoyumesorawokoete"),
-      KeyPress(121.0, "hateshinakuhirogatteikuyo"),
-      KeyPress(125.0, "namidanoatomomunenoitamimo"),
-      KeyPress(129.0, "kiminochikaraninaru"),
-      KeyPress(133.0, "minnnanoyumetokiwokoete"),
-      KeyPress(137.0, "dokomademotunagatteikuyo"),
-      KeyPress(141.0, "namidanoatomomunenoitamimo"),
-      KeyPress(145.0, "kiminochikaraninaru"),
-      KeyPress(149.0, "namidanoatomomunenoitamimo"),
-      KeyPress(153.0, "kiminochikaraninaru"),
+      KeyPress(3.5, "anosorawomiagetegorann"),
+      KeyPress(4.5, "yorunoyamiwoosiagete"),
+      KeyPress(3.5, "taiyougamatahohoemikureru"),
+      KeyPress(4.5, "maedakemitetemortukarerune"),
+      KeyPress(3.5, "tamanihatatidomatteiinndayo"),
+      KeyPress(4.5, "muneippaikuukisuttara"),
+      KeyPress(3.75, "mataashiwohumidasouyo"),
+      KeyPress(4.25, "bokuranoyumesorawokoete"),
+      KeyPress(4.0, "hateshinakuhirogatteikuyo"),
+      KeyPress(4.0, "namidanoatomomunenoitamimo"),
+      KeyPress(4.0, "kiminochikaraninaru"),
+      KeyPress(4.0, "maltukuradanagedasumaeni"),
+      KeyPress(3.0, "anosorawomiagetegorann"),
+      KeyPress(5.0, "yorunoyamimewokoraseba"),
+      KeyPress(3.5, "hoshitachinodannsupa-texi-"),
+      KeyPress(3.5, "tuyogaribakarijatukarerune"),
+      KeyPress(4.0, "namidawokoboshitemoiinndayo"),
+      KeyPress(4.0, "omoikirinaitaatoniha"),
+      KeyPress(3.75, "mataegaowomisetene"),
+      KeyPress(4.25, "minnnanoyumetokiwokoete"),
+      KeyPress(4.0, "dokomademotunagaxtuteikuyo"),
+      KeyPress(4.0, "namidanoatomomunenoitamimo"),
+      KeyPress(4.0, "kiminochikaraninaru"),
+      KeyPress(4.0, "sukoshidutumaenisusumou"),
+      KeyPress(4.0, "miraihazuttomatteirukara"),
+      KeyPress(4.0, "omoikirinaitayorusase"),
+      KeyPress(3.5, "itukaomoidenikawaruyo"),
+      KeyPress(6.5, "bokuranoyumesorawokoete"),
+      KeyPress(4.0, "hateshinakuhirogatteikuyo"),
+      KeyPress(4.0, "namidanoatomomunenoitamimo"),
+      KeyPress(4.0, "kiminochikaraninaru"),
+      KeyPress(4.0, "minnnanoyumetokiwokoete"),
+      KeyPress(4.0, "dokomademotunagatteikuyo"),
+      KeyPress(4.0, "namidanoatomomunenoitamimo"),
+      KeyPress(4.0, "kiminochikaraninaru"),
+      KeyPress(4.0, "namidanoatomomunenoitamimo"),
+      KeyPress(4.0, "kiminochikaraninaru"),
     ]);
     let mut presenter = MockPresenter::new();
 
     game.run_game(&mut controller, &mut presenter).unwrap();
 
     assert_eq!(
-      presenter.log(),
+      presenter.logs(),
       &[
         PlayBGM("kkiminochikara-edited.wav".to_owned()),
         DecreateRemainingTime(3.0),

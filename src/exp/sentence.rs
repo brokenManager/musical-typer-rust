@@ -1,9 +1,18 @@
 use super::roman::roman_str::RomanStr;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Sentence {
   origin: String,
   hiragana: RomanStr,
+}
+
+impl std::fmt::Debug for Sentence {
+  fn fmt(
+    &self,
+    mut f: &mut std::fmt::Formatter<'_>,
+  ) -> std::fmt::Result {
+    write!(&mut f, "{:?}", self.hiragana)
+  }
 }
 
 impl Sentence {
