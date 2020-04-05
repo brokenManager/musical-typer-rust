@@ -122,15 +122,13 @@ pub fn parse(
       }
       TokenContent::Section(_) => {}
       TokenContent::Lyrics(lyrics) => {
-        if let Some(_) = parsed_japanese {
-          return Err(InvalidStatementDefinition {
-            line_num,
-            reason: "歌詞は複数行に分けないでください。",
-          });
+        if let Some(prev_lyrics) = parsed_japanese {
+          parsed_japanese =
+            Some(format!("{}{}", prev_lyrics, lyrics));
+          continue;
         }
         parsed_japanese = Some(lyrics.to_owned());
       }
-      _ => {}
     }
   }
   Ok(Scoremap { metadata, notes })

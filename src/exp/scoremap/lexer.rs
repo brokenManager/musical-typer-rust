@@ -3,8 +3,7 @@ use std::io::BufReader;
 
 use crate::exp::roman::roman_str::RomanStr;
 
-const PROPERTY: &str =
-  r"^:([[:^space:]]+)[[:space:]]+([[:^space:]]+)$";
+const PROPERTY: &str = r"^:([[:^space:]]+)[[:space:]]+(.+)$";
 const COMMENT: &str = r"^[[:space:]]*(:?#.*)?$";
 const COMMAND: &str =
   r"^[[:space:]]*\[[[:space:]]*(.*)[[:space:]]*\][[:space:]]*$";
@@ -110,19 +109,11 @@ const METADATA_KEYS: &[&'static str] = &[
 #[derive(Debug)]
 pub enum ScoremapLexError {
   UnexceptedEndOfFile,
-  InvalidCommand {
-    line_num: usize,
-    reason: &'static str,
-  },
   InvalidPropertyDeifinition {
     line_num: usize,
     reason: &'static str,
   },
   InvalidStatementDefinition {
-    line_num: usize,
-    reason: &'static str,
-  },
-  InvalidTimingDeifinition {
     line_num: usize,
     reason: &'static str,
   },

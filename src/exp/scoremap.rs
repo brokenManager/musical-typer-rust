@@ -218,7 +218,7 @@ fn case1() {
     },
   )
   .unwrap();
-  println!("{:?}", score);
+  println!("{:#?}", score);
   assert!(loop {
     break true;
   })
