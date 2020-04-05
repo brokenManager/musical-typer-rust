@@ -258,6 +258,7 @@ where
           }
         })?),
       });
+      continue;
     }
     if let Some(section) = section_reg.captures(line) {
       let string = section.get(1).unwrap().as_str();

@@ -36,7 +36,6 @@ pub fn parse(
   let mut parsed_japanese: Option<String> = None;
 
   while 1 <= tokens.len() {
-    println!("{:?}", tokens);
     let Token { line_num, content } = &tokens[0];
     let line_num = *line_num;
     let line_time = line_minute_second.to_seconds();
