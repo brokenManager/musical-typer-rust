@@ -1,3 +1,4 @@
+use super::roman::roman_lexer::RomanParseError;
 use super::roman::roman_str::RomanStr;
 
 #[derive(Clone, PartialEq)]
@@ -11,16 +12,18 @@ impl std::fmt::Debug for Sentence {
     &self,
     mut f: &mut std::fmt::Formatter<'_>,
   ) -> std::fmt::Result {
-    write!(&mut f, "{:?}", self.hiragana)
+    write!(&mut f, "{} <-> {:?}", self.origin, self.hiragana)
   }
 }
 
 impl Sentence {
-  pub fn new(origin: &str, to_input: &str) -> Result<Self, String> {
+  pub fn new(
+    origin: &str,
+    to_input: &str,
+  ) -> Result<Self, RomanParseError> {
     Ok(Sentence {
       origin: origin.to_owned(),
-      hiragana: RomanStr::new(to_input)
-        .map_err(|e| format!("{:#?}", e))?,
+      hiragana: RomanStr::new(to_input)?,
     })
   }
 

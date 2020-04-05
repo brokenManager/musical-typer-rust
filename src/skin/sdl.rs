@@ -60,10 +60,9 @@ impl SDLView {
     let header = Header::new("Music Name", "Composer");
     let header_dim = Rect::new(0, 0, self.width, 100);
 
-    let to_input = Sentence::new(
-      "千本桜　夜ニ紛レ",
-      "せんぼんざくらよるにまぎれ",
-    )?;
+    let to_input =
+      Sentence::new("千本桜　夜ニ紛レ", "せんぼんざくらよるにまぎれ")
+        .map_err(|e| format!("{:?}", e))?;
     let section = Section::new(&to_input, 0.2);
     let section_dim = Rect::new(0, 100, self.width, 200);
 

@@ -30,7 +30,7 @@ pub enum TypeResult {
   Vacant,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum NoteContent {
   Sentence { sentence: Sentence, succeed: bool },
   Caption(String),
