@@ -24,6 +24,10 @@ pub fn parse<'a>(
 ) -> Result<(), RomanParseError> {
   while yomigana.len() != 0 {
     let replaced_count = match yomigana {
+      ['っ', 'く', 'ぁ' | 'ぃ' | 'ぅ' | 'ぇ' | 'ぉ', ..] => {
+        romans.push(RomanChar::new(&["q", "k", "xtu", "ltu"]));
+        1
+      }
       ['っ', 'か' | 'き' | 'く' | 'け' | 'こ', ..] => {
         romans.push(RomanChar::new(&["k", "xtu", "ltu"]));
         1
@@ -80,10 +84,6 @@ pub fn parse<'a>(
         romans.push(RomanChar::new(&["p", "xtu", "ltu"]));
         1
       }
-      ['ゔ', 'ぁ', ..] => {
-        romans.push(RomanChar::new(&["va"]));
-        2
-      }
       ['う', 'ぃ', ..] => {
         romans.push(RomanChar::new(&["wi"]));
         2
@@ -92,34 +92,80 @@ pub fn parse<'a>(
         romans.push(RomanChar::new(&["we"]));
         2
       }
-      ['う', 'ぉ', ..] => {
-        romans.push(RomanChar::new(&["fa"]));
+      ['き', 'ゃ', ..] => {
+        romans.push(RomanChar::new(&["kya"]));
         2
       }
-      // ['き', 'ゃ', ..] => {
-      //   romans.push(RomanChar::new(&["kya"]));
-      //   2
-      // }
-      // :
-      // :
-      // ['ぎ', 'ゃ', ..] => {
-      //   romans.push(RomanChar::new(&["kya"]));
-      //   2
-      // }
-      // :
-      // :
-      // ['く', 'ぁ', ..] => {
-      //   romans.push(RomanChar::new(&["qa", "kwa"]));
-      //   2
-      // }
-      // :
-      // :
+      ['き', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["kyi"]));
+        2
+      }
+      ['き', 'ゅ', ..] => {
+        romans.push(RomanChar::new(&["kyu"]));
+        2
+      }
+      ['き', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["kye"]));
+        2
+      }
+      ['き', 'ょ', ..] => {
+        romans.push(RomanChar::new(&["kyo"]));
+        2
+      }
+      ['ぎ', 'ゃ', ..] => {
+        romans.push(RomanChar::new(&["gya"]));
+        2
+      }
+      ['ぎ', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["gyi"]));
+        2
+      }
+      ['ぎ', 'ゅ', ..] => {
+        romans.push(RomanChar::new(&["gyu"]));
+        2
+      }
+      ['ぎ', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["gye"]));
+        2
+      }
+      ['ぎ', 'ょ', ..] => {
+        romans.push(RomanChar::new(&["gyo"]));
+        2
+      }
+      ['く', 'ぁ', ..] => {
+        romans.push(RomanChar::new(&["qa", "kwa"]));
+        2
+      }
+      ['く', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["qi", "kwi"]));
+        2
+      }
+      ['く', 'ぅ', ..] => {
+        romans.push(RomanChar::new(&["qu", "kwu"]));
+        2
+      }
+      ['く', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["qe", "kwe"]));
+        2
+      }
+      ['く', 'ぉ', ..] => {
+        romans.push(RomanChar::new(&["qo", "kwo"]));
+        2
+      }
       ['し', 'ゃ', ..] => {
         romans.push(RomanChar::new(&["sha", "sya"]));
         2
       }
+      ['し', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["syi"]));
+        2
+      }
       ['し', 'ゅ', ..] => {
         romans.push(RomanChar::new(&["shu", "syu"]));
+        2
+      }
+      ['し', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["sye"]));
         2
       }
       ['し', 'ょ', ..] => {
@@ -130,26 +176,62 @@ pub fn parse<'a>(
         romans.push(RomanChar::new(&["cha", "cya", "tya"]));
         2
       }
+      ['ち', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["cyi", "tyi"]));
+        2
+      }
       ['ち', 'ゅ', ..] => {
         romans.push(RomanChar::new(&["chu", "cyu", "tyu"]));
+        2
+      }
+      ['ち', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["cye", "tye"]));
         2
       }
       ['ち', 'ょ', ..] => {
         romans.push(RomanChar::new(&["cho", "cyo", "tyo"]));
         2
       }
-      // ['に', 'ゃ', ..] => {
-      //   romans.push(RomanChar::new(&["nya"]));
-      //   2
-      // }
-      // :
-      // :
-      // ['ひ', 'ゃ', ..] => {
-      //   romans.push(RomanChar::new(&["hya"]));
-      //   2
-      // }
-      // :
-      // :
+      ['に', 'ゃ', ..] => {
+        romans.push(RomanChar::new(&["nya"]));
+        2
+      }
+      ['に', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["nyi"]));
+        2
+      }
+      ['に', 'ゅ', ..] => {
+        romans.push(RomanChar::new(&["nyu"]));
+        2
+      }
+      ['に', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["nye"]));
+        2
+      }
+      ['に', 'ょ', ..] => {
+        romans.push(RomanChar::new(&["nyo"]));
+        2
+      }
+      ['ひ', 'ゃ', ..] => {
+        romans.push(RomanChar::new(&["hya"]));
+        2
+      }
+      ['ひ', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["hyi"]));
+        2
+      }
+      ['ひ', 'ゅ', ..] => {
+        romans.push(RomanChar::new(&["hyu"]));
+        2
+      }
+      ['ひ', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["hye"]));
+        2
+      }
+      ['ひ', 'ょ', ..] => {
+        romans.push(RomanChar::new(&["hyo"]));
+        2
+      }
       ['ふ', 'ぁ', ..] => {
         romans.push(RomanChar::new(&["fa"]));
         2
@@ -166,18 +248,58 @@ pub fn parse<'a>(
         romans.push(RomanChar::new(&["fo"]));
         2
       }
-      // ['み', 'ゃ', ..] => {
-      //   romans.push(RomanChar::new(&["mya"]));
-      //   2
-      // }
-      // :
-      // :
-      // ['り', 'ゃ', ..] => {
-      //   romans.push(RomanChar::new(&["rya"]));
-      //   2
-      // }
-      // :
-      // :
+      ['ふ', 'ゃ', ..] => {
+        romans.push(RomanChar::new(&["fya"]));
+        2
+      }
+      ['ふ', 'ゅ', ..] => {
+        romans.push(RomanChar::new(&["fyu"]));
+        2
+      }
+      ['ふ', 'ょ', ..] => {
+        romans.push(RomanChar::new(&["fyo"]));
+        2
+      }
+      ['み', 'ゃ', ..] => {
+        romans.push(RomanChar::new(&["mya"]));
+        2
+      }
+      ['み', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["myi"]));
+        2
+      }
+      ['み', 'ゅ', ..] => {
+        romans.push(RomanChar::new(&["myu"]));
+        2
+      }
+      ['み', 'ょ', ..] => {
+        romans.push(RomanChar::new(&["myo"]));
+        2
+      }
+      ['り', 'ゃ', ..] => {
+        romans.push(RomanChar::new(&["rya"]));
+        2
+      }
+      ['り', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["ryi"]));
+        2
+      }
+      ['り', 'ゅ', ..] => {
+        romans.push(RomanChar::new(&["ryu"]));
+        2
+      }
+      ['り', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["rye"]));
+        2
+      }
+      ['り', 'ょ', ..] => {
+        romans.push(RomanChar::new(&["ryo"]));
+        2
+      }
+      ['ゔ', 'ぁ', ..] => {
+        romans.push(RomanChar::new(&["va"]));
+        2
+      }
       ['ゔ', 'ぃ', ..] => {
         romans.push(RomanChar::new(&["vi"]));
         2
@@ -194,24 +316,40 @@ pub fn parse<'a>(
         romans.push(RomanChar::new(&["vu"]));
         1
       }
-      // ['ぐ', 'ぁ', ..] => {
-      //   romans.push(RomanChar::new(&["gwa"]));
-      //   2
-      // }
-      // :
-      // :
-      // ['ぐ', 'ぁ', ..] => {
-      //   romans.push(RomanChar::new(&["gwa"]));
-      //   2
-      // }
-      // :
-      // :
+      ['ぐ', 'ぁ', ..] => {
+        romans.push(RomanChar::new(&["gwa"]));
+        2
+      }
+      ['ぐ', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["gwi"]));
+        2
+      }
+      ['ぐ', 'ぅ', ..] => {
+        romans.push(RomanChar::new(&["gwu"]));
+        2
+      }
+      ['ぐ', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["gwe"]));
+        2
+      }
+      ['ぐ', 'ぉ', ..] => {
+        romans.push(RomanChar::new(&["gwo"]));
+        2
+      }
       ['じ', 'ゃ', ..] => {
         romans.push(RomanChar::new(&["ja", "jya"]));
         2
       }
+      ['じ', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["jyi"]));
+        2
+      }
       ['じ', 'ゅ', ..] => {
         romans.push(RomanChar::new(&["ju", "jyu"]));
+        2
+      }
+      ['じ', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["jye"]));
         2
       }
       ['じ', 'ょ', ..] => {
@@ -226,23 +364,54 @@ pub fn parse<'a>(
         romans.push(RomanChar::new(&["dyu"]));
         2
       }
+      ['ぢ', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["dye"]));
+        2
+      }
       ['ぢ', 'ょ', ..] => {
         romans.push(RomanChar::new(&["dyo"]));
         2
       }
-
-      // ['び', 'ゃ', ..] => {
-      //   romans.push(RomanChar::new(&["hya"]));
-      //   2
-      // }
-      // :
-      // :
-      // ['ぴ', 'ゃ', ..] => {
-      //   romans.push(RomanChar::new(&["hya"]));
-      //   2
-      // }
-      // :
-      // :
+      ['び', 'ゃ', ..] => {
+        romans.push(RomanChar::new(&["bya"]));
+        2
+      }
+      ['び', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["byi"]));
+        2
+      }
+      ['び', 'ゅ', ..] => {
+        romans.push(RomanChar::new(&["byu"]));
+        2
+      }
+      ['び', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["bye"]));
+        2
+      }
+      ['び', 'ょ', ..] => {
+        romans.push(RomanChar::new(&["hyo"]));
+        2
+      }
+      ['ぴ', 'ゃ', ..] => {
+        romans.push(RomanChar::new(&["pya"]));
+        2
+      }
+      ['ぴ', 'ぃ', ..] => {
+        romans.push(RomanChar::new(&["pyi"]));
+        2
+      }
+      ['ぴ', 'ゅ', ..] => {
+        romans.push(RomanChar::new(&["pyu"]));
+        2
+      }
+      ['ぴ', 'ぇ', ..] => {
+        romans.push(RomanChar::new(&["pye"]));
+        2
+      }
+      ['ぴ', 'ょ', ..] => {
+        romans.push(RomanChar::new(&["pyo"]));
+        2
+      }
       ['ん', 'な' | 'に' | 'ぬ' | 'ね' | 'の', ..] => {
         romans.push(RomanChar::new(&["nn"]));
         1
@@ -654,10 +823,10 @@ fn panst() -> Result<(), RomanParseError> {
   .iter()
   .zip(parsed.iter())
   {
-    assert_eq!(expected.len(), actual.styles().len());
     for (expected, actual) in expected.iter().zip(actual.styles()) {
       assert_eq!(expected, actual);
     }
+    assert_eq!(expected.len(), actual.styles().len());
   }
   Ok(())
 }
@@ -699,10 +868,44 @@ fn ff12rw() -> Result<(), RomanParseError> {
   .iter()
   .zip(parsed.iter())
   {
-    assert_eq!(expected.len(), actual.styles().len());
     for (expected, actual) in expected.iter().zip(actual.styles()) {
       assert_eq!(expected, actual);
     }
+    assert_eq!(expected.len(), actual.styles().len());
+  }
+  Ok(())
+}
+
+#[test]
+fn chocolate_balls() -> Result<(), RomanParseError> {
+  let mut parsed: Vec<RomanChar> = vec![];
+  parse(
+    &mut parsed,
+    "くぇっくぇっくぇっちょこぼーる"
+      .chars()
+      .collect::<Vec<char>>()
+      .as_slice(),
+  )?;
+  for (expected, actual) in [
+    vec!["qe", "kwe"],
+    vec!["q", "k", "xtu", "ltu"],
+    vec!["qe", "kwe"],
+    vec!["q", "k", "xtu", "ltu"],
+    vec!["qe", "kwe"],
+    vec!["t", "c", "xtu", "ltu"],
+    vec!["cho", "cyo", "tyo"],
+    vec!["ko"],
+    vec!["bo"],
+    vec!["-"],
+    vec!["ru"],
+  ]
+  .iter()
+  .zip(parsed.iter())
+  {
+    for (expected, actual) in expected.iter().zip(actual.styles()) {
+      assert_eq!(expected, actual);
+    }
+    assert_eq!(expected.len(), actual.styles().len());
   }
   Ok(())
 }
