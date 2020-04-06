@@ -409,6 +409,7 @@ fn case1() -> Result<(), ScoremapError> {
     assert_eq!(expected.time(), note.time());
     assert_eq!(*expected.content(), *note.content());
   }
+  assert_eq!(expected_notes.len(), score.notes.len());
   for (k, v) in score.metadata.iter() {
     assert_eq!(
       v,
