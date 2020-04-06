@@ -1,3 +1,5 @@
+use super::prim::{Area, Color, Pos};
+
 mod components;
 mod finder;
 mod header;
@@ -11,8 +13,16 @@ pub enum RenderError {
 }
 
 pub enum ARTEndNode {
-  Label,
-  Box,
+  Label {
+    pos: Pos,
+    text: String,
+    color: Color,
+  },
+  Box {
+    area: Area,
+    border_color: Color,
+    background_color: Color,
+  },
   Fragment,
 }
 
@@ -22,12 +32,14 @@ where
 {
   fn new(props: P) -> Self;
 
-  type T: IntoIterator<Item = ART>;
-  fn render(&self) -> Self::T;
+  fn render(&self) -> ART;
 }
 
 pub enum ART {
-  Node(Box<ART>),
+  Node {
+    client: Area,
+    children: Vec<Box<ART>>,
+  },
   End(ARTEndNode),
 }
 
@@ -65,19 +77,3 @@ L Progress
     L Correctness
     L Completed
 */
-
-pub struct ARTRenderer {
-  tree: ART,
-}
-
-impl ARTRenderer {
-  fn new() -> Self {
-    ARTRenderer {
-      tree: ART::End(ARTEndNode::Fragment),
-    }
-  }
-
-  fn tree(&self) -> &ART {
-    &self.tree
-  }
-}
