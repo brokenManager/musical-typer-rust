@@ -24,14 +24,70 @@ pub fn parse<'a>(
 ) -> Result<(), RomanParseError> {
   while yomigana.len() != 0 {
     let replaced_count = match yomigana {
-      // ['っ', 'か', ..] => {
-      //   romans.push(RomanChar::new(&["k", "ka"]));
-      //   2
-      // }
+      ['っ', 'か' | 'き' | 'く' | 'け' | 'こ', ..] => {
+        romans.push(RomanChar::new(&["k", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'さ' | 'し' | 'す' | 'せ' | 'そ', ..] => {
+        romans.push(RomanChar::new(&["s", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'た' | 'つ' | 'て' | 'と', ..] => {
+        romans.push(RomanChar::new(&["t", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'ち', ..] => {
+        romans.push(RomanChar::new(&["t", "c", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'は' | 'ひ' | 'ふ' | 'へ' | 'ほ', ..] => {
+        romans.push(RomanChar::new(&["h", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'ま' | 'み' | 'む' | 'め' | 'も', ..] => {
+        romans.push(RomanChar::new(&["m", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'や' | 'ゆ' | 'よ', ..] => {
+        romans.push(RomanChar::new(&["y", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'ら' | 'り' | 'る' | 'れ' | 'ろ', ..] => {
+        romans.push(RomanChar::new(&["r", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'わ' | 'ゐ' | 'ゑ' | 'を', ..] => {
+        romans.push(RomanChar::new(&["w", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'ざ' | 'ず' | 'ぜ' | 'ぞ', ..] => {
+        romans.push(RomanChar::new(&["z", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'じ', ..] => {
+        romans.push(RomanChar::new(&["z", "j", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'だ' | 'ぢ' | 'づ' | 'で' | 'ど', ..] => {
+        romans.push(RomanChar::new(&["d", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'ば' | 'び' | 'ぶ' | 'べ' | 'ぼ', ..] => {
+        romans.push(RomanChar::new(&["b", "xtu", "ltu"]));
+        1
+      }
+      ['っ', 'ぱ' | 'ぴ' | 'ぷ' | 'ぺ' | 'ぽ', ..] => {
+        romans.push(RomanChar::new(&["p", "xtu", "ltu"]));
+        1
+      }
       // :
       // :
       // ['ゔ', 'ぁ', ..] => {
       //   romans.push(RomanChar::new(&["va"]));
+      //   2
+      // }
+      // ['ふ', 'ぁ', ..] => {
+      //   romans.push(RomanChar::new(&["fa"]));
       //   2
       // }
       // :
@@ -448,28 +504,59 @@ fn jojo() -> Result<(), RomanParseError> {
     &mut parsed,
     "そのちのさだめ".chars().collect::<Vec<char>>().as_slice(),
   )?;
-  assert!(parsed
-    .iter()
-    .zip(&[
-      vec!["so"],
-      vec!["no"],
-      vec!["ti", "chi"],
-      vec!["no"],
-      vec!["sa"],
-      vec!["da"],
-      vec!["me"],
-    ])
-    .all(|(roman_char, except)| {
-      let styles = roman_char.styles();
-      if styles.len() != except.len() {
-        return false;
-      }
-      for i in 0..styles.len() {
-        if styles[i] != except[i] {
-          return false;
-        }
-      }
-      true
-    }));
+  for (expected, actual) in [
+    vec!["so"],
+    vec!["no"],
+    vec!["ti", "chi"],
+    vec!["no"],
+    vec!["sa"],
+    vec!["da"],
+    vec!["me"],
+  ]
+  .iter()
+  .zip(parsed.iter())
+  {
+    assert_eq!(expected.len(), actual.styles().len());
+    for (expected, actual) in expected.iter().zip(actual.styles()) {
+      assert_eq!(expected, actual);
+    }
+  }
+  Ok(())
+}
+
+#[test]
+fn panst() -> Result<(), RomanParseError> {
+  let mut parsed: Vec<RomanChar> = vec![];
+  parse(
+    &mut parsed,
+    "ぱんてぃーあんどすとっきんぐ"
+      .chars()
+      .collect::<Vec<char>>()
+      .as_slice(),
+  )?;
+  for (expected, actual) in [
+    vec!["pa"],
+    vec!["n"],
+    vec!["te"],
+    vec!["xi", "li"],
+    vec!["-"],
+    vec!["a"],
+    vec!["n"],
+    vec!["do"],
+    vec!["su"],
+    vec!["to"],
+    vec!["k", "xtu", "ltu"],
+    vec!["ki"],
+    vec!["n"],
+    vec!["gu"],
+  ]
+  .iter()
+  .zip(parsed.iter())
+  {
+    assert_eq!(expected.len(), actual.styles().len());
+    for (expected, actual) in expected.iter().zip(actual.styles()) {
+      assert_eq!(expected, actual);
+    }
+  }
   Ok(())
 }
