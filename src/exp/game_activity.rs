@@ -22,11 +22,11 @@ pub struct GameActivity {
 impl GameActivity {
   pub fn new(notes: &Vec<Note>) -> Self {
     let shifted_notes = notes.iter().cloned().skip(1);
-    let sections = notes
+    let mut sections = notes
       .iter()
       .zip(shifted_notes)
-      .map(|(prev, note): (&Note, Note)| {
-        Section::new(prev.id(), prev.time(), note.time())
+      .map(|(note, next): (&Note, Note)| {
+        Section::new(note.id(), note.time(), next.time())
       })
       .collect();
     let mut notes_map = BTreeMap::<String, Note>::new();
@@ -67,7 +67,7 @@ impl GameActivity {
   pub fn update_time(&mut self, time: Seconds) {
     self.state = State::OnGame;
     for section in self.sections.iter() {
-      if section.from <= time && time <= section.to {
+      if section.from <= time && time < section.to {
         self.current_section = Some(section.clone());
         return;
       }

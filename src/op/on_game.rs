@@ -142,21 +142,23 @@ mod tests {
   use PresentLog::*;
 
   struct MockPresenter {
-    log: Vec<PresentLog>,
+    expected: Vec<PresentLog>,
+    index: usize,
   }
 
   impl MockPresenter {
-    fn new() -> Self {
-      MockPresenter { log: vec![] }
+    fn new(expected: Vec<PresentLog>) -> Self {
+      MockPresenter { expected, index: 0 }
     }
 
     fn log(&mut self, log: PresentLog) {
-      println!("{:#?}", log);
-      self.log.push(log);
-    }
-
-    fn logs(&self) -> &[PresentLog] {
-      &self.log
+      println!("{:?}", log);
+      assert_eq!(
+        self.expected[self.index], log,
+        "index: {}",
+        self.index
+      );
+      self.index += 1;
     }
   }
 
@@ -232,11 +234,7 @@ mod tests {
       KeyPress(4.0, "kiminochikaraninaru"),
       KeyPress(5.0, ""),
     ]);
-    let mut presenter = MockPresenter::new();
-
-    game.run_game(&mut controller, &mut presenter)?;
-
-    let expected_log = &[
+    let mut presenter = MockPresenter::new(vec![
       PlayBGM("kkiminochikara-edited.wav".to_owned()),
       DecreaseRemainingTime(3.0),
       UpdateSentence(Sentence::new(
@@ -429,13 +427,9 @@ mod tests {
         "きみのちからになる",
       )?),
       DecreaseRemainingTime(5.0),
-    ];
-    for (expected, actual) in
-      expected_log.iter().zip(presenter.logs().iter())
-    {
-      assert_eq!(expected, actual);
-    }
-    assert_eq!(expected_log.len(), presenter.logs().len());
+    ]);
+
+    game.run_game(&mut controller, &mut presenter)?;
 
     Ok(())
   }
