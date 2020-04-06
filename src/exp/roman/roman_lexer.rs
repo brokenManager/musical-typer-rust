@@ -1,8 +1,21 @@
 use super::roman_char::RomanChar;
+use crate::exp::scoremap::lexer::ScoremapLexError;
+use crate::exp::scoremap::ScoremapError;
 
 #[derive(Debug)]
 pub enum RomanParseError {
   IllegalYomigana(String),
+}
+
+impl From<RomanParseError> for ScoremapError {
+  fn from(_err: RomanParseError) -> Self {
+    ScoremapError::LexError(
+      ScoremapLexError::InvalidStatementDefinition {
+        line_num: 1,
+        reason: "ふりがなでのそのような平仮名の並びは未対応です。",
+      },
+    )
+  }
 }
 
 pub fn parse<'a>(

@@ -66,18 +66,6 @@ impl Scoremap {
 
 #[test]
 fn case1() -> Result<(), ScoremapError> {
-  use super::roman::roman_lexer::RomanParseError;
-  impl From<RomanParseError> for ScoremapError {
-    fn from(_err: RomanParseError) -> ScoremapError {
-      ScoremapError::LexError(
-        ScoremapLexError::InvalidStatementDefinition {
-          line_num: 1,
-          reason: "ふりがなでのそのような平仮名の並びは未対応です。",
-        },
-      )
-    }
-  }
-
   let score = Scoremap::from_str(
     r#"
 # Case 1

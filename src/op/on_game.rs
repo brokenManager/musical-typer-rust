@@ -1,6 +1,8 @@
 use crate::exp::game_activity::GameActivity;
 use crate::exp::minute_second::Seconds;
 use crate::exp::note::Section;
+use crate::exp::roman::roman_lexer::RomanParseError;
+use crate::exp::scoremap::lexer::ScoremapLexError;
 use crate::exp::scoremap::{Scoremap, ScoremapError};
 use crate::exp::sentence::Sentence;
 
@@ -34,6 +36,16 @@ impl From<std::io::Error> for MusicalTyperError {
 impl From<ScoremapError> for MusicalTyperError {
   fn from(err: ScoremapError) -> Self {
     MusicalTyperError::ScoremapBuildError(err)
+  }
+}
+impl From<RomanParseError> for MusicalTyperError {
+  fn from(_err: RomanParseError) -> Self {
+    MusicalTyperError::ScoremapBuildError(ScoremapError::LexError(
+      ScoremapLexError::InvalidStatementDefinition {
+        line_num: 1,
+        reason: "ふりがなでのそのような平仮名の並びは未対応です。",
+      },
+    ))
   }
 }
 
@@ -228,13 +240,161 @@ mod tests {
       PlayBGM("kkiminochikara-edited.wav".to_owned()),
       DecreaseRemainingTime(3.0),
       DecreaseRemainingTime(3.0),
-      UpdateSentence(
-        Sentence::new(
-          "もうダメだ そんな時は",
-          "もうだめだそんなときは",
-        )
-        .unwrap(),
-      ),
+      UpdateSentence(Sentence::new(
+        "もうダメだ そんな時は",
+        "もうだめだそんなときは",
+      )?),
+      /*
+            あの空を 見上げてごらん
+      :あのそらをみあげてごらん
+
+      *11.000
+      夜の闇を 押し上げて
+      :よるのやみをおしあげて
+
+      *14.500
+      太陽がまた 微笑みくれる
+      :たいようがまたほほえみくれる
+
+      *19.000
+      前だけ見てても疲れるね
+      :まえだけみててもつかれるね
+
+      *22.500
+      たまには立ち止まっていいんだよ
+      :たまにはたちどまっていいんだよ
+
+      *27.000
+      胸いっぱい空気吸ったら
+      :むねいっぱいくうきすったら
+
+      *30.750
+      また足を踏み出そうよ
+      :またあしをふみだそうよ
+
+      *35.000
+      僕らの夢 空を超えて
+      :ぼくらのゆめそらをこえて
+
+      *39.000
+      果てなく広がって行くよ
+      :はてなくひろがっていくよ
+
+      *43.000
+      涙のあとも 胸の痛みも
+      :なみだのあともむねのいたみも
+
+      *47.000
+      キミの力になる
+      :きみのちからになる
+
+      *51.000
+      真っ暗だ！ 投げ出す前に
+      :まっくらだなげだすまえに
+
+      *54.000
+      あの空を 見上げてごらん
+      :あのそらをみあげてごらん
+
+      *59.000
+      夜の闇 目を凝らせば
+      :よるのやみめをこらせば
+
+
+      |1
+      *02.500
+      星たちのダンスパーティー
+      :ほしたちのだんすぱーてぃー
+
+      *07.000
+      強がりばかりじゃ疲れるね
+      :つよがりばかりじゃつかれるね
+
+      *11.000
+      涙を零してもいいんだよ
+      :なみだをこぼしてもいいんだよ
+
+      *15.000
+      思い切り泣いたあとには
+      :おもいきりないたあとには
+
+      *18.750
+      また笑顔をみせてね
+      :またえがおをみせてね
+
+      *23.000
+      みんなの夢 時を超えて
+      :みんなのゆめときをこえて
+
+      *27.000
+      どこまでも繋がって行くよ
+      :どこまでもつながっていくよ
+
+      *31.0000
+      涙のあとも 胸の痛みも
+      :なみだのあともむねのいたみも
+
+      *35.000
+      キミの力になる
+      :きみのちからになる
+
+      *39.000
+      少しづつ 前に進もう
+      :すこしづつまえにすすもう
+
+      *43.000
+      未来はずっと待っているから
+      :みらいはずっとまっているから
+
+      *47.000
+      思い切り泣いた夜さえ
+      :おもいきりないたよるさえ
+
+      *50.500
+      いつか思い出に変わるよ
+      :いつかおもいでにかわるよ
+
+      *57.000
+      僕らの夢 空を超えて
+      :ぼくらのゆめそらをこえて
+
+      |2
+      *01.000
+      果てなく広がって行くよ
+      :はてなくひろがっていくよ
+
+      *05.000
+      涙のあとも 胸の痛みも
+      :なみだのあともむねのいたみも
+
+      *09.000
+      キミの力になる
+      :きみのちからになる
+
+      *13.000
+      みんなの夢 時を超えて
+      :みんなのゆめときをこえて
+
+      *17.000
+      どこまでも繋がって行くよ
+      :どこまでもつながっていくよ
+
+      *21.000
+      涙のあとも 胸の痛みも
+      :なみだのあともむねのいたみも
+
+      *25.000
+      キミの力になる
+      :きみのちからになる
+
+      *29.000
+      涙のあとも 胸の痛みも
+      :なみだのあともむねのいたみも
+
+      *33.000
+      キミの力になる
+      :きみのちからになる
+      */
     ];
     for (expected, actual) in
       expected_log.iter().zip(presenter.logs().iter())
