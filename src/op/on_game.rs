@@ -152,7 +152,6 @@ mod tests {
     }
 
     fn log(&mut self, log: PresentLog) {
-      println!("{:?}", log);
       assert_eq!(
         self.expected[self.index], log,
         "index: {}",
@@ -210,7 +209,7 @@ mod tests {
       KeyPress(3.0, "anosorawomiagetegorann"),
       KeyPress(5.0, "yorunoyamimewokoraseba"),
       KeyPress(3.5, "hoshitachinodannsupa-texi-"),
-      KeyPress(3.5, "tuyogaribakarijatukarerune"),
+      KeyPress(4.5, "tuyogaribakarijatukarerune"),
       KeyPress(4.0, "namidawokoboshitemoiinndayo"),
       KeyPress(4.0, "omoikirinaitaatoniha"),
       KeyPress(3.75, "mataegaowomisetene"),
@@ -316,7 +315,7 @@ mod tests {
         "星たちのダンスパーティー",
         "ほしたちのだんすぱーてぃー",
       )?),
-      DecreaseRemainingTime(3.5),
+      DecreaseRemainingTime(4.5),
       UpdateSentence(Sentence::new(
         "強がりばかりじゃ疲れるね",
         "つよがりばかりじゃつかれるね",
