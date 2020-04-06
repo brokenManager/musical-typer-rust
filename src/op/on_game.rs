@@ -86,13 +86,13 @@ impl MusicalTyper {
       to,
     }) = self.activity.current_section()
     {
-      let delta_time = controller.elapse_time();
-      self.accumulated_time += delta_time;
-      self.activity.update_time(self.accumulated_time);
-
       for typed in controller.key_press().iter() {
         self.activity.input(*typed);
       }
+
+      let delta_time = controller.elapse_time();
+      self.accumulated_time += delta_time;
+      self.activity.update_time(self.accumulated_time);
 
       presenter.decrease_remaining_time(delta_time);
       if let Some(sentence) = self.activity.current_sentence() {
@@ -239,162 +239,196 @@ mod tests {
     let expected_log = &[
       PlayBGM("kkiminochikara-edited.wav".to_owned()),
       DecreaseRemainingTime(3.0),
-      DecreaseRemainingTime(3.0),
       UpdateSentence(Sentence::new(
         "もうダメだ そんな時は",
         "もうだめだそんなときは",
       )?),
-      /*
-            あの空を 見上げてごらん
-      :あのそらをみあげてごらん
-
-      *11.000
-      夜の闇を 押し上げて
-      :よるのやみをおしあげて
-
-      *14.500
-      太陽がまた 微笑みくれる
-      :たいようがまたほほえみくれる
-
-      *19.000
-      前だけ見てても疲れるね
-      :まえだけみててもつかれるね
-
-      *22.500
-      たまには立ち止まっていいんだよ
-      :たまにはたちどまっていいんだよ
-
-      *27.000
-      胸いっぱい空気吸ったら
-      :むねいっぱいくうきすったら
-
-      *30.750
-      また足を踏み出そうよ
-      :またあしをふみだそうよ
-
-      *35.000
-      僕らの夢 空を超えて
-      :ぼくらのゆめそらをこえて
-
-      *39.000
-      果てなく広がって行くよ
-      :はてなくひろがっていくよ
-
-      *43.000
-      涙のあとも 胸の痛みも
-      :なみだのあともむねのいたみも
-
-      *47.000
-      キミの力になる
-      :きみのちからになる
-
-      *51.000
-      真っ暗だ！ 投げ出す前に
-      :まっくらだなげだすまえに
-
-      *54.000
-      あの空を 見上げてごらん
-      :あのそらをみあげてごらん
-
-      *59.000
-      夜の闇 目を凝らせば
-      :よるのやみめをこらせば
-
-
-      |1
-      *02.500
-      星たちのダンスパーティー
-      :ほしたちのだんすぱーてぃー
-
-      *07.000
-      強がりばかりじゃ疲れるね
-      :つよがりばかりじゃつかれるね
-
-      *11.000
-      涙を零してもいいんだよ
-      :なみだをこぼしてもいいんだよ
-
-      *15.000
-      思い切り泣いたあとには
-      :おもいきりないたあとには
-
-      *18.750
-      また笑顔をみせてね
-      :またえがおをみせてね
-
-      *23.000
-      みんなの夢 時を超えて
-      :みんなのゆめときをこえて
-
-      *27.000
-      どこまでも繋がって行くよ
-      :どこまでもつながっていくよ
-
-      *31.0000
-      涙のあとも 胸の痛みも
-      :なみだのあともむねのいたみも
-
-      *35.000
-      キミの力になる
-      :きみのちからになる
-
-      *39.000
-      少しづつ 前に進もう
-      :すこしづつまえにすすもう
-
-      *43.000
-      未来はずっと待っているから
-      :みらいはずっとまっているから
-
-      *47.000
-      思い切り泣いた夜さえ
-      :おもいきりないたよるさえ
-
-      *50.500
-      いつか思い出に変わるよ
-      :いつかおもいでにかわるよ
-
-      *57.000
-      僕らの夢 空を超えて
-      :ぼくらのゆめそらをこえて
-
-      |2
-      *01.000
-      果てなく広がって行くよ
-      :はてなくひろがっていくよ
-
-      *05.000
-      涙のあとも 胸の痛みも
-      :なみだのあともむねのいたみも
-
-      *09.000
-      キミの力になる
-      :きみのちからになる
-
-      *13.000
-      みんなの夢 時を超えて
-      :みんなのゆめときをこえて
-
-      *17.000
-      どこまでも繋がって行くよ
-      :どこまでもつながっていくよ
-
-      *21.000
-      涙のあとも 胸の痛みも
-      :なみだのあともむねのいたみも
-
-      *25.000
-      キミの力になる
-      :きみのちからになる
-
-      *29.000
-      涙のあとも 胸の痛みも
-      :なみだのあともむねのいたみも
-
-      *33.000
-      キミの力になる
-      :きみのちからになる
-      */
+      DecreaseRemainingTime(3.5),
+      UpdateSentence(Sentence::new(
+        "あの空を 見上げてごらん",
+        "あのそらをみあげてごらん",
+      )?),
+      DecreaseRemainingTime(4.5),
+      UpdateSentence(Sentence::new(
+        "夜の闇を 押し上げて",
+        "よるのやみをおしあげて",
+      )?),
+      DecreaseRemainingTime(3.5),
+      UpdateSentence(Sentence::new(
+        "太陽がまた 微笑みくれる",
+        "たいようがまたほほえみくれる",
+      )?),
+      DecreaseRemainingTime(4.5),
+      UpdateSentence(Sentence::new(
+        "前だけ見てても疲れるね",
+        "まえだけみててもつかれるね",
+      )?),
+      DecreaseRemainingTime(3.5),
+      UpdateSentence(Sentence::new(
+        "たまには立ち止まっていいんだよ",
+        "たまにはたちどまっていいんだよ",
+      )?),
+      DecreaseRemainingTime(4.5),
+      UpdateSentence(Sentence::new(
+        "胸いっぱい空気吸ったら",
+        "むねいっぱいくうきすったら",
+      )?),
+      DecreaseRemainingTime(3.75),
+      UpdateSentence(Sentence::new(
+        "また足を踏み出そうよ",
+        "またあしをふみだそうよ",
+      )?),
+      DecreaseRemainingTime(4.25),
+      UpdateSentence(Sentence::new(
+        "僕らの夢 空を超えて",
+        "ぼくらのゆめそらをこえて",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "果てなく広がって行くよ",
+        "はてなくひろがっていくよ",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "涙のあとも 胸の痛みも",
+        "なみだのあともむねのいたみも",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "キミの力になる",
+        "きみのちからになる",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "真っ暗だ！ 投げ出す前に",
+        "まっくらだなげだすまえに",
+      )?),
+      DecreaseRemainingTime(3.0),
+      UpdateSentence(Sentence::new(
+        "あの空を 見上げてごらん",
+        "あのそらをみあげてごらん",
+      )?),
+      DecreaseRemainingTime(5.0),
+      UpdateSentence(Sentence::new(
+        "夜の闇 目を凝らせば",
+        "よるのやみめをこらせば",
+      )?),
+      DecreaseRemainingTime(3.5),
+      UpdateSentence(Sentence::new(
+        "星たちのダンスパーティー",
+        "ほしたちのだんすぱーてぃー",
+      )?),
+      DecreaseRemainingTime(3.5),
+      UpdateSentence(Sentence::new(
+        "強がりばかりじゃ疲れるね",
+        "つよがりばかりじゃつかれるね",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "涙を零してもいいんだよ",
+        "なみだをこぼしてもいいんだよ",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "思い切り泣いたあとには",
+        "おもいきりないたあとには",
+      )?),
+      DecreaseRemainingTime(3.75),
+      UpdateSentence(Sentence::new(
+        "また笑顔をみせてね",
+        "またえがおをみせてね",
+      )?),
+      DecreaseRemainingTime(4.25),
+      UpdateSentence(Sentence::new(
+        "みんなの夢 時を超えて",
+        "みんなのゆめときをこえて",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "どこまでも繋がって行くよ",
+        "どこまでもつながっていくよ",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "涙のあとも 胸の痛みも",
+        "なみだのあともむねのいたみも",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "キミの力になる",
+        "きみのちからになる",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "少しづつ 前に進もう",
+        "すこしづつまえにすすもう",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "未来はずっと待っているから",
+        "みらいはずっとまっているから",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "思い切り泣いた夜さえ",
+        "おもいきりないたよるさえ",
+      )?),
+      DecreaseRemainingTime(3.5),
+      UpdateSentence(Sentence::new(
+        "いつか思い出に変わるよ",
+        "いつかおもいでにかわるよ",
+      )?),
+      DecreaseRemainingTime(6.5),
+      UpdateSentence(Sentence::new(
+        "僕らの夢 空を超えて",
+        "ぼくらのゆめそらをこえて",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "果てなく広がって行くよ",
+        "はてなくひろがっていくよ",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "涙のあとも 胸の痛みも",
+        "なみだのあともむねのいたみも",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "キミの力になる",
+        "きみのちからになる",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "みんなの夢 時を超えて",
+        "みんなのゆめときをこえて",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "どこまでも繋がって行くよ",
+        "どこまでもつながっていくよ",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "涙のあとも 胸の痛みも",
+        "なみだのあともむねのいたみも",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "キミの力になる",
+        "きみのちからになる",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "涙のあとも 胸の痛みも",
+        "なみだのあともむねのいたみも",
+      )?),
+      DecreaseRemainingTime(4.0),
+      UpdateSentence(Sentence::new(
+        "キミの力になる",
+        "きみのちからになる",
+      )?),
+      DecreaseRemainingTime(5.0),
     ];
     for (expected, actual) in
       expected_log.iter().zip(presenter.logs().iter())
