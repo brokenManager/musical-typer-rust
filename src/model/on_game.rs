@@ -14,7 +14,8 @@ pub trait Presenter {
   fn play_bgm(&mut self, name: &str);
   fn decrease_remaining_time(&mut self, delta_time: f64);
   fn update_sentence(&mut self, string: &Sentence);
-  fn mistyped(&mut self);
+  fn pointed(&mut self, added: i32);
+  fn typed(&mut self, is_mistaken: bool);
   fn flush_screen(&mut self);
 }
 
@@ -49,94 +50,77 @@ impl From<RomanParseError> for MusicalTyperError {
   }
 }
 
-pub struct MusicalTyper {
+pub struct MusicalTyper<'p, P> {
   score: Scoremap,
   activity: GameActivity,
   accumulated_time: Seconds,
+  presenter: &'p mut P,
 }
 
-impl MusicalTyper {
-  pub fn new(score: Scoremap) -> Self {
+impl<'p, P> MusicalTyper<'p, P>
+where
+  P: Presenter,
+{
+  pub fn new(score: Scoremap, presenter: &'p mut P) -> Self {
     let activity = GameActivity::new(&score.notes);
     MusicalTyper {
       score,
       activity,
       accumulated_time: 0.0,
+      presenter,
     }
   }
 
-  pub fn run_game(
-    &mut self,
-    controller: &mut impl Controller,
-    presenter: &mut impl Presenter,
-  ) -> Result<(), MusicalTyperError> {
+  pub fn update(&mut self) -> Result<(), MusicalTyperError> {
     use MusicalTyperError::*;
 
     let metadata = &self.score.metadata;
     if let Some(ref song_data) = metadata.get("song_data") {
-      presenter.play_bgm(song_data);
+      self.presenter.play_bgm(song_data);
     } else {
       return Err(SongDataNotFound);
     }
 
     self.activity.update_time(0.0);
-    while let Some(Section {
+    if let Some(Section {
       foreign_note,
       from,
       to,
     }) = self.activity.current_section()
     {
-      for typed in controller.key_press().iter() {
-        self.activity.input(*typed);
-      }
-
-      let delta_time = controller.elapse_time();
-      self.accumulated_time += delta_time;
-      self.activity.update_time(self.accumulated_time);
-
-      presenter.decrease_remaining_time(delta_time);
       if let Some(sentence) = self.activity.current_sentence() {
-        presenter.update_sentence(sentence);
+        self.presenter.update_sentence(sentence);
       }
     }
     Ok(())
+  }
+
+  pub fn key_press(&mut self, typed: Vec<char>) {
+    for typed in typed.iter() {
+      self.activity.input(*typed);
+    }
+  }
+  pub fn elapse_time(&mut self, delta_time: f64) {
+    self.accumulated_time += delta_time;
+    self.activity.update_time(self.accumulated_time);
+    self.presenter.decrease_remaining_time(delta_time);
   }
 }
 
 #[cfg(test)]
 mod tests {
   use super::super::exp::sentence::Sentence;
-  use super::{Controller, MusicalTyperError, Presenter};
+  use super::{MusicalTyperError, Presenter};
 
   struct KeyPress(f64, &'static str);
-
-  struct MockController {
-    key_press_schedule: &'static [KeyPress],
-  }
-
-  impl MockController {
-    fn new(key_press_schedule: &'static [KeyPress]) -> Self {
-      MockController { key_press_schedule }
-    }
-  }
-
-  impl Controller for MockController {
-    fn key_press(&mut self) -> Vec<char> {
-      let res = self.key_press_schedule[0].1.chars().collect();
-      self.key_press_schedule = &self.key_press_schedule[1..];
-      res
-    }
-    fn elapse_time(&mut self) -> f64 {
-      self.key_press_schedule[0].0
-    }
-  }
 
   #[derive(Debug, PartialEq)]
   enum PresentLog {
     PlayBGM(String),
     DecreaseRemainingTime(f64),
     UpdateSentence(Sentence),
-    Mistyped,
+    Pointed(i32),
+    Typed(bool),
   }
 
   use PresentLog::*;
@@ -171,8 +155,11 @@ mod tests {
     fn update_sentence(&mut self, string: &Sentence) {
       self.log(UpdateSentence(string.clone()));
     }
-    fn mistyped(&mut self) {
-      self.log(Mistyped)
+    fn pointed(&mut self, added: i32) {
+      self.log(Pointed(added));
+    }
+    fn typed(&mut self, is_mistaken: bool) {
+      self.log(Typed(is_mistaken));
     }
     fn flush_screen(&mut self) {}
   }
@@ -189,9 +176,7 @@ mod tests {
       |config| config.ignore_invalid_properties(true),
     )?;
 
-    let mut game = MusicalTyper::new(test_score);
-
-    let mut controller = MockController::new(&[
+    let mut keypresses = &[
       KeyPress(3.0, ""),
       KeyPress(3.0, "moudamedasonnnatokiha"),
       KeyPress(3.5, "anosorawomiagetegorann"),
@@ -232,7 +217,7 @@ mod tests {
       KeyPress(4.0, "namidanoatomomunenoitamimo"),
       KeyPress(4.0, "kiminochikaraninaru"),
       KeyPress(5.0, ""),
-    ]);
+    ];
     let mut presenter = MockPresenter::new(vec![
       PlayBGM("kkiminochikara-edited.wav".to_owned()),
       DecreaseRemainingTime(3.0),
@@ -428,7 +413,13 @@ mod tests {
       DecreaseRemainingTime(5.0),
     ]);
 
-    game.run_game(&mut controller, &mut presenter)?;
+    let mut game = MusicalTyper::new(test_score, &mut presenter);
+
+    for KeyPress(time, key) in keypresses.iter() {
+      game.elapse_time(*time);
+      game.key_press(key.chars().collect());
+      game.update()?;
+    }
 
     Ok(())
   }

@@ -3,13 +3,12 @@ extern crate sdl2;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
-use sdl2::video::Window;
+use sdl2::video::{Window, WindowContext};
 use sdl2::Sdl;
 
 use std::time::Duration;
 
 use crate::model::exp::sentence::Sentence;
-use crate::model::on_game::{Controller, Presenter};
 
 mod header;
 mod keyboard;
@@ -38,41 +37,63 @@ impl From<TextError> for ViewError {
   }
 }
 
-pub struct SDLView {
+pub trait SdlEventHandler {
+  fn key_press(&mut self, typed: Vec<char>) {}
+  fn elapse_time(&mut self, delta_time: f64) {}
+}
+
+pub struct SdlView<'a, T> {
   width: u32,
   height: u32,
   ctx: Sdl,
   canvas: Canvas<Window>,
+  controller: &'a mut T,
 }
 
-impl SDLView {
-  pub fn new(width: u32, height: u32) -> Result<Self, String> {
-    let ctx = sdl2::init().map_err(|e| e.to_string())?;
+impl<'a, T> SdlView<'a, T>
+where
+  T: SdlEventHandler,
+{
+  pub fn new(
+    width: u32,
+    height: u32,
+    controller: &'a mut T,
+  ) -> Result<Self, ViewError> {
+    let ctx = sdl2::init()
+      .map_err(|e| ViewError::InitError { message: e })?;
 
-    let video = ctx.video().map_err(|e| e.to_string())?;
+    let video = ctx
+      .video()
+      .map_err(|e| ViewError::InitError { message: e })?;
     let window = video
       .window("Musical Typer", width, height)
       .position_centered()
       .opengl()
       .build()
-      .map_err(|e| e.to_string())?;
+      .map_err(|e| ViewError::InitError {
+        message: e.to_string(),
+      })?;
 
-    let mut canvas =
-      window.into_canvas().build().map_err(|e| e.to_string())?;
+    let mut canvas = window.into_canvas().build().map_err(|e| {
+      ViewError::InitError {
+        message: e.to_string(),
+      }
+    })?;
     canvas.clear();
     canvas.present();
 
-    Ok(SDLView {
+    Ok(SdlView {
       width,
       height,
       ctx,
       canvas,
+      controller,
     })
   }
 
-  fn render<'a, T>(
+  fn render<'t>(
     &mut self,
-    builder: TextBuilder<'a, T>,
+    builder: TextBuilder<'t, WindowContext>,
   ) -> Result<(), ViewError> {
     let header = Header::new("Music Name", "Composer");
     let header_dim = Rect::new(0, 0, self.width, 100);
@@ -115,7 +136,7 @@ impl SDLView {
     Ok(())
   }
 
-  pub fn run(&mut self) -> Result<(), ViewError> {
+  pub fn draw(&mut self) -> Result<(), ViewError> {
     let texture_creator = self.canvas.texture_creator();
 
     let ttf =
@@ -137,45 +158,17 @@ impl SDLView {
       self.ctx.event_pump().map_err(|e| ViewError::InitError {
         message: e.to_string(),
       })?;
-    'main: loop {
-      for event in poller.poll_iter() {
-        use sdl2::event::Event::*;
-        match event {
-          Quit { .. } => break 'main Ok(()),
-          _ => {}
-        }
-        self.render(builder.clone())?;
-
-        self.canvas.present();
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
+    for event in poller.poll_iter() {
+      use sdl2::event::Event::*;
+      match event {
+        Quit { .. } => break,
+        _ => {}
       }
+      self.render(builder.clone())?;
+
+      self.canvas.present();
+      ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
     }
-  }
-}
-
-impl Presenter for SDLView {
-  fn play_bgm(&mut self, _: &str) {
-    unimplemented!()
-  }
-  fn decrease_remaining_time(&mut self, _: f64) {
-    unimplemented!()
-  }
-  fn update_sentence(&mut self, _: &Sentence) {
-    unimplemented!()
-  }
-  fn mistyped(&mut self) {
-    unimplemented!()
-  }
-  fn flush_screen(&mut self) {
-    unimplemented!()
-  }
-}
-
-impl Controller for SDLView {
-  fn key_press(&mut self) -> Vec<char> {
-    unimplemented!()
-  }
-  fn elapse_time(&mut self) -> f64 {
-    unimplemented!()
+    Ok(())
   }
 }

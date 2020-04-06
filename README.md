@@ -64,7 +64,7 @@ Musical Typer を Rust で実装チャレンジ!!!
   - exp -- システムに出てくる概念
   - op -- システムで重要な操作
   - skin -- abst の実装
-    - sdl_presenter -- SDL2 画面のコンポーネント
+    - sdl_presenter -- Sdl2 画面のコンポーネント
 
 
 # 譜面フォーマット
