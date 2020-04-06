@@ -1,12 +1,10 @@
 #![feature(or_patterns)]
 
-mod abst;
-mod exp;
-mod op;
-mod skin;
+mod model;
+mod sdl;
 
 fn main() {
-  use exp::scoremap::Scoremap;
+  use model::exp::scoremap::Scoremap;
   let score = Scoremap::from_file(
     std::fs::File::open(std::path::Path::new(
       "example/sampleScore.tsc",
@@ -16,7 +14,7 @@ fn main() {
   )
   .unwrap();
 
-  use skin::sdl::SDLView;
+  use sdl::SDLView;
   let mut presenter = SDLView::new(800, 600).unwrap();
   presenter.run().unwrap();
 }

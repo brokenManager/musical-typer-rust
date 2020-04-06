@@ -1,8 +1,8 @@
 use super::lexer::{Token, TokenContent};
 use super::{Scoremap, ScoremapMetadata};
-use crate::exp::minute_second::MinuteSecond;
-use crate::exp::note::Note;
-use crate::exp::sentence::Sentence;
+use crate::model::exp::minute_second::MinuteSecond;
+use crate::model::exp::note::Note;
+use crate::model::exp::sentence::Sentence;
 
 #[derive(Debug)]
 pub enum ScoremapParseError {

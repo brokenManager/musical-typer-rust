@@ -1,1 +1,0 @@
-// Shows animated label

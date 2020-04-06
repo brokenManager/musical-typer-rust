@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::io::BufReader;
 
-use crate::exp::roman::roman_str::RomanStr;
+use crate::model::exp::roman::roman_str::RomanStr;
 
 const PROPERTY: &str = r"^:([[:^space:]]+)[[:space:]]+(.+)$";
 const COMMENT: &str = r"^[[:space:]]*(:?#.*)?$";

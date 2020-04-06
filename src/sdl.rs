@@ -8,8 +8,8 @@ use sdl2::Sdl;
 
 use std::time::Duration;
 
-use crate::exp::sentence::Sentence;
-use crate::op::on_game::{Controller, Presenter};
+use crate::model::exp::sentence::Sentence;
+use crate::model::on_game::{Controller, Presenter};
 
 mod header;
 mod keyboard;

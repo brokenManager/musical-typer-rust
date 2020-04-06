@@ -4,7 +4,7 @@ use sdl2::render::{Canvas, RenderTarget};
 
 use super::text::{TextBuilder, TextError};
 
-use crate::exp::sentence::Sentence;
+use crate::model::exp::sentence::Sentence;
 
 pub struct Section<'a> {
   to_input: &'a Sentence,
