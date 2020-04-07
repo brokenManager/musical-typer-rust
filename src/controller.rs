@@ -35,6 +35,7 @@ impl MTController {
 impl SdlEventHandler for MTController {
   fn key_press(&mut self, typed: Vec<char>) {}
   fn elapse_time(&mut self, delta_time: f64) {}
+  fn quit(&mut self) {}
 }
 
 impl Presenter for MTController {

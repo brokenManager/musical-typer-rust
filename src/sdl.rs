@@ -38,8 +38,9 @@ impl From<TextError> for ViewError {
 }
 
 pub trait SdlEventHandler {
-  fn key_press(&mut self, typed: Vec<char>) {}
-  fn elapse_time(&mut self, delta_time: f64) {}
+  fn key_press(&mut self, typed: Vec<char>);
+  fn elapse_time(&mut self, delta_time: f64);
+  fn quit(&mut self);
 }
 
 pub struct SdlView<'a, T> {
@@ -161,7 +162,7 @@ where
     for event in poller.poll_iter() {
       use sdl2::event::Event::*;
       match event {
-        Quit { .. } => break,
+        Quit { .. } => self.controller.quit(),
         _ => {}
       }
       self.render(builder.clone())?;
