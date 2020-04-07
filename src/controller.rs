@@ -1,4 +1,4 @@
-use crate::model::{exp::scoremap::Scoremap, on_game::Presenter};
+use crate::model::{exp::scoremap::Scoremap, game::Presenter};
 use crate::sdl::{SdlEventHandler, ViewError};
 
 #[derive(Debug)]
@@ -20,7 +20,7 @@ impl MTController {
   }
 
   pub fn run(&mut self, score: Scoremap) -> Result<(), MTError> {
-    use crate::model::on_game::MusicalTyper;
+    use crate::model::game::MusicalTyper;
     let mut game = MusicalTyper::new(score, self);
 
     use crate::sdl::SdlView;

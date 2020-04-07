@@ -1,2 +1,2 @@
 pub mod exp;
-pub mod on_game;
+pub mod game;
