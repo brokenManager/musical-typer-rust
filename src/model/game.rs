@@ -51,11 +51,39 @@ impl From<RomanParseError> for MusicalTyperError {
   }
 }
 
+pub type Point = u32;
+pub type TypingSpeed = f64;
+
+pub struct MusicalTyperConfig {
+  wrong_type: Point,
+  correct_type: Point,
+  missed_sentence: Point,
+  complete_sentence: Point,
+  perfect_sentence: Point,
+  perfect_section: Point,
+  ideal_type: TypingSpeed,
+}
+
+impl Default for MusicalTyperConfig {
+  fn default() -> Self {
+    MusicalTyperConfig {
+      wrong_type: 30,
+      correct_type: 10,
+      missed_sentence: 2,
+      complete_sentence: 50,
+      perfect_sentence: 100,
+      perfect_section: 300,
+      ideal_type: 3.0,
+    }
+  }
+}
+
 pub struct MusicalTyper<'p, P> {
   score: Scoremap,
   activity: GameActivity,
   accumulated_time: Seconds,
   presenter: &'p mut P,
+  config: MusicalTyperConfig,
 }
 
 impl<'p, P> MusicalTyper<'p, P>
@@ -65,6 +93,7 @@ where
   pub fn new(
     score: Scoremap,
     presenter: &'p mut P,
+    config: MusicalTyperConfig,
   ) -> Result<Self, MusicalTyperError> {
     let activity = GameActivity::new(&score.notes);
 
@@ -80,6 +109,7 @@ where
       activity,
       accumulated_time: 0.0,
       presenter,
+      config,
     })
   }
 
@@ -173,7 +203,7 @@ mod tests {
   #[test]
   fn op1() -> Result<(), MusicalTyperError> {
     use super::super::exp::scoremap::Scoremap;
-    use super::MusicalTyper;
+    use super::{MusicalTyper, MusicalTyperConfig};
 
     let test_score = Scoremap::from_str(
       r#"
@@ -209,7 +239,11 @@ mod tests {
       UpdateSentence(Sentence::new("打鍵テスト", "だけんてすと")?),
     ]);
 
-    let mut game = MusicalTyper::new(test_score, &mut presenter)?;
+    let mut game = MusicalTyper::new(
+      test_score,
+      &mut presenter,
+      MusicalTyperConfig::default(),
+    )?;
 
     for KeyPress(time, key) in keypresses.iter() {
       game.elapse_time(*time);

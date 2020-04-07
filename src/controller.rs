@@ -20,8 +20,9 @@ impl MTController {
   }
 
   pub fn run(&mut self, score: Scoremap) -> Result<(), MTError> {
-    use crate::model::game::MusicalTyper;
-    let mut game = MusicalTyper::new(score, self);
+    use crate::model::game::{MusicalTyper, MusicalTyperConfig};
+    let mut game =
+      MusicalTyper::new(score, self, MusicalTyperConfig::default());
 
     use crate::sdl::SdlView;
     let mut view = SdlView::new(800, 600, self)?;
