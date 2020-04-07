@@ -186,11 +186,10 @@ impl GameView {
       let typed_key_buf = typed_key_buf.clone();
       mt_events = self.model.key_press(typed_key_buf.into_iter());
 
-      let elapsed =
-        time.elapsed().as_nanos() as f64 / 1_000_000_000.0;
+      let elapsed = time.elapsed().as_secs_f64();
       mt_events.append(&mut self.model.elapse_time(elapsed));
       println!("FPS: {}", 1.0 / elapsed);
-      ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
+      ::std::thread::sleep(Duration::from_secs_f64(1.0 / 60.0));
     }
     Ok(())
   }
