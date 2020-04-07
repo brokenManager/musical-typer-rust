@@ -3,7 +3,7 @@ use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::Sdl;
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::time::Duration;
 
 mod text;
@@ -40,7 +40,7 @@ pub struct SdlView<'a, T> {
   ctx: Sdl,
   canvas: Canvas<Window>,
   controller: &'a mut T,
-  typed_key_buf: HashSet<char>,
+  typed_key_buf: BTreeSet<char>,
 }
 
 impl<'a, T> SdlView<'a, T>
@@ -81,7 +81,7 @@ where
       ctx,
       canvas,
       controller,
-      typed_key_buf: HashSet::new(),
+      typed_key_buf: BTreeSet::new(),
     })
   }
 
@@ -146,9 +146,8 @@ where
           let typed_key_buf = self.typed_key_buf.clone();
           self.controller.key_press(typed_key_buf.into_iter());
         }
-
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
       }
+      ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
     }
     Ok(())
   }
