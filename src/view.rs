@@ -173,11 +173,11 @@ impl GameView {
       self.canvas.present();
 
       let typed_key_buf = self.typed_key_buf.clone();
-      self.model.key_press(typed_key_buf.into_iter());
+      mt_events = self.model.key_press(typed_key_buf.into_iter());
 
       let elapsed =
         time.elapsed().as_nanos() as f64 / 1_000_000_000.0;
-      mt_events = self.model.elapse_time(elapsed);
+      mt_events.append(&mut self.model.elapse_time(elapsed));
       ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
     }
     Ok(())
