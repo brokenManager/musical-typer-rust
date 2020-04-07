@@ -4,9 +4,6 @@ use sdl2::Sdl;
 
 use std::time::Duration;
 
-mod header;
-mod keyboard;
-mod section;
 mod text;
 mod whole;
 

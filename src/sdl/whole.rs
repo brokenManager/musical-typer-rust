@@ -3,13 +3,17 @@ use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::{Window, WindowContext};
 
-use crate::model::exp::sentence::Sentence;
-
-use super::header::Header;
-use super::keyboard::Keyboard;
-use super::section::Section;
 use super::text::TextBuilder;
 use super::ViewError;
+use crate::model::exp::sentence::Sentence;
+
+mod header;
+mod keyboard;
+mod section;
+
+use header::Header;
+use keyboard::Keyboard;
+use section::Section;
 
 pub fn render<'t>(
   mut canvas: &mut Canvas<Window>,

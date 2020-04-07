@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, RenderTarget};
 
-use super::text::{TextBuilder, TextError};
+use super::super::text::{TextBuilder, TextError};
 
 use crate::model::exp::sentence::Sentence;
 
