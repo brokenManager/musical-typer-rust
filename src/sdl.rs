@@ -1,3 +1,4 @@
+use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::Sdl;
@@ -27,7 +28,7 @@ impl From<TextError> for ViewError {
 }
 
 pub trait SdlEventHandler {
-  fn key_press(&mut self, typed: Vec<char>);
+  fn key_press(&mut self, typed: impl Iterator<Item = char>);
   fn elapse_time(&mut self, delta_time: f64);
 }
 
@@ -37,6 +38,7 @@ pub struct SdlView<'a, T> {
   ctx: Sdl,
   canvas: Canvas<Window>,
   controller: &'a mut T,
+  typed_key_buf: Vec<char>,
 }
 
 impl<'a, T> SdlView<'a, T>
@@ -77,6 +79,7 @@ where
       ctx,
       canvas,
       controller,
+      typed_key_buf: vec![],
     })
   }
 
@@ -107,6 +110,12 @@ where
         use sdl2::event::Event::*;
         match event {
           Quit { .. } => break 'main,
+          KeyDown {
+            keycode: Some(keycode),
+            ..
+          } => {
+            self.on_keydown(keycode);
+          }
           _ => {}
         }
         whole::render(
@@ -116,9 +125,51 @@ where
         )?;
 
         self.canvas.present();
+
+        {
+          let typed_key_buf = self.typed_key_buf.clone();
+          self.controller.key_press(typed_key_buf.into_iter());
+          self.typed_key_buf.clear();
+        }
+
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
       }
     }
     Ok(())
+  }
+
+  fn on_keydown(&mut self, keycode: Keycode) {
+    use Keycode::*;
+    let typed = match keycode {
+      A => 'a',
+      B => 'b',
+      C => 'c',
+      D => 'd',
+      E => 'e',
+      F => 'f',
+      G => 'g',
+      H => 'h',
+      I => 'i',
+      J => 'j',
+      K => 'k',
+      L => 'l',
+      M => 'm',
+      N => 'n',
+      O => 'o',
+      P => 'p',
+      Q => 'q',
+      R => 'r',
+      S => 's',
+      T => 't',
+      U => 'u',
+      V => 'v',
+      W => 'w',
+      X => 'x',
+      Y => 'y',
+      Z => 'z',
+      Minus => '-',
+      _ => '\0',
+    };
+    self.typed_key_buf.push(typed);
   }
 }
