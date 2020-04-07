@@ -39,28 +39,18 @@ impl SdlEventHandler for MTController {
 }
 
 impl Presenter for MTController {
-  fn play_bgm(&mut self, name: &std::primitive::str) {
-    unimplemented!()
-  }
+  fn play_bgm(&mut self, name: &std::primitive::str) {}
   fn decrease_remaining_time(
     &mut self,
     delta_time: std::primitive::f64,
   ) {
-    unimplemented!()
   }
   fn update_sentence(
     &mut self,
     string: &crate::model::exp::sentence::Sentence,
   ) {
-    unimplemented!()
   }
-  fn pointed(&mut self, added: std::primitive::i32) {
-    unimplemented!()
-  }
-  fn typed(&mut self, is_mistaken: std::primitive::bool) {
-    unimplemented!()
-  }
-  fn flush_screen(&mut self) {
-    unimplemented!()
-  }
+  fn pointed(&mut self, added: std::primitive::i32) {}
+  fn typed(&mut self, is_mistaken: std::primitive::bool) {}
+  fn flush_screen(&mut self) {}
 }
