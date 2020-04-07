@@ -15,10 +15,15 @@ use header::Header;
 use keyboard::Keyboard;
 use section::Section;
 
-pub fn render<'t>(
+pub struct WholeProps<'a> {
+  pub pressed_keys: &'a [char],
+}
+
+pub fn render<'a, 't>(
   mut canvas: &mut Canvas<Window>,
   client: Rect,
   builder: TextBuilder<'t, WindowContext>,
+  props: &'a WholeProps,
 ) -> Result<(), ViewError> {
   let header = Header::new("Music Name", "Composer");
   let header_dim = Rect::new(0, 0, client.width(), 100);
@@ -31,7 +36,7 @@ pub fn render<'t>(
   let section = Section::new(&to_input, 0.2);
   let section_dim = Rect::new(0, 100, client.width(), 200);
 
-  let keyboard = Keyboard::new(&['h']);
+  let keyboard = Keyboard::new(props.pressed_keys, &['h']);
   let keyboard_dim =
     Rect::new(0, client.height() as i32 - 300, client.width(), 300);
 

@@ -9,6 +9,7 @@ mod text;
 mod whole;
 
 use text::{TextBuilder, TextError};
+use whole::WholeProps;
 
 #[derive(Debug)]
 pub enum ViewError {
@@ -122,6 +123,9 @@ where
           &mut self.canvas,
           sdl2::rect::Rect::new(0, 0, self.width, self.height),
           builder.clone(),
+          &WholeProps {
+            pressed_keys: &self.typed_key_buf.as_slice(),
+          },
         )?;
 
         self.canvas.present();
