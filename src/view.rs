@@ -49,8 +49,6 @@ pub struct GameView {
   ctx: Sdl,
   canvas: Canvas<Window>,
   model: MusicalTyper,
-  typed_key_buf: BTreeSet<char>,
-  sentence: Option<Sentence>,
 }
 
 impl GameView {
@@ -91,8 +89,6 @@ impl GameView {
         &score,
         MusicalTyperConfig::default(),
       )?,
-      typed_key_buf: BTreeSet::new(),
-      sentence: None,
     })
   }
 
@@ -115,6 +111,8 @@ impl GameView {
     let builder = TextBuilder::new(&font, &texture_creator);
 
     let mut mt_events = vec![];
+    let mut typed_key_buf = BTreeSet::new();
+    let mut sentence: Option<Sentence> = None;
 
     'main: loop {
       let time = std::time::Instant::now();
@@ -123,7 +121,9 @@ impl GameView {
           use MusicalTyperEvent::*;
           match mt_event {
             PlayBgm(bgm_name) => {}
-            UpdateSentence(sentence) => {}
+            UpdateSentence(new_sentence) => {
+              sentence = Some(new_sentence.clone());
+            }
             Pointed(point) => {}
             Typed { mistaken } => {}
           }
@@ -143,13 +143,13 @@ impl GameView {
               keycode: Some(keycode),
               ..
             } => {
-              self.typed_key_buf.insert(keycode_to_char(keycode));
+              typed_key_buf.insert(keycode_to_char(keycode));
             }
             KeyUp {
               keycode: Some(keycode),
               ..
             } => {
-              self.typed_key_buf.remove(&keycode_to_char(keycode));
+              typed_key_buf.remove(&keycode_to_char(keycode));
             }
             _ => {}
           }
@@ -160,19 +160,18 @@ impl GameView {
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
         builder.clone(),
         &WholeProps {
-          pressed_keys: &self
-            .typed_key_buf
+          pressed_keys: &typed_key_buf
             .iter()
             .cloned()
             .collect::<Vec<char>>()
             .as_slice(),
-          sentence: &self.sentence,
+          sentence: &sentence,
         },
       )?;
 
       self.canvas.present();
 
-      let typed_key_buf = self.typed_key_buf.clone();
+      let typed_key_buf = typed_key_buf.clone();
       mt_events = self.model.key_press(typed_key_buf.into_iter());
 
       let elapsed =
