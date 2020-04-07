@@ -18,6 +18,8 @@ use keyboard::Keyboard;
 pub struct WholeProps<'a> {
   pub pressed_keys: &'a [char],
   pub sentence: &'a Option<Sentence>,
+  pub title: &'a str,
+  pub song_author: &'a str,
 }
 
 pub fn render<'a, 't>(
@@ -26,7 +28,7 @@ pub fn render<'a, 't>(
   builder: TextBuilder<'t, WindowContext>,
   props: &'a WholeProps,
 ) -> Result<(), ViewError> {
-  let header = Header::new("Music Name", "Composer");
+  let header = Header::new(props.title, props.song_author);
   let header_dim = Rect::new(0, 0, client.width(), 100);
 
   let finder = Finder::new(props.sentence, 0.2);

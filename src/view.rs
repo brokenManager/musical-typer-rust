@@ -49,6 +49,7 @@ pub struct GameView {
   ctx: Sdl,
   canvas: Canvas<Window>,
   model: MusicalTyper,
+  score: Scoremap,
 }
 
 impl GameView {
@@ -89,6 +90,7 @@ impl GameView {
         &score,
         MusicalTyperConfig::default(),
       )?,
+      score,
     })
   }
 
@@ -166,6 +168,16 @@ impl GameView {
             .collect::<Vec<char>>()
             .as_slice(),
           sentence: &sentence,
+          title: self
+            .score
+            .metadata
+            .get("title")
+            .unwrap_or(&"曲名不詳".to_owned()),
+          song_author: self
+            .score
+            .metadata
+            .get("song_author")
+            .unwrap_or(&"作曲者不詳".to_owned()),
         },
       )?;
 
