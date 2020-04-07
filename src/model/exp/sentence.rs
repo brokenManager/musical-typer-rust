@@ -75,4 +75,8 @@ impl Sentence {
   pub fn input(&mut self, typed: char) -> bool {
     self.hiragana.input(typed)
   }
+
+  pub fn completed(&self) -> bool {
+    self.hiragana.completed()
+  }
 }

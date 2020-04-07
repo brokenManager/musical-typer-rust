@@ -80,6 +80,10 @@ impl RomanStr {
       false
     }
   }
+
+  pub fn completed(&self) -> bool {
+    self.chars.len() <= self.inputting_char
+  }
 }
 
 #[test]

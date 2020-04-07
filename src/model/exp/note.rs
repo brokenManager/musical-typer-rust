@@ -88,7 +88,9 @@ impl Note {
     use TypeResult::*;
 
     if let Sentence { sentence, succeed } = &mut self.content {
-      if sentence.input(typed) {
+      if sentence.completed() {
+        Vacant
+      } else if sentence.input(typed) {
         *succeed = true;
         Succeed
       } else {
