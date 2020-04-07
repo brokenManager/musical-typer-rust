@@ -32,7 +32,7 @@ pub fn render<'a, 't>(
   let finder = Finder::new(props.sentence, 0.2);
   let finder_dim = Rect::new(0, 100, client.width(), 200);
 
-  let keyboard = Keyboard::new(props.pressed_keys, &['h']);
+  let keyboard = Keyboard::new(props.pressed_keys, &[]);
   let keyboard_dim =
     Rect::new(0, client.height() as i32 - 300, client.width(), 300);
 

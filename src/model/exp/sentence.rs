@@ -1,6 +1,11 @@
 use super::roman::roman_lexer::RomanParseError;
 use super::roman::roman_str::RomanStr;
 
+pub struct TypingStr {
+  pub will_input: String,
+  pub inputted: String,
+}
+
 #[derive(Clone, PartialEq)]
 pub struct Sentence {
   origin: String,
@@ -50,11 +55,21 @@ impl Sentence {
   }
 
   pub fn origin(&self) -> &str {
-    &self.origin
+    self.origin.as_str()
   }
 
-  pub fn hiragana(&self) -> &RomanStr {
-    &self.hiragana
+  pub fn yomiagana(&self) -> TypingStr {
+    TypingStr {
+      will_input: self.hiragana.will_input_yomigana().to_owned(),
+      inputted: self.hiragana.inputted_yomigana(),
+    }
+  }
+
+  pub fn roman(&self) -> TypingStr {
+    TypingStr {
+      will_input: self.hiragana.will_input_roman(),
+      inputted: self.hiragana.inputted_roman().to_owned(),
+    }
   }
 
   pub fn input(&mut self, typed: char) -> bool {

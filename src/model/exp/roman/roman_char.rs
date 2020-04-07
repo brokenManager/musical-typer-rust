@@ -59,6 +59,10 @@ impl RomanChar {
   pub fn completed_input(&self) -> bool {
     self.determined_style().len() == self.inputted.len()
   }
+
+  pub fn origin(&self) -> &str {
+    ""
+  }
 }
 
 #[test]

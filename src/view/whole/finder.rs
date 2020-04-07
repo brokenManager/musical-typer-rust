@@ -4,7 +4,7 @@ use sdl2::render::{Canvas, RenderTarget};
 
 use super::super::text::{TextBuilder, TextError};
 
-use crate::model::exp::sentence::Sentence;
+use crate::model::exp::sentence::{Sentence, TypingStr};
 
 pub struct Finder<'a> {
   sentence: &'a Option<Sentence>,
@@ -45,6 +45,12 @@ impl<'a> Finder<'a> {
     let half_x = offset.width() / 2;
 
     if let Some(sentence) = self.sentence {
+      let roman = sentence.roman();
+      let full_roman_len =
+        roman.will_input.len() + roman.inputted.len();
+      let normalized_inputted =
+        roman.inputted.len() as f64 / full_roman_len as f64;
+
       let will_input_japanese = sentence.origin();
       text_builder
         .color(Color::RGB(0, 0, 0))
@@ -53,46 +59,57 @@ impl<'a> Finder<'a> {
         .render(
           &mut canvas,
           Rect::new(
-            half_x as i32,
+            half_x as i32
+              - (normalized_inputted
+                * will_input_japanese.len() as f64)
+                as i32
+                * JAPANESE_GLYPH_WIDTH as i32,
             offset.y(),
             will_input_japanese.len() as u32 * JAPANESE_GLYPH_WIDTH,
             JAPANESE_HEIGHT,
           ),
         )?;
 
-      const ROMAN_GLYPH_WIDTH: u32 = 20;
-      const ROMAN_HEIGHT: u32 = 20;
-      let will_input_roman = sentence.hiragana().will_input();
-      text_builder
-        .color(Color::RGB(0, 0, 0))
-        .text(will_input_roman.as_str())
-        .build()?
-        .render(
-          &mut canvas,
-          Rect::new(
-            half_x as i32,
-            offset.y() + JAPANESE_HEIGHT as i32,
-            will_input_roman.len() as u32 * ROMAN_GLYPH_WIDTH,
-            ROMAN_HEIGHT + ROMAN_HEIGHT,
-          ),
-        )?;
+      {
+        const ROMAN_GLYPH_WIDTH: u32 = 20;
+        const ROMAN_HEIGHT: u32 = 20;
+        let TypingStr {
+          will_input,
+          inputted,
+        } = sentence.roman();
+        let will_input = will_input.as_str();
+        let inputted = inputted.as_str();
 
-      let inputted_roman = sentence.hiragana().inputted();
-      text_builder
-        .color(Color::RGB(80, 80, 80))
-        .text(inputted_roman)
-        .build()?
-        .render(
-          &mut canvas,
-          Rect::new(
-            half_x as i32
-              - (inputted_roman.len() + 1) as i32
-                * ROMAN_GLYPH_WIDTH as i32,
-            offset.y() + JAPANESE_HEIGHT as i32,
-            inputted_roman.len() as u32 * ROMAN_GLYPH_WIDTH,
-            ROMAN_HEIGHT + ROMAN_HEIGHT,
-          ),
-        )?;
+        text_builder
+          .color(Color::RGB(0, 0, 0))
+          .text(will_input)
+          .build()?
+          .render(
+            &mut canvas,
+            Rect::new(
+              half_x as i32,
+              offset.y() + JAPANESE_HEIGHT as i32,
+              will_input.len() as u32 * ROMAN_GLYPH_WIDTH,
+              ROMAN_HEIGHT + ROMAN_HEIGHT,
+            ),
+          )?;
+
+        text_builder
+          .color(Color::RGB(80, 80, 80))
+          .text(inputted)
+          .build()?
+          .render(
+            &mut canvas,
+            Rect::new(
+              half_x as i32
+                - (inputted.len() + 1) as i32
+                  * ROMAN_GLYPH_WIDTH as i32,
+              offset.y() + JAPANESE_HEIGHT as i32,
+              inputted.len() as u32 * ROMAN_GLYPH_WIDTH,
+              ROMAN_HEIGHT + ROMAN_HEIGHT,
+            ),
+          )?;
+      }
     }
     Ok(())
   }

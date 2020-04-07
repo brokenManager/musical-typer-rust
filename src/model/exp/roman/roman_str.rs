@@ -38,11 +38,22 @@ impl RomanStr {
     })
   }
 
-  pub fn inputted(&self) -> &str {
-    &self.inputted
+  pub fn will_input_yomigana(&self) -> &str {
+    ""
   }
 
-  pub fn will_input(&self) -> String {
+  pub fn inputted_yomigana(&self) -> String {
+    self
+      .chars
+      .iter()
+      .take_while(|c| !c.completed_input())
+      .map(|c| c.origin())
+      .collect::<Vec<&str>>()
+      .join("")
+      .to_owned()
+  }
+
+  pub fn will_input_roman(&self) -> String {
     self
       .chars
       .iter()
@@ -50,8 +61,12 @@ impl RomanStr {
         roman_char.determined_style().to_owned()
       })
       .collect::<Vec<String>>()
-      .join("")[self.inputted().len()..]
+      .join("")[self.inputted_roman().len()..]
       .to_owned()
+  }
+
+  pub fn inputted_roman(&self) -> &str {
+    &self.inputted
   }
 
   pub fn input(&mut self, typed: char) -> bool {
@@ -70,63 +85,63 @@ impl RomanStr {
 #[test]
 fn hello() -> Result<(), RomanParseError> {
   let mut hello = RomanStr::new("こんにちは")?;
-  assert_eq!(hello.inputted(), "");
-  assert_eq!(hello.will_input(), "konnnitiha");
+  assert_eq!(hello.inputted_roman(), "");
+  assert_eq!(hello.will_input_roman(), "konnnitiha");
   assert!(hello.input('k'));
-  assert_eq!(hello.inputted(), "k");
-  assert_eq!(hello.will_input(), "onnnitiha");
+  assert_eq!(hello.inputted_roman(), "k");
+  assert_eq!(hello.will_input_roman(), "onnnitiha");
   assert!(hello.input('o'));
-  assert_eq!(hello.inputted(), "ko");
-  assert_eq!(hello.will_input(), "nnnitiha");
+  assert_eq!(hello.inputted_roman(), "ko");
+  assert_eq!(hello.will_input_roman(), "nnnitiha");
   assert!(hello.input('n'));
-  assert_eq!(hello.inputted(), "kon");
-  assert_eq!(hello.will_input(), "nnitiha");
+  assert_eq!(hello.inputted_roman(), "kon");
+  assert_eq!(hello.will_input_roman(), "nnitiha");
   assert!(hello.input('n'));
-  assert_eq!(hello.inputted(), "konn");
-  assert_eq!(hello.will_input(), "nitiha");
+  assert_eq!(hello.inputted_roman(), "konn");
+  assert_eq!(hello.will_input_roman(), "nitiha");
   assert!(hello.input('n'));
-  assert_eq!(hello.inputted(), "konnn");
-  assert_eq!(hello.will_input(), "itiha");
+  assert_eq!(hello.inputted_roman(), "konnn");
+  assert_eq!(hello.will_input_roman(), "itiha");
   assert!(hello.input('i'));
-  assert_eq!(hello.inputted(), "konnni");
-  assert_eq!(hello.will_input(), "tiha");
+  assert_eq!(hello.inputted_roman(), "konnni");
+  assert_eq!(hello.will_input_roman(), "tiha");
   assert!(hello.input('t'));
-  assert_eq!(hello.inputted(), "konnnit");
-  assert_eq!(hello.will_input(), "iha");
+  assert_eq!(hello.inputted_roman(), "konnnit");
+  assert_eq!(hello.will_input_roman(), "iha");
   assert!(hello.input('i'));
-  assert_eq!(hello.inputted(), "konnniti");
-  assert_eq!(hello.will_input(), "ha");
+  assert_eq!(hello.inputted_roman(), "konnniti");
+  assert_eq!(hello.will_input_roman(), "ha");
   assert!(hello.input('h'));
-  assert_eq!(hello.inputted(), "konnnitih");
-  assert_eq!(hello.will_input(), "a");
+  assert_eq!(hello.inputted_roman(), "konnnitih");
+  assert_eq!(hello.will_input_roman(), "a");
   assert!(hello.input('a'));
-  assert_eq!(hello.inputted(), "konnnitiha");
-  assert_eq!(hello.will_input(), "");
+  assert_eq!(hello.inputted_roman(), "konnnitiha");
+  assert_eq!(hello.will_input_roman(), "");
   Ok(())
 }
 
 #[test]
 fn toy() -> Result<(), RomanParseError> {
   let mut hello = RomanStr::new("おもちゃ")?;
-  assert_eq!(hello.inputted(), "");
-  assert_eq!(hello.will_input(), "omocha");
+  assert_eq!(hello.inputted_roman(), "");
+  assert_eq!(hello.will_input_roman(), "omocha");
   assert!(hello.input('o'));
-  assert_eq!(hello.inputted(), "o");
-  assert_eq!(hello.will_input(), "mocha");
+  assert_eq!(hello.inputted_roman(), "o");
+  assert_eq!(hello.will_input_roman(), "mocha");
   assert!(hello.input('m'));
-  assert_eq!(hello.inputted(), "om");
-  assert_eq!(hello.will_input(), "ocha");
+  assert_eq!(hello.inputted_roman(), "om");
+  assert_eq!(hello.will_input_roman(), "ocha");
   assert!(hello.input('o'));
-  assert_eq!(hello.inputted(), "omo");
-  assert_eq!(hello.will_input(), "cha");
+  assert_eq!(hello.inputted_roman(), "omo");
+  assert_eq!(hello.will_input_roman(), "cha");
   assert!(hello.input('t'));
-  assert_eq!(hello.inputted(), "omot");
-  assert_eq!(hello.will_input(), "ya");
+  assert_eq!(hello.inputted_roman(), "omot");
+  assert_eq!(hello.will_input_roman(), "ya");
   assert!(hello.input('y'));
-  assert_eq!(hello.inputted(), "omoty");
-  assert_eq!(hello.will_input(), "a");
+  assert_eq!(hello.inputted_roman(), "omoty");
+  assert_eq!(hello.will_input_roman(), "a");
   assert!(hello.input('a'));
-  assert_eq!(hello.inputted(), "omotya");
-  assert_eq!(hello.will_input(), "");
+  assert_eq!(hello.inputted_roman(), "omotya");
+  assert_eq!(hello.will_input_roman(), "");
   Ok(())
 }
