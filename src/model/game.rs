@@ -127,10 +127,6 @@ impl MusicalTyper {
         }
         Vacant => {}
       }
-
-      if let Some(sentence) = self.activity.current_sentence() {
-        self.event_queue.push(UpdateSentence(sentence.clone()));
-      }
     }
     self.pack_events()
   }
@@ -146,6 +142,10 @@ impl MusicalTyper {
   }
 
   fn pack_events(&mut self) -> Vec<MusicalTyperEvent> {
+    if let Some(sentence) = self.activity.current_sentence() {
+      self.event_queue.push(UpdateSentence(sentence.clone()));
+    }
+
     let res = self.event_queue.iter().cloned().collect();
     self.event_queue.clear();
     res
