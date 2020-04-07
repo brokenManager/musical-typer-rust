@@ -5,7 +5,7 @@ use super::exp::scoremap::lexer::ScoremapLexError;
 use super::exp::scoremap::{Scoremap, ScoremapError};
 use super::exp::sentence::Sentence;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MusicalTyperEvent {
   PlayBgm(String),
   UpdateSentence(Sentence),
@@ -107,7 +107,11 @@ impl MusicalTyper {
     })
   }
 
-  pub fn key_press(&mut self, typed: impl Iterator<Item = char>) {
+  #[must_use]
+  pub fn key_press(
+    &mut self,
+    typed: impl Iterator<Item = char>,
+  ) -> Vec<MusicalTyperEvent> {
     for typed in typed {
       use super::exp::note::TypeResult::*;
       match self.activity.input(typed) {
@@ -130,6 +134,7 @@ impl MusicalTyper {
         self.event_queue.push(UpdateSentence(sentence.clone()));
       }
     }
+    self.pack_events()
   }
 
   #[must_use]
@@ -139,6 +144,10 @@ impl MusicalTyper {
   ) -> Vec<MusicalTyperEvent> {
     self.accumulated_time += delta_time;
     self.activity.update_time(self.accumulated_time);
+    self.pack_events()
+  }
+
+  fn pack_events(&mut self) -> Vec<MusicalTyperEvent> {
     let res = self.event_queue.iter().cloned().collect();
     self.event_queue.clear();
     res
@@ -262,10 +271,19 @@ mod tests {
     let mut game =
       MusicalTyper::new(test_score, MusicalTyperConfig::default())?;
 
+    let mut actual_events = vec![];
+
     for KeyPress(time, key) in keypresses.iter() {
-      game.key_press(key.chars());
-      game.elapse_time(*time);
+      actual_events.append(&mut game.elapse_time(*time));
+      actual_events.append(&mut game.key_press(key.chars()));
     }
+
+    for (expected, actual) in
+      expected_events.iter().zip(actual_events.iter())
+    {
+      assert_eq!(expected, actual);
+    }
+    assert_eq!(expected_events.len(), actual_events.len());
 
     Ok(())
   }
