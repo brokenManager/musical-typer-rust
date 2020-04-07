@@ -189,6 +189,7 @@ impl GameView {
       let elapsed =
         time.elapsed().as_nanos() as f64 / 1_000_000_000.0;
       mt_events.append(&mut self.model.elapse_time(elapsed));
+      println!("FPS: {}", 1.0 / elapsed);
       ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
     }
     Ok(())
