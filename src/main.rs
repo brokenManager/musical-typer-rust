@@ -18,5 +18,5 @@ fn main() {
   )
   .unwrap();
 
-  controller.run(score);
+  controller.run(score).unwrap();
 }
