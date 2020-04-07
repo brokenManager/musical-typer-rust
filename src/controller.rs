@@ -35,7 +35,6 @@ impl MTController {
 impl SdlEventHandler for MTController {
   fn key_press(&mut self, typed: Vec<char>) {}
   fn elapse_time(&mut self, delta_time: f64) {}
-  fn quit(&mut self) {}
 }
 
 impl Presenter for MTController {
@@ -52,5 +51,4 @@ impl Presenter for MTController {
   }
   fn pointed(&mut self, added: std::primitive::i32) {}
   fn typed(&mut self, is_mistaken: std::primitive::bool) {}
-  fn flush_screen(&mut self) {}
 }

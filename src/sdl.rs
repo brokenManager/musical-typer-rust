@@ -29,7 +29,6 @@ impl From<TextError> for ViewError {
 pub trait SdlEventHandler {
   fn key_press(&mut self, typed: Vec<char>);
   fn elapse_time(&mut self, delta_time: f64);
-  fn quit(&mut self);
 }
 
 pub struct SdlView<'a, T> {
@@ -99,24 +98,26 @@ where
 
     let builder = TextBuilder::new(&font, &texture_creator);
 
-    let mut poller =
-      self.ctx.event_pump().map_err(|e| ViewError::InitError {
-        message: e.to_string(),
-      })?;
-    for event in poller.poll_iter() {
-      use sdl2::event::Event::*;
-      match event {
-        Quit { .. } => self.controller.quit(),
-        _ => {}
-      }
-      whole::render(
-        &mut self.canvas,
-        sdl2::rect::Rect::new(0, 0, self.width, self.height),
-        builder.clone(),
-      )?;
+    'main: loop {
+      let mut poller =
+        self.ctx.event_pump().map_err(|e| ViewError::InitError {
+          message: e.to_string(),
+        })?;
+      for event in poller.poll_iter() {
+        use sdl2::event::Event::*;
+        match event {
+          Quit { .. } => break 'main,
+          _ => {}
+        }
+        whole::render(
+          &mut self.canvas,
+          sdl2::rect::Rect::new(0, 0, self.width, self.height),
+          builder.clone(),
+        )?;
 
-      self.canvas.present();
-      ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
+        self.canvas.present();
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
+      }
     }
     Ok(())
   }

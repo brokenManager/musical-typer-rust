@@ -11,7 +11,6 @@ pub trait Presenter {
   fn update_sentence(&mut self, string: &Sentence);
   fn pointed(&mut self, added: i32);
   fn typed(&mut self, is_mistaken: bool);
-  fn flush_screen(&mut self);
 }
 
 #[derive(Debug)]
@@ -192,7 +191,6 @@ mod tests {
     fn typed(&mut self, is_mistaken: bool) {
       self.log(Typed(is_mistaken));
     }
-    fn flush_screen(&mut self) {}
   }
 
   #[test]
