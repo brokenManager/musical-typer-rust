@@ -1,4 +1,9 @@
+use crate::model::exp::scoremap::Scoremap;
 use crate::model::exp::sentence::Sentence;
+use crate::model::game::{
+  MusicalTyper, MusicalTyperConfig, MusicalTyperError,
+  MusicalTyperEvent,
+};
 
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
@@ -16,10 +21,17 @@ use whole::WholeProps;
 
 #[derive(Debug)]
 pub enum ViewError {
+  ModelError(MusicalTyperError),
   InitError { message: String },
   FontError { message: String },
   TextError(TextError),
   RenderError(String),
+}
+
+impl From<MusicalTyperError> for ViewError {
+  fn from(err: MusicalTyperError) -> Self {
+    ViewError::ModelError(err)
+  }
 }
 
 impl From<TextError> for ViewError {
@@ -31,29 +43,21 @@ impl From<TextError> for ViewError {
   }
 }
 
-pub trait SdlEventHandler {
-  fn key_press(&mut self, typed: impl Iterator<Item = char>);
-  fn elapse_time(&mut self, delta_time: f64);
-}
-
-pub struct SdlView<'a, T> {
+pub struct GameView {
   width: u32,
   height: u32,
   ctx: Sdl,
   canvas: Canvas<Window>,
-  controller: &'a mut T,
+  model: MusicalTyper,
   typed_key_buf: BTreeSet<char>,
   sentence: Option<Sentence>,
 }
 
-impl<'a, T> SdlView<'a, T>
-where
-  T: SdlEventHandler,
-{
+impl GameView {
   pub fn new(
     width: u32,
     height: u32,
-    controller: &'a mut T,
+    score: Scoremap,
   ) -> Result<Self, ViewError> {
     let ctx = sdl2::init()
       .map_err(|e| ViewError::InitError { message: e })?;
@@ -78,18 +82,18 @@ where
     canvas.clear();
     canvas.present();
 
-    Ok(SdlView {
+    Ok(GameView {
       width,
       height,
       ctx,
       canvas,
-      controller,
+      model: MusicalTyper::new(score, MusicalTyperConfig::default())?,
       typed_key_buf: BTreeSet::new(),
       sentence: None,
     })
   }
 
-  pub fn draw(&mut self) -> Result<(), ViewError> {
+  pub fn run(&mut self) -> Result<(), ViewError> {
     let texture_creator = self.canvas.texture_creator();
 
     let ttf =
@@ -107,29 +111,45 @@ where
 
     let builder = TextBuilder::new(&font, &texture_creator);
 
+    let mut mt_events = vec![];
+
     'main: loop {
       let time = std::time::Instant::now();
-      let mut poller =
-        self.ctx.event_pump().map_err(|e| ViewError::InitError {
-          message: e.to_string(),
+      {
+        for mt_event in mt_events.iter() {
+          use MusicalTyperEvent::*;
+          match mt_event {
+            PlayBgm(bgm_name) => {}
+            UpdateSentence(sentence) => {}
+            Pointed(point) => {}
+            Typed { mistaken } => {}
+          }
+        }
+      }
+      {
+        let mut poller = self.ctx.event_pump().map_err(|e| {
+          ViewError::InitError {
+            message: e.to_string(),
+          }
         })?;
-      for event in poller.poll_iter() {
-        use sdl2::event::Event::*;
-        match event {
-          Quit { .. } => break 'main,
-          KeyDown {
-            keycode: Some(keycode),
-            ..
-          } => {
-            self.typed_key_buf.insert(keycode_to_char(keycode));
+        for event in poller.poll_iter() {
+          use sdl2::event::Event::*;
+          match event {
+            Quit { .. } => break 'main,
+            KeyDown {
+              keycode: Some(keycode),
+              ..
+            } => {
+              self.typed_key_buf.insert(keycode_to_char(keycode));
+            }
+            KeyUp {
+              keycode: Some(keycode),
+              ..
+            } => {
+              self.typed_key_buf.remove(&keycode_to_char(keycode));
+            }
+            _ => {}
           }
-          KeyUp {
-            keycode: Some(keycode),
-            ..
-          } => {
-            self.typed_key_buf.remove(&keycode_to_char(keycode));
-          }
-          _ => {}
         }
       }
       whole::render(
@@ -150,18 +170,14 @@ where
       self.canvas.present();
 
       let typed_key_buf = self.typed_key_buf.clone();
-      self.controller.key_press(typed_key_buf.into_iter());
+      self.model.key_press(typed_key_buf.into_iter());
 
       let elapsed =
         time.elapsed().as_nanos() as f64 / 1_000_000_000.0;
-      self.controller.elapse_time(elapsed);
+      mt_events = self.model.elapse_time(elapsed);
       ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
     }
     Ok(())
-  }
-
-  fn update_sentence(&mut self, sentence: Sentence) {
-    self.sentence = Some(sentence);
   }
 }
 

@@ -1,13 +1,9 @@
 #![feature(or_patterns)]
 
-mod controller;
 mod model;
-mod sdl;
+mod view;
 
 fn main() {
-  use controller::MTController;
-  let mut controller = MTController::new();
-
   use model::exp::scoremap::Scoremap;
   let score = Scoremap::from_file(
     std::fs::File::open(std::path::Path::new(
@@ -18,5 +14,6 @@ fn main() {
   )
   .unwrap();
 
-  controller.run(score).unwrap();
+  let mut view = view::GameView::new(800, 600, score).unwrap();
+  view.run().unwrap();
 }

@@ -5,13 +5,15 @@ use super::exp::scoremap::lexer::ScoremapLexError;
 use super::exp::scoremap::{Scoremap, ScoremapError};
 use super::exp::sentence::Sentence;
 
-pub trait Presenter {
-  fn play_bgm(&mut self, name: &str);
-  fn decrease_remaining_time(&mut self, delta_time: f64);
-  fn update_sentence(&mut self, string: &Sentence);
-  fn pointed(&mut self, added: i32);
-  fn typed(&mut self, is_mistaken: bool);
+#[derive(Debug, Clone)]
+pub enum MusicalTyperEvent {
+  PlayBgm(String),
+  UpdateSentence(Sentence),
+  Pointed(i32),
+  Typed { mistaken: bool },
 }
+
+use MusicalTyperEvent::*;
 
 #[derive(Debug)]
 pub enum MusicalTyperError {
@@ -73,28 +75,25 @@ impl Default for MusicalTyperConfig {
   }
 }
 
-pub struct MusicalTyper<'p, P> {
+pub struct MusicalTyper {
   score: Scoremap,
   activity: GameActivity,
   accumulated_time: Seconds,
-  presenter: &'p mut P,
+  event_queue: Vec<MusicalTyperEvent>,
   config: MusicalTyperConfig,
 }
 
-impl<'p, P> MusicalTyper<'p, P>
-where
-  P: Presenter,
-{
+impl MusicalTyper {
   pub fn new(
     score: Scoremap,
-    presenter: &'p mut P,
     config: MusicalTyperConfig,
   ) -> Result<Self, MusicalTyperError> {
+    let mut event_queue = vec![];
     let activity = GameActivity::new(&score.notes);
 
     let metadata = &score.metadata;
-    if let Some(ref song_data) = metadata.get("song_data") {
-      presenter.play_bgm(song_data);
+    if let Some(song_data) = metadata.get("song_data") {
+      event_queue.push(PlayBgm(song_data.to_owned()));
     } else {
       return Err(SongDataNotFound);
     }
@@ -103,7 +102,7 @@ where
       score,
       activity,
       accumulated_time: 0.0,
-      presenter,
+      event_queue,
       config,
     })
   }
@@ -113,85 +112,45 @@ where
       use super::exp::note::TypeResult::*;
       match self.activity.input(typed) {
         Succeed => {
-          self.presenter.pointed(self.config.correct_type as i32);
-          self.presenter.typed(false);
+          self.event_queue.append(&mut vec![
+            Pointed(self.config.correct_type as i32),
+            Typed { mistaken: false },
+          ]);
         }
         Mistaken => {
-          self.presenter.pointed(-(self.config.wrong_type as i32));
-          self.presenter.typed(true);
+          self.event_queue.append(&mut vec![
+            Pointed(-(self.config.wrong_type as i32)),
+            Typed { mistaken: true },
+          ]);
         }
         Vacant => {}
       }
 
       if let Some(sentence) = self.activity.current_sentence() {
-        self.presenter.update_sentence(sentence);
+        self.event_queue.push(UpdateSentence(sentence.clone()));
       }
     }
   }
 
-  pub fn elapse_time(&mut self, delta_time: f64) {
+  #[must_use]
+  pub fn elapse_time(
+    &mut self,
+    delta_time: f64,
+  ) -> Vec<MusicalTyperEvent> {
     self.accumulated_time += delta_time;
     self.activity.update_time(self.accumulated_time);
-    self.presenter.decrease_remaining_time(delta_time);
+    let res = self.event_queue.iter().cloned().collect();
+    self.event_queue.clear();
+    res
   }
 }
 
 #[cfg(test)]
 mod tests {
   use super::super::exp::sentence::Sentence;
-  use super::{MusicalTyperError, Presenter};
+  use super::{MusicalTyperError, MusicalTyperEvent};
 
   struct KeyPress(f64, &'static str);
-
-  #[derive(Debug, PartialEq)]
-  enum PresentLog {
-    PlayBGM(String),
-    DecreaseRemainingTime(f64),
-    UpdateSentence(Sentence),
-    Pointed(i32),
-    Typed(bool),
-  }
-
-  use PresentLog::*;
-
-  struct MockPresenter {
-    pub expected: Vec<PresentLog>,
-    pub index: usize,
-  }
-
-  impl MockPresenter {
-    fn new(expected: Vec<PresentLog>) -> Self {
-      MockPresenter { expected, index: 0 }
-    }
-
-    fn log(&mut self, log: PresentLog) {
-      assert_eq!(
-        self.expected[self.index], log,
-        "index: {}",
-        self.index
-      );
-      println!("{:?}; index: {}", log, self.index);
-      self.index += 1;
-    }
-  }
-
-  impl Presenter for MockPresenter {
-    fn play_bgm(&mut self, name: &str) {
-      self.log(PlayBGM(name.to_owned()));
-    }
-    fn decrease_remaining_time(&mut self, delta_time: f64) {
-      self.log(DecreaseRemainingTime(delta_time));
-    }
-    fn update_sentence(&mut self, string: &Sentence) {
-      self.log(UpdateSentence(string.clone()));
-    }
-    fn pointed(&mut self, added: i32) {
-      self.log(Pointed(added));
-    }
-    fn typed(&mut self, is_mistaken: bool) {
-      self.log(Typed(is_mistaken));
-    }
-  }
 
   #[test]
   fn op1() -> Result<(), MusicalTyperError> {
@@ -218,100 +177,95 @@ mod tests {
     )?;
 
     let keypresses = &[KeyPress(2.22, "dakentesuto")];
-    let mut presenter = MockPresenter::new(vec![
-      PlayBGM("void.ogg".to_owned()),
-      DecreaseRemainingTime(2.22),
+    use MusicalTyperEvent::*;
+    let expected_events = vec![
+      PlayBgm("void.ogg".to_owned()),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "d",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "da",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "dak",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "dake",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "daken",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "dakent",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "dakente",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "dakentes",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "dakentesu",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "dakentesut",
       )?),
       Pointed(10),
-      Typed(false),
+      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
         "dakentesuto",
       )?),
-    ]);
+    ];
 
-    let mut game = MusicalTyper::new(
-      test_score,
-      &mut presenter,
-      MusicalTyperConfig::default(),
-    )?;
+    let mut game =
+      MusicalTyper::new(test_score, MusicalTyperConfig::default())?;
 
     for KeyPress(time, key) in keypresses.iter() {
-      game.elapse_time(*time);
       game.key_press(key.chars());
+      game.elapse_time(*time);
     }
-
-    assert_eq!(presenter.index, presenter.expected.len());
 
     Ok(())
   }
