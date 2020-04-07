@@ -1,23 +1,15 @@
-extern crate sdl2;
-
-use sdl2::pixels::Color;
-use sdl2::rect::Rect;
 use sdl2::render::Canvas;
-use sdl2::video::{Window, WindowContext};
+use sdl2::video::Window;
 use sdl2::Sdl;
 
 use std::time::Duration;
-
-use crate::model::exp::sentence::Sentence;
 
 mod header;
 mod keyboard;
 mod section;
 mod text;
+mod whole;
 
-use header::Header;
-use keyboard::Keyboard;
-use section::Section;
 use text::{TextBuilder, TextError};
 
 #[derive(Debug)]
@@ -92,51 +84,6 @@ where
     })
   }
 
-  fn render<'t>(
-    &mut self,
-    builder: TextBuilder<'t, WindowContext>,
-  ) -> Result<(), ViewError> {
-    let header = Header::new("Music Name", "Composer");
-    let header_dim = Rect::new(0, 0, self.width, 100);
-
-    let to_input =
-      Sentence::new("千本桜　夜ニ紛レ", "せんぼんざくらよるにまぎれ")
-        .map_err(|e| ViewError::InitError {
-          message: format!("{:?}", e),
-        })?;
-    let section = Section::new(&to_input, 0.2);
-    let section_dim = Rect::new(0, 100, self.width, 200);
-
-    let keyboard = Keyboard::new(&['h']);
-    let keyboard_dim =
-      Rect::new(0, self.height as i32 - 300, self.width, 300);
-
-    self.canvas.set_draw_color(Color::RGB(253, 243, 226));
-    self.canvas.clear();
-
-    header.draw(&mut self.canvas, builder.clone())?;
-    self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-    self
-      .canvas
-      .draw_rect(header_dim)
-      .map_err(|e| ViewError::RenderError(e))?;
-
-    section.draw(&mut self.canvas, builder.clone(), section_dim)?;
-    self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-    self
-      .canvas
-      .draw_rect(section_dim)
-      .map_err(|e| ViewError::RenderError(e))?;
-
-    keyboard.draw(&mut self.canvas, builder.clone(), keyboard_dim)?;
-    self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-    self
-      .canvas
-      .draw_rect(keyboard_dim)
-      .map_err(|e| ViewError::RenderError(e))?;
-    Ok(())
-  }
-
   pub fn draw(&mut self) -> Result<(), ViewError> {
     let texture_creator = self.canvas.texture_creator();
 
@@ -165,7 +112,11 @@ where
         Quit { .. } => self.controller.quit(),
         _ => {}
       }
-      self.render(builder.clone())?;
+      whole::render(
+        &mut self.canvas,
+        sdl2::rect::Rect::new(0, 0, self.width, self.height),
+        builder.clone(),
+      )?;
 
       self.canvas.present();
       ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
