@@ -6,14 +6,14 @@ use super::super::text::{TextBuilder, TextError};
 
 use crate::model::exp::sentence::Sentence;
 
-pub struct Section<'a> {
+pub struct Finder<'a> {
   to_input: &'a Sentence,
   remaining_ratio: f64,
 }
 
-impl<'a> Section<'a> {
+impl<'a> Finder<'a> {
   pub fn new(to_input: &'a Sentence, remaining_ratio: f64) -> Self {
-    Section {
+    Finder {
       to_input,
       remaining_ratio: remaining_ratio.max(0.).min(1.),
     }

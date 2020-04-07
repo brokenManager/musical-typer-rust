@@ -7,13 +7,13 @@ use super::text::TextBuilder;
 use super::ViewError;
 use crate::model::exp::sentence::Sentence;
 
+mod finder;
 mod header;
 mod keyboard;
-mod section;
 
+use finder::Finder;
 use header::Header;
 use keyboard::Keyboard;
-use section::Section;
 
 pub struct WholeProps<'a> {
   pub pressed_keys: &'a [char],
@@ -33,8 +33,8 @@ pub fn render<'a, 't>(
       .map_err(|e| ViewError::InitError {
       message: format!("{:?}", e),
     })?;
-  let section = Section::new(&to_input, 0.2);
-  let section_dim = Rect::new(0, 100, client.width(), 200);
+  let finder = Finder::new(&to_input, 0.2);
+  let finder_dim = Rect::new(0, 100, client.width(), 200);
 
   let keyboard = Keyboard::new(props.pressed_keys, &['h']);
   let keyboard_dim =
@@ -49,10 +49,10 @@ pub fn render<'a, 't>(
     .draw_rect(header_dim)
     .map_err(|e| ViewError::RenderError(e))?;
 
-  section.draw(&mut canvas, builder.clone(), section_dim)?;
+  finder.draw(&mut canvas, builder.clone(), finder_dim)?;
   canvas.set_draw_color(Color::RGB(0, 0, 0));
   canvas
-    .draw_rect(section_dim)
+    .draw_rect(finder_dim)
     .map_err(|e| ViewError::RenderError(e))?;
 
   keyboard.draw(&mut canvas, builder.clone(), keyboard_dim)?;
