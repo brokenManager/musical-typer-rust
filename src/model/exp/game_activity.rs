@@ -31,12 +31,14 @@ impl GameActivity {
     for note in notes {
       notes_map.insert(note.id(), note.clone());
     }
-    GameActivity {
+    let mut res = GameActivity {
       state: State::BeforeStart,
       notes: notes_map,
       sections,
       current_section: None,
-    }
+    };
+    res.update_time(0.0);
+    res
   }
 
   pub fn current_section(&self) -> Option<Section> {
@@ -70,9 +72,11 @@ impl GameActivity {
   pub fn input(&mut self, typed: char) -> TypeResult {
     use TypeResult::*;
     if let State::OnGame = self.state {
-      Vacant
-    } else if let Some(note) = self.current_note_mut() {
-      note.input(typed)
+      if let Some(note) = self.current_note_mut() {
+        note.input(typed)
+      } else {
+        Vacant
+      }
     } else {
       Vacant
     }
