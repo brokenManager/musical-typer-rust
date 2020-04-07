@@ -402,6 +402,7 @@ fn case1() -> Result<(), ScoremapError> {
       144.3,
       Sentence::new("生きられない", "いきられない")?,
     ),
+    Note::blank(146.0),
   ];
   for (expected, note) in
     expected_notes.iter().zip(score.notes.iter())
@@ -424,5 +425,47 @@ fn case1() -> Result<(), ScoremapError> {
       }
     );
   }
+  Ok(())
+}
+
+#[test]
+fn case2() -> Result<(), ScoremapError> {
+  use super::note::Note;
+  let score = Scoremap::from_str(
+    r#"
+# Sample 1
+:title TEST
+:score_author Mikuro さいな
+:song_data void.ogg
+:bpm 222.22
+
+[start]
+*2.22
+打鍵テスト
+:だけんてすと
+
+*3.0
+[end]
+"#,
+    |config| config.ignore_invalid_properties(true),
+  )?;
+  use super::sentence::Sentence;
+  let expected_notes: Vec<Note> = vec![
+    Note::blank(0.0),
+    Note::sentence(
+      2.22,
+      Sentence::new("打鍵テスト", "だけんてすと")?,
+    ),
+    Note::blank(3.0),
+  ];
+
+  for (expected, note) in
+    expected_notes.iter().zip(score.notes.iter())
+  {
+    assert_eq!(expected.time(), note.time());
+    assert_eq!(*expected.content(), *note.content());
+  }
+  assert_eq!(expected_notes.len(), score.notes.len());
+
   Ok(())
 }

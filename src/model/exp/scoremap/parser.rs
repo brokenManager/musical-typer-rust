@@ -76,6 +76,10 @@ pub fn parse(
             notes.push(Note::blank(line_time));
           }
         }
+        if notes.len() == 0 {
+          // 最初に空白ノーツを追加
+          notes.push(Note::blank(line_time));
+        }
         parsed_japanese = None;
         line_minute_second = new_time;
         tokens = &tokens[1..];
@@ -163,6 +167,10 @@ pub fn parse(
       _ => unreachable!(),
     }
   }
+  // 最後に空白ノーツを追加
+  let line_time = line_minute_second.to_seconds();
+  notes.push(Note::blank(line_time));
+
   Ok(Scoremap { metadata, notes })
 }
 
