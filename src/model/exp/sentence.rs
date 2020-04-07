@@ -32,9 +32,13 @@ impl Sentence {
     to_input: &str,
     inputted: &str,
   ) -> Result<Self, RomanParseError> {
+    let mut roman_str = RomanStr::new(to_input)?;
+    for inputted in inputted.chars() {
+      roman_str.input(inputted);
+    }
     Ok(Sentence {
       origin: origin.to_owned(),
-      hiragana: RomanStr::new_with_inputted(to_input, inputted)?,
+      hiragana: roman_str,
     })
   }
 
