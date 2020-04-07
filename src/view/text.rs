@@ -84,11 +84,10 @@ impl<'a, T> TextBuilder<'a, T> {
   }
 
   pub fn build(&self) -> Result<Text<'a>, TextError> {
-    Text::new::<T>(
-      self.font,
-      self.texture_creator,
-      self.text.as_str(),
-      self.color,
-    )
+    let mut text = self.text.as_str();
+    if text == "" {
+      text = " ";
+    }
+    Text::new::<T>(self.font, self.texture_creator, text, self.color)
   }
 }

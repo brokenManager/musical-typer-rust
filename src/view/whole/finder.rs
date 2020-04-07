@@ -72,7 +72,24 @@ impl<'a> Finder<'a> {
           Rect::new(
             half_x as i32,
             offset.y() + JAPANESE_HEIGHT as i32,
-            will_input_japanese.len() as u32 * ROMAN_GLYPH_WIDTH,
+            will_input_roman.len() as u32 * ROMAN_GLYPH_WIDTH,
+            ROMAN_HEIGHT + ROMAN_HEIGHT,
+          ),
+        )?;
+
+      let inputted_roman = sentence.hiragana().inputted();
+      text_builder
+        .color(Color::RGB(80, 80, 80))
+        .text(inputted_roman)
+        .build()?
+        .render(
+          &mut canvas,
+          Rect::new(
+            half_x as i32
+              - (inputted_roman.len() + 1) as i32
+                * ROMAN_GLYPH_WIDTH as i32,
+            offset.y() + JAPANESE_HEIGHT as i32,
+            inputted_roman.len() as u32 * ROMAN_GLYPH_WIDTH,
             ROMAN_HEIGHT + ROMAN_HEIGHT,
           ),
         )?;
