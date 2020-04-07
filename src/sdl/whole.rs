@@ -17,6 +17,7 @@ use keyboard::Keyboard;
 
 pub struct WholeProps<'a> {
   pub pressed_keys: &'a [char],
+  pub sentence: &'a Option<Sentence>,
 }
 
 pub fn render<'a, 't>(
@@ -28,12 +29,7 @@ pub fn render<'a, 't>(
   let header = Header::new("Music Name", "Composer");
   let header_dim = Rect::new(0, 0, client.width(), 100);
 
-  let to_input =
-    Sentence::new("千本桜　夜ニ紛レ", "せんぼんざくらよるにまぎれ")
-      .map_err(|e| ViewError::InitError {
-      message: format!("{:?}", e),
-    })?;
-  let finder = Finder::new(&to_input, 0.2);
+  let finder = Finder::new(props.sentence, 0.2);
   let finder_dim = Rect::new(0, 100, client.width(), 200);
 
   let keyboard = Keyboard::new(props.pressed_keys, &['h']);

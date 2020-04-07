@@ -7,14 +7,17 @@ use super::super::text::{TextBuilder, TextError};
 use crate::model::exp::sentence::Sentence;
 
 pub struct Finder<'a> {
-  to_input: &'a Sentence,
+  sentence: &'a Option<Sentence>,
   remaining_ratio: f64,
 }
 
 impl<'a> Finder<'a> {
-  pub fn new(to_input: &'a Sentence, remaining_ratio: f64) -> Self {
+  pub fn new(
+    sentence: &'a Option<Sentence>,
+    remaining_ratio: f64,
+  ) -> Self {
     Finder {
-      to_input,
+      sentence,
       remaining_ratio: remaining_ratio.max(0.).min(1.),
     }
   }
@@ -41,38 +44,39 @@ impl<'a> Finder<'a> {
     const JAPANESE_HEIGHT: u32 = 80;
     let half_x = offset.width() / 2;
 
-    let will_input_japanese = self.to_input.origin();
-    text_builder
-      .color(Color::RGB(0, 0, 0))
-      .text(will_input_japanese)
-      .build()?
-      .render(
-        &mut canvas,
-        Rect::new(
-          half_x as i32,
-          offset.y(),
-          will_input_japanese.len() as u32 * JAPANESE_GLYPH_WIDTH,
-          JAPANESE_HEIGHT,
-        ),
-      )?;
+    if let Some(sentence) = self.sentence {
+      let will_input_japanese = sentence.origin();
+      text_builder
+        .color(Color::RGB(0, 0, 0))
+        .text(will_input_japanese)
+        .build()?
+        .render(
+          &mut canvas,
+          Rect::new(
+            half_x as i32,
+            offset.y(),
+            will_input_japanese.len() as u32 * JAPANESE_GLYPH_WIDTH,
+            JAPANESE_HEIGHT,
+          ),
+        )?;
 
-    const ROMAN_GLYPH_WIDTH: u32 = 20;
-    const ROMAN_HEIGHT: u32 = 20;
-    let will_input_roman = self.to_input.hiragana().will_input();
-    text_builder
-      .color(Color::RGB(0, 0, 0))
-      .text(will_input_roman.as_str())
-      .build()?
-      .render(
-        &mut canvas,
-        Rect::new(
-          half_x as i32,
-          offset.y() + JAPANESE_HEIGHT as i32,
-          will_input_japanese.len() as u32 * ROMAN_GLYPH_WIDTH,
-          ROMAN_HEIGHT + ROMAN_HEIGHT,
-        ),
-      )?;
-
+      const ROMAN_GLYPH_WIDTH: u32 = 20;
+      const ROMAN_HEIGHT: u32 = 20;
+      let will_input_roman = sentence.hiragana().will_input();
+      text_builder
+        .color(Color::RGB(0, 0, 0))
+        .text(will_input_roman.as_str())
+        .build()?
+        .render(
+          &mut canvas,
+          Rect::new(
+            half_x as i32,
+            offset.y() + JAPANESE_HEIGHT as i32,
+            will_input_japanese.len() as u32 * ROMAN_GLYPH_WIDTH,
+            ROMAN_HEIGHT + ROMAN_HEIGHT,
+          ),
+        )?;
+    }
     Ok(())
   }
 }

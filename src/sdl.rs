@@ -1,3 +1,5 @@
+use crate::model::exp::sentence::Sentence;
+
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
@@ -41,6 +43,7 @@ pub struct SdlView<'a, T> {
   canvas: Canvas<Window>,
   controller: &'a mut T,
   typed_key_buf: BTreeSet<char>,
+  sentence: Option<Sentence>,
 }
 
 impl<'a, T> SdlView<'a, T>
@@ -82,6 +85,7 @@ where
       canvas,
       controller,
       typed_key_buf: BTreeSet::new(),
+      sentence: None,
     })
   }
 
@@ -139,6 +143,7 @@ where
             .cloned()
             .collect::<Vec<char>>()
             .as_slice(),
+          sentence: &self.sentence,
         },
       )?;
 
@@ -153,6 +158,10 @@ where
       ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
     }
     Ok(())
+  }
+
+  fn update_sentence(&mut self, sentence: Sentence) {
+    self.sentence = Some(sentence);
   }
 }
 
