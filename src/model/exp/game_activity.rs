@@ -20,7 +20,7 @@ pub struct GameActivity {
 impl GameActivity {
   pub fn new(notes: &Vec<Note>) -> Self {
     let shifted_notes = notes.iter().cloned().skip(1);
-    let mut sections = notes
+    let sections = notes
       .iter()
       .zip(shifted_notes)
       .map(|(note, next): (&Note, Note)| {

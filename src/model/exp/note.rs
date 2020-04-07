@@ -24,6 +24,7 @@ impl Section {
   }
 }
 
+#[derive(Debug)]
 pub enum TypeResult {
   Succeed,
   Mistaken,

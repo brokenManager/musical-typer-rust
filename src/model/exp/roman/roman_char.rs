@@ -10,7 +10,7 @@ impl std::fmt::Debug for RomanChar {
     &self,
     mut f: &mut std::fmt::Formatter<'_>,
   ) -> std::fmt::Result {
-    write!(&mut f, "{}", self.determined_style())
+    write!(&mut f, "{}({})", self.determined_style(), self.inputted)
   }
 }
 

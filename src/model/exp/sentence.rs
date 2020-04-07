@@ -27,6 +27,17 @@ impl Sentence {
     })
   }
 
+  pub fn new_with_inputted(
+    origin: &str,
+    to_input: &str,
+    inputted: &str,
+  ) -> Result<Self, RomanParseError> {
+    Ok(Sentence {
+      origin: origin.to_owned(),
+      hiragana: RomanStr::new_with_inputted(to_input, inputted)?,
+    })
+  }
+
   pub fn from(origin: &str, yomigana: RomanStr) -> Self {
     Sentence {
       origin: origin.to_owned(),

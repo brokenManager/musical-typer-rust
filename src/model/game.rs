@@ -5,10 +5,6 @@ use super::exp::scoremap::lexer::ScoremapLexError;
 use super::exp::scoremap::{Scoremap, ScoremapError};
 use super::exp::sentence::Sentence;
 
-pub trait Controller {
-  fn key_press(&mut self) -> Vec<char>;
-  fn elapse_time(&mut self) -> f64;
-}
 pub trait Presenter {
   fn play_bgm(&mut self, name: &str);
   fn decrease_remaining_time(&mut self, delta_time: f64);
@@ -113,28 +109,27 @@ where
     })
   }
 
-  pub fn update(&mut self) {
-    if let Some(_) = self.activity.current_section() {
+  pub fn key_press(&mut self, typed: impl Iterator<Item = char>) {
+    for typed in typed {
+      use super::exp::note::TypeResult::*;
+      match self.activity.input(typed) {
+        Succeed => {
+          self.presenter.pointed(self.config.correct_type as i32);
+          self.presenter.typed(false);
+        }
+        Mistaken => {
+          self.presenter.pointed(-(self.config.wrong_type as i32));
+          self.presenter.typed(true);
+        }
+        Vacant => {}
+      }
+
       if let Some(sentence) = self.activity.current_sentence() {
         self.presenter.update_sentence(sentence);
       }
     }
   }
 
-  pub fn key_press(&mut self, typed: Vec<char>) {
-    for typed in typed.iter() {
-      use super::exp::note::TypeResult::*;
-      match self.activity.input(*typed) {
-        Succeed => {
-          self.presenter.typed(false);
-        }
-        Mistaken => {
-          self.presenter.typed(true);
-        }
-        Vacant => {}
-      }
-    }
-  }
   pub fn elapse_time(&mut self, delta_time: f64) {
     self.accumulated_time += delta_time;
     self.activity.update_time(self.accumulated_time);
@@ -161,8 +156,8 @@ mod tests {
   use PresentLog::*;
 
   struct MockPresenter {
-    expected: Vec<PresentLog>,
-    index: usize,
+    pub expected: Vec<PresentLog>,
+    pub index: usize,
   }
 
   impl MockPresenter {
@@ -217,6 +212,9 @@ mod tests {
 *2.22
 打鍵テスト
 :だけんてすと
+
+*3.0
+[end]
 "#,
       |config| config.ignore_invalid_properties(true),
     )?;
@@ -225,18 +223,83 @@ mod tests {
     let mut presenter = MockPresenter::new(vec![
       PlayBGM("void.ogg".to_owned()),
       DecreaseRemainingTime(2.22),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "d",
+      )?),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "da",
+      )?),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "dak",
+      )?),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "dake",
+      )?),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "daken",
+      )?),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "dakent",
+      )?),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "dakente",
+      )?),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "dakentes",
+      )?),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "dakentesu",
+      )?),
+      Pointed(10),
       Typed(false),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "dakentesut",
+      )?),
+      Pointed(10),
       Typed(false),
-      UpdateSentence(Sentence::new("打鍵テスト", "だけんてすと")?),
+      UpdateSentence(Sentence::new_with_inputted(
+        "打鍵テスト",
+        "だけんてすと",
+        "dakentesuto",
+      )?),
     ]);
 
     let mut game = MusicalTyper::new(
@@ -247,9 +310,10 @@ mod tests {
 
     for KeyPress(time, key) in keypresses.iter() {
       game.elapse_time(*time);
-      game.key_press(key.chars().collect());
-      game.update();
+      game.key_press(key.chars());
     }
+
+    assert_eq!(presenter.index, presenter.expected.len());
 
     Ok(())
   }

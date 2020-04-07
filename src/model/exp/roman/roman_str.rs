@@ -38,6 +38,20 @@ impl RomanStr {
     })
   }
 
+  pub fn new_with_inputted(
+    yomigana: &str,
+    inputted: &str,
+  ) -> Result<Self, RomanParseError> {
+    let chars: Vec<char> = yomigana.chars().collect();
+    let mut parsed: Vec<RomanChar> = vec![];
+    parse(&mut parsed, chars.as_slice())?;
+    Ok(RomanStr {
+      chars: parsed,
+      inputting_char: 0,
+      inputted: inputted.to_owned(),
+    })
+  }
+
   pub fn inputted(&self) -> &str {
     &self.inputted
   }
