@@ -3,6 +3,7 @@ use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::Sdl;
 
+use std::collections::HashSet;
 use std::time::Duration;
 
 mod text;
@@ -39,7 +40,7 @@ pub struct SdlView<'a, T> {
   ctx: Sdl,
   canvas: Canvas<Window>,
   controller: &'a mut T,
-  typed_key_buf: Vec<char>,
+  typed_key_buf: HashSet<char>,
 }
 
 impl<'a, T> SdlView<'a, T>
@@ -80,7 +81,7 @@ where
       ctx,
       canvas,
       controller,
-      typed_key_buf: vec![],
+      typed_key_buf: HashSet::new(),
     })
   }
 
@@ -115,7 +116,13 @@ where
             keycode: Some(keycode),
             ..
           } => {
-            self.on_keydown(keycode);
+            self.typed_key_buf.insert(keycode_to_char(keycode));
+          }
+          KeyUp {
+            keycode: Some(keycode),
+            ..
+          } => {
+            self.typed_key_buf.remove(&keycode_to_char(keycode));
           }
           _ => {}
         }
@@ -124,7 +131,12 @@ where
           sdl2::rect::Rect::new(0, 0, self.width, self.height),
           builder.clone(),
           &WholeProps {
-            pressed_keys: &self.typed_key_buf.as_slice(),
+            pressed_keys: &self
+              .typed_key_buf
+              .iter()
+              .cloned()
+              .collect::<Vec<char>>()
+              .as_slice(),
           },
         )?;
 
@@ -133,7 +145,6 @@ where
         {
           let typed_key_buf = self.typed_key_buf.clone();
           self.controller.key_press(typed_key_buf.into_iter());
-          self.typed_key_buf.clear();
         }
 
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
@@ -141,39 +152,38 @@ where
     }
     Ok(())
   }
+}
 
-  fn on_keydown(&mut self, keycode: Keycode) {
-    use Keycode::*;
-    let typed = match keycode {
-      A => 'a',
-      B => 'b',
-      C => 'c',
-      D => 'd',
-      E => 'e',
-      F => 'f',
-      G => 'g',
-      H => 'h',
-      I => 'i',
-      J => 'j',
-      K => 'k',
-      L => 'l',
-      M => 'm',
-      N => 'n',
-      O => 'o',
-      P => 'p',
-      Q => 'q',
-      R => 'r',
-      S => 's',
-      T => 't',
-      U => 'u',
-      V => 'v',
-      W => 'w',
-      X => 'x',
-      Y => 'y',
-      Z => 'z',
-      Minus => '-',
-      _ => '\0',
-    };
-    self.typed_key_buf.push(typed);
+fn keycode_to_char(keycode: Keycode) -> char {
+  use Keycode::*;
+  match keycode {
+    A => 'a',
+    B => 'b',
+    C => 'c',
+    D => 'd',
+    E => 'e',
+    F => 'f',
+    G => 'g',
+    H => 'h',
+    I => 'i',
+    J => 'j',
+    K => 'k',
+    L => 'l',
+    M => 'm',
+    N => 'n',
+    O => 'o',
+    P => 'p',
+    Q => 'q',
+    R => 'r',
+    S => 's',
+    T => 't',
+    U => 'u',
+    V => 'v',
+    W => 'w',
+    X => 'x',
+    Y => 'y',
+    Z => 'z',
+    Minus => '-',
+    _ => '\0',
   }
 }
