@@ -104,6 +104,7 @@ where
     let builder = TextBuilder::new(&font, &texture_creator);
 
     'main: loop {
+      let time = std::time::Instant::now();
       let mut poller =
         self.ctx.event_pump().map_err(|e| ViewError::InitError {
           message: e.to_string(),
@@ -126,27 +127,29 @@ where
           }
           _ => {}
         }
-        whole::render(
-          &mut self.canvas,
-          sdl2::rect::Rect::new(0, 0, self.width, self.height),
-          builder.clone(),
-          &WholeProps {
-            pressed_keys: &self
-              .typed_key_buf
-              .iter()
-              .cloned()
-              .collect::<Vec<char>>()
-              .as_slice(),
-          },
-        )?;
-
-        self.canvas.present();
-
-        {
-          let typed_key_buf = self.typed_key_buf.clone();
-          self.controller.key_press(typed_key_buf.into_iter());
-        }
       }
+      whole::render(
+        &mut self.canvas,
+        sdl2::rect::Rect::new(0, 0, self.width, self.height),
+        builder.clone(),
+        &WholeProps {
+          pressed_keys: &self
+            .typed_key_buf
+            .iter()
+            .cloned()
+            .collect::<Vec<char>>()
+            .as_slice(),
+        },
+      )?;
+
+      self.canvas.present();
+
+      let typed_key_buf = self.typed_key_buf.clone();
+      self.controller.key_press(typed_key_buf.into_iter());
+
+      let elapsed =
+        time.elapsed().as_nanos() as f64 / 1_000_000_000.0;
+      self.controller.elapse_time(elapsed);
       ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
     }
     Ok(())
