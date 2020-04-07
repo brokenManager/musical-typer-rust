@@ -87,7 +87,10 @@ impl GameView {
       height,
       ctx,
       canvas,
-      model: MusicalTyper::new(score, MusicalTyperConfig::default())?,
+      model: MusicalTyper::new(
+        &score,
+        MusicalTyperConfig::default(),
+      )?,
       typed_key_buf: BTreeSet::new(),
       sentence: None,
     })

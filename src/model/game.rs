@@ -76,7 +76,6 @@ impl Default for MusicalTyperConfig {
 }
 
 pub struct MusicalTyper {
-  score: Scoremap,
   activity: GameActivity,
   accumulated_time: Seconds,
   event_queue: Vec<MusicalTyperEvent>,
@@ -85,7 +84,7 @@ pub struct MusicalTyper {
 
 impl MusicalTyper {
   pub fn new(
-    score: Scoremap,
+    score: &Scoremap,
     config: MusicalTyperConfig,
   ) -> Result<Self, MusicalTyperError> {
     let mut event_queue = vec![];
@@ -99,7 +98,6 @@ impl MusicalTyper {
     }
 
     Ok(MusicalTyper {
-      score,
       activity,
       accumulated_time: 0.0,
       event_queue,
@@ -269,7 +267,7 @@ mod tests {
     ];
 
     let mut game =
-      MusicalTyper::new(test_score, MusicalTyperConfig::default())?;
+      MusicalTyper::new(&test_score, MusicalTyperConfig::default())?;
 
     let mut actual_events = vec![];
 
