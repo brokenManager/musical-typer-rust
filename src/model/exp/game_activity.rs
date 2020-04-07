@@ -12,8 +12,6 @@ enum State {
 
 pub struct GameActivity {
   state: State,
-  succeed_count: u32,
-  mistyped_count: u32,
   notes: BTreeMap<String, Note>,
   sections: Vec<Section>,
   current_section: Option<Section>,
@@ -35,8 +33,6 @@ impl GameActivity {
     }
     GameActivity {
       state: State::BeforeStart,
-      succeed_count: 0,
-      mistyped_count: 0,
       notes: notes_map,
       sections,
       current_section: None,
@@ -59,11 +55,6 @@ impl GameActivity {
       .and_then(|section| self.notes.get(&section.foreign_note))
   }
 
-  pub fn accuracy(&self) -> f64 {
-    let typed_count = self.succeed_count + self.mistyped_count;
-    self.mistyped_count as f64 / typed_count as f64
-  }
-
   pub fn update_time(&mut self, time: Seconds) {
     self.state = State::OnGame;
     for section in self.sections.iter() {
@@ -76,21 +67,14 @@ impl GameActivity {
     self.state = State::GameOver;
   }
 
-  pub fn input(&mut self, typed: char) {
+  pub fn input(&mut self, typed: char) -> TypeResult {
+    use TypeResult::*;
     if let State::OnGame = self.state {
-      return;
-    }
-    if let Some(note) = self.current_note_mut() {
-      use TypeResult::*;
-      match note.input(typed) {
-        Succeed => {
-          self.succeed_count += 1;
-        }
-        Mistaken => {
-          self.mistyped_count += 1;
-        }
-        Vacant => {}
-      }
+      Vacant
+    } else if let Some(note) = self.current_note_mut() {
+      note.input(typed)
+    } else {
+      Vacant
     }
   }
 

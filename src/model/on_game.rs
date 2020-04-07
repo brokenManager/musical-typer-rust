@@ -1,6 +1,5 @@
 use super::exp::game_activity::GameActivity;
 use super::exp::minute_second::Seconds;
-use super::exp::note::Section;
 use super::exp::roman::roman_lexer::RomanParseError;
 use super::exp::scoremap::lexer::ScoremapLexError;
 use super::exp::scoremap::{Scoremap, ScoremapError};
@@ -25,6 +24,8 @@ pub enum MusicalTyperError {
   FileReadError { reason: String },
   ScoremapBuildError(ScoremapError),
 }
+
+use MusicalTyperError::*;
 
 impl From<std::io::Error> for MusicalTyperError {
   fn from(err: std::io::Error) -> Self {
@@ -61,43 +62,48 @@ impl<'p, P> MusicalTyper<'p, P>
 where
   P: Presenter,
 {
-  pub fn new(score: Scoremap, presenter: &'p mut P) -> Self {
+  pub fn new(
+    score: Scoremap,
+    presenter: &'p mut P,
+  ) -> Result<Self, MusicalTyperError> {
     let activity = GameActivity::new(&score.notes);
-    MusicalTyper {
-      score,
-      activity,
-      accumulated_time: 0.0,
-      presenter,
-    }
-  }
 
-  pub fn update(&mut self) -> Result<(), MusicalTyperError> {
-    use MusicalTyperError::*;
-
-    let metadata = &self.score.metadata;
+    let metadata = &score.metadata;
     if let Some(ref song_data) = metadata.get("song_data") {
-      self.presenter.play_bgm(song_data);
+      presenter.play_bgm(song_data);
     } else {
       return Err(SongDataNotFound);
     }
 
+    Ok(MusicalTyper {
+      score,
+      activity,
+      accumulated_time: 0.0,
+      presenter,
+    })
+  }
+
+  pub fn update(&mut self) {
     self.activity.update_time(0.0);
-    if let Some(Section {
-      foreign_note,
-      from,
-      to,
-    }) = self.activity.current_section()
-    {
+    if let Some(_) = self.activity.current_section() {
       if let Some(sentence) = self.activity.current_sentence() {
         self.presenter.update_sentence(sentence);
       }
     }
-    Ok(())
   }
 
   pub fn key_press(&mut self, typed: Vec<char>) {
     for typed in typed.iter() {
-      self.activity.input(*typed);
+      use super::exp::note::TypeResult::*;
+      match self.activity.input(*typed) {
+        Succeed => {
+          self.presenter.typed(false);
+        }
+        Mistaken => {
+          self.presenter.typed(true);
+        }
+        Vacant => {}
+      }
     }
   }
   pub fn elapse_time(&mut self, delta_time: f64) {
@@ -413,12 +419,12 @@ mod tests {
       DecreaseRemainingTime(5.0),
     ]);
 
-    let mut game = MusicalTyper::new(test_score, &mut presenter);
+    let mut game = MusicalTyper::new(test_score, &mut presenter)?;
 
     for KeyPress(time, key) in keypresses.iter() {
       game.elapse_time(*time);
       game.key_press(key.chars().collect());
-      game.update()?;
+      game.update();
     }
 
     Ok(())
