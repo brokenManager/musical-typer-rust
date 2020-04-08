@@ -75,6 +75,9 @@ impl RomanStr {
       if self.chars[self.inputting_char].completed_input() {
         self.inputting_char += 1;
       }
+      if !self.completed() {
+        self.chars[self.inputting_char].fix_style(typed);
+      }
       true
     } else {
       false
@@ -146,6 +149,36 @@ fn toy() -> Result<(), RomanParseError> {
   assert_eq!(hello.will_input_roman(), "a");
   assert!(hello.input('a'));
   assert_eq!(hello.inputted_roman(), "omotya");
+  assert_eq!(hello.will_input_roman(), "");
+  Ok(())
+}
+
+#[test]
+fn small() -> Result<(), RomanParseError> {
+  let mut hello = RomanStr::new("ちっちゃい")?;
+  assert_eq!(hello.inputted_roman(), "");
+  assert_eq!(hello.will_input_roman(), "tittyai");
+  assert!(hello.input('t'));
+  assert_eq!(hello.inputted_roman(), "t");
+  assert_eq!(hello.will_input_roman(), "ittyai");
+  assert!(hello.input('i'));
+  assert_eq!(hello.inputted_roman(), "ti");
+  assert_eq!(hello.will_input_roman(), "ttyai");
+  assert!(hello.input('t'));
+  assert_eq!(hello.inputted_roman(), "tit");
+  assert_eq!(hello.will_input_roman(), "tyai");
+  assert!(!hello.input('c'));
+  assert!(hello.input('t'));
+  assert_eq!(hello.inputted_roman(), "titt");
+  assert_eq!(hello.will_input_roman(), "yai");
+  assert!(hello.input('y'));
+  assert_eq!(hello.inputted_roman(), "titty");
+  assert_eq!(hello.will_input_roman(), "ai");
+  assert!(hello.input('a'));
+  assert_eq!(hello.inputted_roman(), "tittya");
+  assert_eq!(hello.will_input_roman(), "i");
+  assert!(hello.input('i'));
+  assert_eq!(hello.inputted_roman(), "tittyai");
   assert_eq!(hello.will_input_roman(), "");
   Ok(())
 }

@@ -173,7 +173,7 @@ pub fn parse<'a>(
         2
       }
       ['ち', 'ゃ', ..] => {
-        romans.push(RomanChar::new(&["cha", "cya", "tya"]));
+        romans.push(RomanChar::new(&["tya", "cha", "cya"]));
         2
       }
       ['ち', 'ぃ', ..] => {

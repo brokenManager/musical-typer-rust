@@ -63,6 +63,18 @@ impl RomanChar {
   pub fn origin(&self) -> &str {
     ""
   }
+
+  pub fn fix_style(&mut self, typed: char) {
+    let fixed: Vec<_> = self
+      .styles
+      .iter()
+      .cloned()
+      .filter(|s| s.starts_with(typed))
+      .collect();
+    if 0 < fixed.len() {
+      self.styles = fixed;
+    }
+  }
 }
 
 #[test]
