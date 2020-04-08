@@ -82,13 +82,17 @@ impl GameActivity {
     }
   }
 
-  pub fn current_sentence(&self) -> Option<&Sentence> {
-    self.current_note().and_then(|note| {
-      if let NoteContent::Sentence { sentence, .. } = note.content() {
-        Some(sentence)
-      } else {
-        None
-      }
-    })
+  pub fn current_sentence(&self) -> Sentence {
+    self
+      .current_note()
+      .and_then(|note| {
+        if let NoteContent::Sentence { sentence, .. } = note.content()
+        {
+          Some(sentence.clone())
+        } else {
+          None
+        }
+      })
+      .unwrap_or(Sentence::empty())
   }
 }

@@ -59,11 +59,10 @@ impl<'a> Finder<'a> {
         .render(
           &mut canvas,
           Rect::new(
-            half_x as i32
+            (half_x as f64
               - (normalized_inputted
                 * will_input_japanese.len() as f64)
-                as i32
-                * JAPANESE_GLYPH_WIDTH as i32,
+                * JAPANESE_GLYPH_WIDTH as f64) as i32,
             offset.y(),
             will_input_japanese.len() as u32 * JAPANESE_GLYPH_WIDTH,
             JAPANESE_HEIGHT,

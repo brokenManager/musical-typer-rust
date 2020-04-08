@@ -47,6 +47,13 @@ impl Sentence {
     })
   }
 
+  pub fn empty() -> Self {
+    Sentence {
+      origin: "".to_owned(),
+      hiragana: RomanStr::new("").unwrap(),
+    }
+  }
+
   pub fn from(origin: &str, yomigana: RomanStr) -> Self {
     Sentence {
       origin: origin.to_owned(),

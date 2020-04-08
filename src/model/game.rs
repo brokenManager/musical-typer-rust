@@ -142,9 +142,8 @@ impl MusicalTyper {
   }
 
   fn pack_events(&mut self) -> Vec<MusicalTyperEvent> {
-    if let Some(sentence) = self.activity.current_sentence() {
-      self.event_queue.push(UpdateSentence(sentence.clone()));
-    }
+    let sentence = self.activity.current_sentence();
+    self.event_queue.push(UpdateSentence(sentence));
 
     let res = self.event_queue.iter().cloned().collect();
     self.event_queue.clear();
@@ -157,7 +156,12 @@ mod tests {
   use super::super::exp::sentence::Sentence;
   use super::{MusicalTyperError, MusicalTyperEvent};
 
-  struct KeyPress(f64, &'static str);
+  enum Input {
+    Wait(f64),
+    KeyPress(&'static str),
+  }
+
+  use Input::*;
 
   #[test]
   fn op1() -> Result<(), MusicalTyperError> {
@@ -183,80 +187,35 @@ mod tests {
       |config| config.ignore_invalid_properties(true),
     )?;
 
-    let keypresses = &[KeyPress(2.22, "dakentesuto")];
+    let inputs = &[Wait(2.22), KeyPress("dakentesuto"), Wait(1.0)];
     use MusicalTyperEvent::*;
     let expected_events = vec![
       PlayBgm("void.ogg".to_owned()),
-      Pointed(10),
-      Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
         "打鍵テスト",
         "だけんてすと",
-        "d",
+        "",
       )?),
       Pointed(10),
       Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "da",
-      )?),
       Pointed(10),
       Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "dak",
-      )?),
       Pointed(10),
       Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "dake",
-      )?),
       Pointed(10),
       Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "daken",
-      )?),
       Pointed(10),
       Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "dakent",
-      )?),
       Pointed(10),
       Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "dakente",
-      )?),
       Pointed(10),
       Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "dakentes",
-      )?),
       Pointed(10),
       Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "dakentesu",
-      )?),
       Pointed(10),
       Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "dakentesut",
-      )?),
+      Pointed(10),
+      Typed { mistaken: false },
       Pointed(10),
       Typed { mistaken: false },
       UpdateSentence(Sentence::new_with_inputted(
@@ -264,6 +223,7 @@ mod tests {
         "だけんてすと",
         "dakentesuto",
       )?),
+      UpdateSentence(Sentence::empty()),
     ];
 
     let mut game =
@@ -271,16 +231,23 @@ mod tests {
 
     let mut actual_events = vec![];
 
-    for KeyPress(time, key) in keypresses.iter() {
-      actual_events.append(&mut game.elapse_time(*time));
-      actual_events.append(&mut game.key_press(key.chars()));
+    for input in inputs {
+      match input {
+        Wait(time) => {
+          actual_events.append(&mut game.elapse_time(*time))
+        }
+        KeyPress(key) => {
+          actual_events.append(&mut game.key_press(key.chars()))
+        }
+      }
     }
 
-    for (expected, actual) in
-      expected_events.iter().zip(actual_events.iter())
+    for (i, (expected, actual)) in
+      expected_events.iter().zip(actual_events.iter()).enumerate()
     {
-      assert_eq!(expected, actual);
+      assert_eq!(expected, actual, "index: {}", i);
     }
+    println!("{:?}", actual_events.last().unwrap());
     assert_eq!(expected_events.len(), actual_events.len());
 
     Ok(())
