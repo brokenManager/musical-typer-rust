@@ -101,8 +101,10 @@ impl GameView {
 
     let mut mt_events = vec![];
     let mut musics = vec![];
-    let mut typed_key_buf = BTreeSet::new();
+    let mut pressed_key_buf = BTreeSet::new();
+    let mut typed_key_buf = vec![];
     let mut sentence: Option<Sentence> = None;
+    let mut score_point = 0;
 
     'main: loop {
       let time = std::time::Instant::now();
@@ -124,7 +126,9 @@ impl GameView {
             UpdateSentence(new_sentence) => {
               sentence = Some(new_sentence.clone());
             }
-            Pointed(point) => {}
+            Pointed(point) => {
+              score_point += point;
+            }
             Typed { mistaken } => {}
           }
         }
@@ -143,13 +147,16 @@ impl GameView {
               keycode: Some(keycode),
               ..
             } => {
-              typed_key_buf.insert(keycode_to_char(keycode));
+              let key = keycode_to_char(keycode);
+              if pressed_key_buf.insert(key) {
+                typed_key_buf.push(key);
+              }
             }
             KeyUp {
               keycode: Some(keycode),
               ..
             } => {
-              typed_key_buf.remove(&keycode_to_char(keycode));
+              pressed_key_buf.remove(&keycode_to_char(keycode));
             }
             _ => {}
           }
@@ -160,7 +167,7 @@ impl GameView {
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
         builder.clone(),
         &WholeProps {
-          pressed_keys: &typed_key_buf
+          pressed_keys: &pressed_key_buf
             .iter()
             .cloned()
             .collect::<Vec<char>>()
@@ -176,13 +183,16 @@ impl GameView {
             .metadata
             .get("song_author")
             .unwrap_or(&"作曲者不詳".to_owned()),
+          score_point,
         },
       )?;
 
       self.canvas.present();
 
-      let typed_key_buf = typed_key_buf.clone();
-      mt_events = self.model.key_press(typed_key_buf.into_iter());
+      let typed_key_buf_cloned = typed_key_buf.clone();
+      typed_key_buf.clear();
+      mt_events =
+        self.model.key_press(typed_key_buf_cloned.into_iter());
 
       timer.delay((1e3 / 60.0) as u32);
 
