@@ -24,6 +24,7 @@ pub enum ViewError {
   ModelError(MusicalTyperError),
   InitError { message: String },
   FontError { message: String },
+  AudioError { message: String },
   TextError(TextError),
   RenderError(String),
 }
@@ -60,6 +61,22 @@ impl GameView {
   ) -> Result<Self, ViewError> {
     let ctx = sdl2::init()
       .map_err(|e| ViewError::InitError { message: e })?;
+
+    let _mixer = sdl2::mixer::init(
+      sdl2::mixer::InitFlag::OGG | sdl2::mixer::InitFlag::MP3,
+    )
+    .map_err(|e| ViewError::AudioError { message: e })?;
+    let _audio = ctx
+      .audio()
+      .map_err(|e| ViewError::AudioError { message: e })?;
+    sdl2::mixer::open_audio(
+      44100,
+      sdl2::mixer::DEFAULT_FORMAT,
+      sdl2::mixer::DEFAULT_CHANNELS,
+      1024,
+    )
+    .map_err(|e| ViewError::AudioError { message: e })?;
+    println!("linked version: {}", sdl2::mixer::get_linked_version());
 
     let video = ctx
       .video()
@@ -112,7 +129,13 @@ impl GameView {
 
     let builder = TextBuilder::new(&font, &texture_creator);
 
+    let mut timer = self
+      .ctx
+      .timer()
+      .map_err(|e| ViewError::InitError { message: e })?;
+
     let mut mt_events = vec![];
+    let mut musics = vec![];
     let mut typed_key_buf = BTreeSet::new();
     let mut sentence: Option<Sentence> = None;
 
@@ -122,7 +145,17 @@ impl GameView {
         for mt_event in mt_events.iter() {
           use MusicalTyperEvent::*;
           match mt_event {
-            PlayBgm(bgm_name) => {}
+            PlayBgm(bgm_name) => {
+              let bgm_file_path = format!("score/{}", bgm_name);
+              let music = sdl2::mixer::Music::from_file(
+                std::path::Path::new(&bgm_file_path),
+              )
+              .map_err(|e| ViewError::AudioError { message: e })?;
+              music
+                .fade_in(1, 30)
+                .map_err(|e| ViewError::AudioError { message: e })?;
+              musics.push(music);
+            }
             UpdateSentence(new_sentence) => {
               sentence = Some(new_sentence.clone());
             }
@@ -186,12 +219,21 @@ impl GameView {
       let typed_key_buf = typed_key_buf.clone();
       mt_events = self.model.key_press(typed_key_buf.into_iter());
 
-      ::std::thread::sleep(Duration::from_secs_f64(1.0 / 60.0));
+      timer.delay((1e3 / 60.0) as u32);
 
       let elapsed = time.elapsed().as_secs_f64();
       mt_events.append(&mut self.model.elapse_time(elapsed));
-      println!("FPS: {}", 1.0 / elapsed);
+      print!(
+        "\rFPS: {}, Playing: {}     ",
+        1.0 / elapsed,
+        sdl2::mixer::Music::is_playing()
+      );
     }
+    sdl2::mixer::Music::fade_out(500)
+      .map_err(|e| ViewError::AudioError { message: e })?;
+    timer.delay(505);
+    sdl2::mixer::Music::halt();
+
     Ok(())
   }
 }
