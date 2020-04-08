@@ -62,10 +62,6 @@ impl GameView {
     let ctx = sdl2::init()
       .map_err(|e| ViewError::InitError { message: e })?;
 
-    let _mixer = sdl2::mixer::init(
-      sdl2::mixer::InitFlag::OGG | sdl2::mixer::InitFlag::MP3,
-    )
-    .map_err(|e| ViewError::AudioError { message: e })?;
     let _audio = ctx
       .audio()
       .map_err(|e| ViewError::AudioError { message: e })?;
@@ -74,6 +70,10 @@ impl GameView {
       sdl2::mixer::DEFAULT_FORMAT,
       sdl2::mixer::DEFAULT_CHANNELS,
       1024,
+    )
+    .map_err(|e| ViewError::AudioError { message: e })?;
+    let _mixer = sdl2::mixer::init(
+      sdl2::mixer::InitFlag::OGG | sdl2::mixer::InitFlag::MP3,
     )
     .map_err(|e| ViewError::AudioError { message: e })?;
     println!("linked version: {}", sdl2::mixer::get_linked_version());
