@@ -11,7 +11,6 @@ use sdl2::video::Window;
 use sdl2::Sdl;
 
 use std::collections::BTreeSet;
-use std::time::Duration;
 
 mod text;
 mod whole;
@@ -62,9 +61,6 @@ impl GameView {
     let ctx = sdl2::init()
       .map_err(|e| ViewError::InitError { message: e })?;
 
-    let _audio = ctx
-      .audio()
-      .map_err(|e| ViewError::AudioError { message: e })?;
     sdl2::mixer::open_audio(
       44100,
       sdl2::mixer::DEFAULT_FORMAT,
@@ -72,11 +68,6 @@ impl GameView {
       1024,
     )
     .map_err(|e| ViewError::AudioError { message: e })?;
-    let _mixer = sdl2::mixer::init(
-      sdl2::mixer::InitFlag::OGG | sdl2::mixer::InitFlag::MP3,
-    )
-    .map_err(|e| ViewError::AudioError { message: e })?;
-    println!("linked version: {}", sdl2::mixer::get_linked_version());
 
     let video = ctx
       .video()
@@ -152,7 +143,7 @@ impl GameView {
               )
               .map_err(|e| ViewError::AudioError { message: e })?;
               music
-                .fade_in(1, 30)
+                .play(0)
                 .map_err(|e| ViewError::AudioError { message: e })?;
               musics.push(music);
             }
