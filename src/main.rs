@@ -14,6 +14,7 @@ fn main() {
   )
   .unwrap();
 
-  let mut view = view::GameView::new(800, 600, score).unwrap();
-  view.run().unwrap();
+  use view::Router;
+  let mut router = Router::new(score).unwrap();
+  router.run().unwrap();
 }

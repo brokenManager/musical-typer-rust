@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 use sdl2::render::{Canvas, RenderTarget};
 
-use super::super::text::{TextBuilder, TextError};
+use super::super::super::text::{TextBuilder, TextError};
 
 const CELL_WIDTH: u32 = 60;
 const CELL_HEIGHT: u32 = 70;

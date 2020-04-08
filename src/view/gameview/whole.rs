@@ -3,7 +3,7 @@ use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::{Window, WindowContext};
 
-use super::text::TextBuilder;
+use super::super::text::TextBuilder;
 use super::ViewError;
 use crate::model::exp::sentence::Sentence;
 

@@ -1,7 +1,7 @@
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, RenderTarget};
 
-use super::super::text::{TextBuilder, TextError};
+use super::super::super::text::{TextBuilder, TextError};
 
 pub struct Header {
   title: String,
