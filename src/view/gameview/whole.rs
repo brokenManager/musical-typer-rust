@@ -67,8 +67,7 @@ pub fn render<'a, 't>(
     .draw_rect(keyboard_dim)
     .map_err(|e| ViewError::RenderError(e))?;
 
-  stats::render(
-    &mut canvas,
+  stats::build(
     stats_dim,
     builder.clone(),
     StatsProps {
@@ -76,6 +75,6 @@ pub fn render<'a, 't>(
       type_per_second: props.type_per_second,
       achievement_rate: props.achievement_rate,
     },
-  )?;
+  )?(&mut canvas)?;
   Ok(())
 }
