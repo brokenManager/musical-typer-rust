@@ -134,7 +134,7 @@ impl MusicalTyper {
   #[must_use]
   pub fn elapse_time(
     &mut self,
-    delta_time: f64,
+    delta_time: Seconds,
   ) -> Vec<MusicalTyperEvent> {
     self.accumulated_time += delta_time;
     self.activity.update_time(self.accumulated_time);
@@ -148,6 +148,10 @@ impl MusicalTyper {
     let res = self.event_queue.iter().cloned().collect();
     self.event_queue.clear();
     res
+  }
+
+  pub fn accumulated_time(&self) -> Seconds {
+    self.accumulated_time
   }
 }
 

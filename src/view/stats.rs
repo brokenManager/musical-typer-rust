@@ -52,7 +52,7 @@ pub fn render<'t>(
       Rect::new(client.x() + 10, client.y() + 30, 50, 20),
     )?;
   builder
-    .text(&format!("{:05.1}%", props.accuracy))
+    .text(&format!("{:05.1}%", props.accuracy * 100.0))
     .color(Color::RGB(0, 0, 0))
     .build()?
     .render(
@@ -78,7 +78,7 @@ pub fn render<'t>(
       ),
     )?;
   builder
-    .text(&format!("{:05.1}%", props.achievement_rate))
+    .text(&format!("{:05.1}%", props.achievement_rate * 100.0))
     .color(Color::RGB(64, 79, 181))
     .build()?
     .render(

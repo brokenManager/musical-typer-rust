@@ -22,6 +22,9 @@ pub struct WholeProps<'a> {
   pub title: &'a str,
   pub song_author: &'a str,
   pub score_point: i32,
+  pub type_per_second: f64,
+  pub achievement_rate: f64,
+  pub accuracy: f64,
 }
 
 pub fn render<'a, 't>(
@@ -69,9 +72,9 @@ pub fn render<'a, 't>(
     stats_dim,
     builder.clone(),
     StatsProps {
-      accuracy: 0.0,
-      type_per_second: 0.0,
-      achievement_rate: 0.0,
+      accuracy: props.accuracy,
+      type_per_second: props.type_per_second,
+      achievement_rate: props.achievement_rate,
     },
   )?;
   Ok(())
