@@ -1,5 +1,5 @@
 use sdl2::pixels::Color;
-use sdl2::rect::Rect;
+use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::{Window, WindowContext};
 
@@ -20,13 +20,28 @@ pub fn render<'t>(
   mut builder: TextBuilder<'t, WindowContext>,
   props: StatsProps,
 ) -> Result<(), ViewError> {
+  let speed_indicator_color = if 4.0 < props.type_per_second {
+    Color::RGB(250, 119, 109)
+  } else {
+    Color::RGB(178, 255, 89)
+  };
+  let speed_indicator_center =
+    Point::new(client.width() as i32 / 2, client.y() + 15);
+  canvas.set_draw_color(speed_indicator_color);
+  canvas
+    .fill_rect(Rect::from_center(
+      speed_indicator_center,
+      client.width() - 20,
+      20,
+    ))
+    .map_err(|e| ViewError::RenderError(e))?;
   builder
-    .text("タイピング速度")
-    .color(Color::RGB(160, 160, 165))
+    .text(&format!("{:04.2} Type/s", props.type_per_second))
+    .color(Color::RGB(0, 0, 0))
     .build()?
     .render(
       &mut canvas,
-      Rect::new(client.x() + 10, client.y() + 10, 90, 20),
+      Rect::from_center(speed_indicator_center, 100, 20),
     )?;
   builder
     .text("正解率")
