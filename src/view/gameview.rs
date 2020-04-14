@@ -219,7 +219,7 @@ impl GameView {
             .cloned()
             .collect::<Vec<char>>()
             .as_slice(),
-          sentence: &sentence,
+          sentence: sentence.clone(),
           title: self
             .score
             .metadata

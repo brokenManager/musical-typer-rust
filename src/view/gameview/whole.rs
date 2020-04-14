@@ -12,13 +12,13 @@ mod finder;
 mod header;
 mod keyboard;
 
-use finder::Finder;
+use finder::FinderProps;
 use header::Header;
 use keyboard::Keyboard;
 
 pub struct WholeProps<'a> {
   pub pressed_keys: &'a [char],
-  pub sentence: &'a Option<Sentence>,
+  pub sentence: Option<Sentence>,
   pub title: &'a str,
   pub song_author: &'a str,
   pub score_point: i32,
@@ -37,8 +37,15 @@ pub fn render<'a, 't>(
     Header::new(props.title, props.song_author, props.score_point);
   let header_dim = Rect::new(0, 0, client.width(), 100);
 
-  let finder = Finder::new(props.sentence, 0.2);
   let finder_dim = Rect::new(0, 100, client.width(), 150);
+  let finder_render = finder::build(
+    builder.clone(),
+    finder_dim,
+    FinderProps {
+      remaining_ratio: 0.2,
+      sentence: props.sentence.clone(),
+    },
+  )?;
 
   let keyboard = Keyboard::new(props.pressed_keys, &[]);
   let keyboard_dim = Rect::new(0, 250, client.width(), 200);
@@ -55,7 +62,7 @@ pub fn render<'a, 't>(
     .draw_rect(header_dim)
     .map_err(|e| ViewError::RenderError(e))?;
 
-  finder.draw(&mut canvas, builder.clone(), finder_dim)?;
+  finder_render(&mut canvas)?;
   canvas.set_draw_color(Color::RGB(0, 0, 0));
   canvas
     .draw_rect(finder_dim)
