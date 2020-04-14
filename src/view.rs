@@ -2,6 +2,7 @@ use crate::model::exp::scoremap::Scoremap;
 use crate::model::game::MusicalTyperError;
 
 mod gameview;
+mod stats;
 mod text;
 
 use gameview::GameView;
