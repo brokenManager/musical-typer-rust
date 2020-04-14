@@ -14,10 +14,10 @@ mod keyboard;
 
 use finder::FinderProps;
 use header::HeaderProps;
-use keyboard::Keyboard;
+use keyboard::KeyboardProps;
 
-pub struct WholeProps<'a> {
-  pub pressed_keys: &'a [char],
+pub struct WholeProps {
+  pub pressed_keys: Vec<char>,
   pub sentence: Option<Sentence>,
   pub title: String,
   pub song_author: String,
@@ -53,8 +53,15 @@ pub fn render<'a, 't>(
     },
   )?;
 
-  let keyboard = Keyboard::new(props.pressed_keys, &[]);
   let keyboard_dim = Rect::new(0, 250, client.width(), 200);
+  let keyboard_render = keyboard::build(
+    builder.clone(),
+    keyboard_dim,
+    KeyboardProps {
+      pressed_keys: props.pressed_keys.clone(),
+      highlighted_keys: vec![],
+    },
+  )?;
 
   let stats_dim =
     Rect::new(0, 450, client.width(), client.height() - 450);
@@ -74,7 +81,7 @@ pub fn render<'a, 't>(
     .draw_rect(finder_dim)
     .map_err(|e| ViewError::RenderError(e))?;
 
-  keyboard.draw(&mut canvas, builder.clone(), keyboard_dim)?;
+  keyboard_render(&mut canvas)?;
   canvas.set_draw_color(Color::RGB(0, 0, 0));
   canvas
     .draw_rect(keyboard_dim)

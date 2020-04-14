@@ -214,11 +214,10 @@ impl GameView {
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
         builder.clone(),
         &WholeProps {
-          pressed_keys: &pressed_key_buf
+          pressed_keys: pressed_key_buf
             .iter()
             .cloned()
-            .collect::<Vec<char>>()
-            .as_slice(),
+            .collect::<Vec<char>>(),
           sentence: sentence.clone(),
           title: self
             .score

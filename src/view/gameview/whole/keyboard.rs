@@ -1,12 +1,15 @@
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
-use sdl2::render::{Canvas, RenderTarget};
+use sdl2::{
+  render::{Canvas, RenderTarget},
+  video::{Window, WindowContext},
+};
 
 use super::super::super::text::{TextBuilder, TextError};
 
 const CELL_ASPECT: f64 = 55.0 / 70.0;
 
-pub struct KeyCell {
+struct KeyCell {
   client: Rect,
   key: char,
   is_highlighted: bool,
@@ -15,7 +18,7 @@ pub struct KeyCell {
 
 impl KeyCell {
   pub fn draw<'a, T: RenderTarget, U>(
-    self,
+    &self,
     mut canvas: &mut Canvas<T>,
     mut text_builder: TextBuilder<'a, U>,
   ) -> Result<(), TextError> {
@@ -50,60 +53,55 @@ impl KeyCell {
   }
 }
 
-pub struct Keyboard {
-  pressed_keys: Vec<char>,
-  highlighted_keys: Vec<char>,
+pub struct KeyboardProps {
+  pub pressed_keys: Vec<char>,
+  pub highlighted_keys: Vec<char>,
 }
 
-impl Keyboard {
-  pub fn new(
-    pressed_keys: &[char],
-    highlighted_keys: &[char],
-  ) -> Self {
-    Keyboard {
-      pressed_keys: pressed_keys.to_owned(),
-      highlighted_keys: highlighted_keys.to_owned(),
+pub fn build(
+  text_builder: TextBuilder<'_, WindowContext>,
+  client: Rect,
+  props: KeyboardProps,
+) -> Result<
+  impl Fn(&mut Canvas<Window>) -> Result<(), TextError> + '_,
+  TextError,
+> {
+  let key_chars_rows =
+    ["1234567890-", "qwertyuiop", "asdfghjkl", "zxcvbnm"];
+
+  let cell_height =
+    client.height() as f64 / key_chars_rows.len() as f64;
+  let cell_width = cell_height * CELL_ASPECT;
+  let mut key_cells = vec![];
+
+  for (y, key_chars_row) in key_chars_rows.iter().enumerate() {
+    for (x, key_char) in key_chars_row.chars().enumerate() {
+      let width = key_chars_row.len() as u32 - 1;
+      let center = Point::new(
+        (x as f64 * cell_width
+          + client.x() as f64
+          + (client.width() as f64 - width as f64 * cell_width) / 2.0)
+          as i32,
+        (y as f64 * cell_height
+          + client.y() as f64
+          + cell_height / 2.0) as i32,
+      );
+      key_cells.push(KeyCell {
+        client: Rect::from_center(
+          center,
+          cell_width as u32,
+          cell_height as u32,
+        ),
+        key: key_char,
+        is_highlighted: props.highlighted_keys.contains(&key_char),
+        is_pressed: props.pressed_keys.contains(&key_char),
+      });
     }
   }
-
-  pub fn draw<'a, T: RenderTarget, U>(
-    &self,
-    mut canvas: &mut Canvas<T>,
-    text_builder: TextBuilder<'a, U>,
-    client: Rect,
-  ) -> Result<(), TextError> {
-    let key_chars_rows =
-      ["1234567890-", "qwertyuiop", "asdfghjkl", "zxcvbnm"];
-
-    let cell_height =
-      client.height() as f64 / key_chars_rows.len() as f64;
-    let cell_width = cell_height * CELL_ASPECT;
-
-    for (y, key_chars_row) in key_chars_rows.iter().enumerate() {
-      for (x, key_char) in key_chars_row.chars().enumerate() {
-        let width = key_chars_row.len() as u32 - 1;
-        let center = Point::new(
-          (x as f64 * cell_width
-            + client.x() as f64
-            + (client.width() as f64 - width as f64 * cell_width)
-              / 2.0) as i32,
-          (y as f64 * cell_height
-            + client.y() as f64
-            + cell_height / 2.0) as i32,
-        );
-        KeyCell {
-          client: Rect::from_center(
-            center,
-            cell_width as u32,
-            cell_height as u32,
-          ),
-          key: key_char,
-          is_highlighted: self.highlighted_keys.contains(&key_char),
-          is_pressed: self.pressed_keys.contains(&key_char),
-        }
-        .draw(&mut canvas, text_builder.clone())?;
-      }
+  Ok(move |mut canvas: &mut Canvas<Window>| {
+    for key_cell in key_cells.iter() {
+      key_cell.draw(&mut canvas, text_builder.clone())?;
     }
     Ok(())
-  }
+  })
 }
