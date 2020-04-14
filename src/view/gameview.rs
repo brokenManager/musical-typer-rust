@@ -209,11 +209,10 @@ impl GameView {
         correction_type_count as f64 / all_roman_len as f64;
       let type_per_second = timepoints.len() as f64 / 5.0;
 
-      whole::render(
-        &mut self.canvas,
+      whole::build(
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
         builder.clone(),
-        &WholeProps {
+        WholeProps {
           pressed_keys: pressed_key_buf
             .iter()
             .cloned()
@@ -236,8 +235,7 @@ impl GameView {
           achievement_rate,
           type_per_second,
         },
-      )?;
-
+      )?(&mut self.canvas)?;
       self.canvas.present();
 
       let typed_key_buf_cloned = typed_key_buf.clone();

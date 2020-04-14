@@ -27,12 +27,14 @@ pub struct WholeProps {
   pub accuracy: f64,
 }
 
-pub fn render<'a, 't>(
-  mut canvas: &mut Canvas<Window>,
+pub fn build(
   client: Rect,
-  builder: TextBuilder<'t, WindowContext>,
-  props: &'a WholeProps,
-) -> Result<(), ViewError> {
+  builder: TextBuilder<'_, WindowContext>,
+  props: WholeProps,
+) -> Result<
+  impl Fn(&mut Canvas<Window>) -> Result<(), ViewError> + '_,
+  ViewError,
+> {
   let header_render = header::build(
     builder.clone(),
     HeaderProps {
@@ -65,29 +67,7 @@ pub fn render<'a, 't>(
 
   let stats_dim =
     Rect::new(0, 450, client.width(), client.height() - 450);
-
-  canvas.set_draw_color(Color::RGB(253, 243, 226));
-  canvas.clear();
-
-  header_render(&mut canvas)?;
-  canvas.set_draw_color(Color::RGB(0, 0, 0));
-  canvas
-    .draw_rect(header_dim)
-    .map_err(|e| ViewError::RenderError(e))?;
-
-  finder_render(&mut canvas)?;
-  canvas.set_draw_color(Color::RGB(0, 0, 0));
-  canvas
-    .draw_rect(finder_dim)
-    .map_err(|e| ViewError::RenderError(e))?;
-
-  keyboard_render(&mut canvas)?;
-  canvas.set_draw_color(Color::RGB(0, 0, 0));
-  canvas
-    .draw_rect(keyboard_dim)
-    .map_err(|e| ViewError::RenderError(e))?;
-
-  stats::build(
+  let stats_render = stats::build(
     stats_dim,
     builder.clone(),
     StatsProps {
@@ -95,6 +75,31 @@ pub fn render<'a, 't>(
       type_per_second: props.type_per_second,
       achievement_rate: props.achievement_rate,
     },
-  )?(&mut canvas)?;
-  Ok(())
+  )?;
+
+  Ok(move |mut canvas: &mut Canvas<Window>| {
+    canvas.set_draw_color(Color::RGB(253, 243, 226));
+    canvas.clear();
+
+    header_render(&mut canvas)?;
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas
+      .draw_rect(header_dim)
+      .map_err(|e| ViewError::RenderError(e))?;
+
+    finder_render(&mut canvas)?;
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas
+      .draw_rect(finder_dim)
+      .map_err(|e| ViewError::RenderError(e))?;
+
+    keyboard_render(&mut canvas)?;
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas
+      .draw_rect(keyboard_dim)
+      .map_err(|e| ViewError::RenderError(e))?;
+
+    stats_render(&mut canvas)?;
+    Ok(())
+  })
 }
