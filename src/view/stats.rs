@@ -90,6 +90,27 @@ pub fn render<'t>(
         client.height() - 20,
       ),
     )?;
-  let rank = rank::rank(props.accuracy);
+  let rank = rank::rank(props.accuracy * 200.0);
+  builder
+    .text("ランク")
+    .color(Color::RGB(160, 160, 165))
+    .build()?
+    .render(
+      &mut canvas,
+      Rect::new(client.x() + 10, client.y() - 40, 65, 20),
+    )?;
+  builder
+    .text(rank)
+    .color(Color::RGB(64, 79, 181))
+    .build()?
+    .render(
+      &mut canvas,
+      Rect::new(
+        client.x() + 10,
+        client.y() - 25,
+        15 * rank.len() as u32,
+        25,
+      ),
+    )?;
   Ok(())
 }
