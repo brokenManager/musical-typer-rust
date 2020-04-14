@@ -13,14 +13,14 @@ mod header;
 mod keyboard;
 
 use finder::FinderProps;
-use header::Header;
+use header::HeaderProps;
 use keyboard::Keyboard;
 
 pub struct WholeProps<'a> {
   pub pressed_keys: &'a [char],
   pub sentence: Option<Sentence>,
-  pub title: &'a str,
-  pub song_author: &'a str,
+  pub title: String,
+  pub song_author: String,
   pub score_point: i32,
   pub type_per_second: f64,
   pub achievement_rate: f64,
@@ -33,8 +33,14 @@ pub fn render<'a, 't>(
   builder: TextBuilder<'t, WindowContext>,
   props: &'a WholeProps,
 ) -> Result<(), ViewError> {
-  let header =
-    Header::new(props.title, props.song_author, props.score_point);
+  let header_render = header::build(
+    builder.clone(),
+    HeaderProps {
+      title: props.title.clone(),
+      author: props.song_author.clone(),
+      score_point: props.score_point,
+    },
+  )?;
   let header_dim = Rect::new(0, 0, client.width(), 100);
 
   let finder_dim = Rect::new(0, 100, client.width(), 150);
@@ -56,7 +62,7 @@ pub fn render<'a, 't>(
   canvas.set_draw_color(Color::RGB(253, 243, 226));
   canvas.clear();
 
-  header.draw(&mut canvas, builder.clone())?;
+  header_render(&mut canvas)?;
   canvas.set_draw_color(Color::RGB(0, 0, 0));
   canvas
     .draw_rect(header_dim)

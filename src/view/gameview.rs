@@ -224,12 +224,14 @@ impl GameView {
             .score
             .metadata
             .get("title")
-            .unwrap_or(&"曲名不詳".to_owned()),
+            .cloned()
+            .unwrap_or("曲名不詳".to_owned()),
           song_author: self
             .score
             .metadata
             .get("song_author")
-            .unwrap_or(&"作曲者不詳".to_owned()),
+            .cloned()
+            .unwrap_or("作曲者不詳".to_owned()),
           score_point,
           accuracy,
           achievement_rate,
