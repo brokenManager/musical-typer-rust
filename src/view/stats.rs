@@ -14,12 +14,12 @@ pub struct StatsProps {
   pub accuracy: f64,
 }
 
-pub fn build<'t>(
+pub fn build(
   client: Rect,
-  mut builder: TextBuilder<'t, WindowContext>,
+  mut builder: TextBuilder<'_, WindowContext>,
   props: StatsProps,
 ) -> Result<
-  impl Fn(&mut Canvas<Window>) -> Result<(), ViewError> + 't,
+  impl Fn(&mut Canvas<Window>) -> Result<(), ViewError> + '_,
   ViewError,
 > {
   let speed_indicator_color = if 4.0 < props.type_per_second {
