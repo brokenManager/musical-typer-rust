@@ -4,6 +4,7 @@ use sdl2::render::Canvas;
 use sdl2::video::{Window, WindowContext};
 
 use super::super::text::TextBuilder;
+use super::super::{stats, stats::StatsProps};
 use super::ViewError;
 use crate::model::exp::sentence::Sentence;
 
@@ -34,11 +35,13 @@ pub fn render<'a, 't>(
   let header_dim = Rect::new(0, 0, client.width(), 100);
 
   let finder = Finder::new(props.sentence, 0.2);
-  let finder_dim = Rect::new(0, 100, client.width(), 200);
+  let finder_dim = Rect::new(0, 100, client.width(), 150);
 
   let keyboard = Keyboard::new(props.pressed_keys, &[]);
-  let keyboard_dim =
-    Rect::new(0, client.height() as i32 - 300, client.width(), 300);
+  let keyboard_dim = Rect::new(0, 250, client.width(), 200);
+
+  let stats_dim =
+    Rect::new(0, 450, client.width(), client.height() - 450);
 
   canvas.set_draw_color(Color::RGB(253, 243, 226));
   canvas.clear();
@@ -60,5 +63,16 @@ pub fn render<'a, 't>(
   canvas
     .draw_rect(keyboard_dim)
     .map_err(|e| ViewError::RenderError(e))?;
+
+  stats::render(
+    &mut canvas,
+    stats_dim,
+    builder.clone(),
+    StatsProps {
+      accuracy: 0.0,
+      type_per_second: 0.0,
+      achievement_rate: 0.0,
+    },
+  )?;
   Ok(())
 }

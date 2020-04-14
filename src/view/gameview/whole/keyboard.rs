@@ -4,31 +4,16 @@ use sdl2::render::{Canvas, RenderTarget};
 
 use super::super::super::text::{TextBuilder, TextError};
 
-const CELL_WIDTH: u32 = 60;
-const CELL_HEIGHT: u32 = 70;
+const CELL_ASPECT: f64 = 55.0 / 70.0;
 
 pub struct KeyCell {
-  center: Point,
+  client: Rect,
   key: char,
   is_highlighted: bool,
   is_pressed: bool,
 }
 
 impl KeyCell {
-  fn new(
-    center: Point,
-    key: char,
-    is_highlighted: bool,
-    is_pressed: bool,
-  ) -> Self {
-    KeyCell {
-      center,
-      key,
-      is_highlighted,
-      is_pressed,
-    }
-  }
-
   pub fn draw<'a, T: RenderTarget, U>(
     self,
     mut canvas: &mut Canvas<T>,
@@ -38,23 +23,17 @@ impl KeyCell {
     const GREEN: Color = Color::RGB(20, 76, 64);
     const BACK: Color = Color::RGB(253, 243, 226);
     const BLACK: Color = Color::RGB(0, 0, 0);
-    let client =
-      Rect::from_center(self.center, CELL_WIDTH, CELL_HEIGHT);
     canvas.set_draw_color(if self.is_highlighted {
       GREEN
     } else {
       BACK
     });
     canvas
-      .fill_rect(client)
+      .fill_rect(self.client)
       .map_err(|e| TextError::RenderError(e))?;
     canvas.set_draw_color(BLACK);
     canvas
-      .draw_rect(Rect::from_center(
-        self.center,
-        CELL_WIDTH,
-        CELL_HEIGHT,
-      ))
+      .draw_rect(self.client)
       .map_err(|e| TextError::RenderError(e))?;
     text_builder
       .color(if self.is_pressed {
@@ -66,7 +45,7 @@ impl KeyCell {
       })
       .text(&self.key.to_string())
       .build()?
-      .render(&mut canvas, client)?;
+      .render(&mut canvas, self.client)?;
     Ok(())
   }
 }
@@ -91,35 +70,39 @@ impl Keyboard {
     &self,
     mut canvas: &mut Canvas<T>,
     text_builder: TextBuilder<'a, U>,
-    offset: Rect,
+    client: Rect,
   ) -> Result<(), TextError> {
     let key_chars_rows =
       ["1234567890-", "qwertyuiop", "asdfghjkl", "zxcvbnm"];
-    let mut y = 0;
-    for key_chars_row in key_chars_rows.iter() {
-      let mut x = 0;
-      for key_char in key_chars_row.chars() {
+
+    let cell_height =
+      client.height() as f64 / key_chars_rows.len() as f64;
+    let cell_width = cell_height * CELL_ASPECT;
+
+    for (y, key_chars_row) in key_chars_rows.iter().enumerate() {
+      for (x, key_char) in key_chars_row.chars().enumerate() {
         let width = key_chars_row.len() as u32 - 1;
         let center = Point::new(
-          x * CELL_WIDTH as i32
-            + offset.x()
-            + (offset.width() - width * CELL_WIDTH) as i32 / 2,
-          y * CELL_HEIGHT as i32
-            + offset.y()
-            + CELL_HEIGHT as i32 * 2 / 3,
+          (x as f64 * cell_width
+            + client.x() as f64
+            + (client.width() as f64 - width as f64 * cell_width)
+              / 2.0) as i32,
+          (y as f64 * cell_height
+            + client.y() as f64
+            + cell_height / 2.0) as i32,
         );
-        let cell = KeyCell::new(
-          center,
-          key_char,
-          self.highlighted_keys.contains(&key_char),
-          self.pressed_keys.contains(&key_char),
-        );
-        {
-          cell.draw(&mut canvas, text_builder.clone())?;
+        KeyCell {
+          client: Rect::from_center(
+            center,
+            cell_width as u32,
+            cell_height as u32,
+          ),
+          key: key_char,
+          is_highlighted: self.highlighted_keys.contains(&key_char),
+          is_pressed: self.pressed_keys.contains(&key_char),
         }
-        x += 1;
+        .draw(&mut canvas, text_builder.clone())?;
       }
-      y += 1;
     }
     Ok(())
   }
