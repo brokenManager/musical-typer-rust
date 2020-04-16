@@ -3,7 +3,7 @@ use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::{Window, WindowContext};
 
-use super::text::TextBuilder;
+use super::text::TextCtx;
 use super::ViewError;
 
 mod rank;
@@ -16,7 +16,7 @@ pub struct StatsProps {
 
 pub fn build(
   client: Rect,
-  mut builder: TextBuilder<'_, WindowContext>,
+  builder: TextCtx<'_, WindowContext>,
   props: StatsProps,
 ) -> Result<
   impl Fn(&mut Canvas<Window>) -> Result<(), ViewError> + '_,
@@ -30,36 +30,59 @@ pub fn build(
   let speed_indicator_center =
     Point::new(client.width() as i32 / 2, client.y() + 15);
 
-  let type_speed_text = builder
-    .text(&format!("{:04.2} Type/s", props.type_per_second))
-    .color(Color::RGB(0, 0, 0))
-    .build()?;
+  let type_speed_text = {
+    builder
+      .borrow_mut()
+      .text(&format!("{:04.2} Type/s", props.type_per_second))
+      .color(Color::RGB(0, 0, 0))
+      .build()?
+  };
 
-  let accuracy_label_text = builder
-    .text("正解率")
-    .color(Color::RGB(160, 160, 165))
-    .build()?;
-  let accuracy_percent_text = builder
-    .text(&format!("{:05.1}%", props.accuracy * 100.0))
-    .color(Color::RGB(0, 0, 0))
-    .build()?;
+  let accuracy_label_text = {
+    builder
+      .borrow_mut()
+      .text("正解率")
+      .color(Color::RGB(160, 160, 165))
+      .build()?
+  };
+  let accuracy_percent_text = {
+    builder
+      .borrow_mut()
+      .text(&format!("{:05.1}%", props.accuracy * 100.0))
+      .color(Color::RGB(0, 0, 0))
+      .build()?
+  };
 
-  let achievement_rate_label_text = builder
-    .text("達成率")
-    .color(Color::RGB(160, 160, 165))
-    .build()?;
-  let achievement_rate_percent_text = builder
-    .text(&format!("{:05.1}%", props.achievement_rate * 100.0))
-    .color(Color::RGB(64, 79, 181))
-    .build()?;
+  let achievement_rate_label_text = {
+    builder
+      .borrow_mut()
+      .text("達成率")
+      .color(Color::RGB(160, 160, 165))
+      .build()?
+  };
+  let achievement_rate_percent_text = {
+    builder
+      .borrow_mut()
+      .text(&format!("{:05.1}%", props.achievement_rate * 100.0))
+      .color(Color::RGB(64, 79, 181))
+      .build()?
+  };
 
   let rank = rank::rank(props.accuracy * 200.0);
-  let rank_label_text = builder
-    .text("ランク")
-    .color(Color::RGB(160, 160, 165))
-    .build()?;
-  let rank_title_text =
-    builder.text(rank).color(Color::RGB(64, 79, 181)).build()?;
+  let rank_label_text = {
+    builder
+      .borrow_mut()
+      .text("ランク")
+      .color(Color::RGB(160, 160, 165))
+      .build()?
+  };
+  let rank_title_text = {
+    builder
+      .borrow_mut()
+      .text(rank)
+      .color(Color::RGB(64, 79, 181))
+      .build()?
+  };
   Ok(move |mut canvas: &mut Canvas<Window>| {
     canvas.set_draw_color(speed_indicator_color);
     canvas

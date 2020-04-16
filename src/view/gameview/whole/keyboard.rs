@@ -5,7 +5,7 @@ use sdl2::{
   video::{Window, WindowContext},
 };
 
-use super::super::super::text::{TextBuilder, TextError};
+use crate::view::text::{TextCtx, TextError};
 
 const CELL_ASPECT: f64 = 55.0 / 70.0;
 
@@ -20,7 +20,7 @@ impl KeyCell {
   pub fn draw<'a, T: RenderTarget, U>(
     &self,
     mut canvas: &mut Canvas<T>,
-    mut text_builder: TextBuilder<'a, U>,
+    text_builder: TextCtx<'a, U>,
   ) -> Result<(), TextError> {
     const ORANGE: Color = Color::RGB(209, 154, 29);
     const GREEN: Color = Color::RGB(20, 76, 64);
@@ -39,6 +39,7 @@ impl KeyCell {
       .draw_rect(self.client)
       .map_err(|e| TextError::RenderError(e))?;
     text_builder
+      .borrow_mut()
       .color(if self.is_pressed {
         ORANGE
       } else if self.is_highlighted {
@@ -59,7 +60,7 @@ pub struct KeyboardProps {
 }
 
 pub fn build(
-  text_builder: TextBuilder<'_, WindowContext>,
+  text_builder: TextCtx<'_, WindowContext>,
   client: Rect,
   props: KeyboardProps,
 ) -> Result<

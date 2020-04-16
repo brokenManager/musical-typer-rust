@@ -5,7 +5,7 @@ use sdl2::{
   video::{Window, WindowContext},
 };
 
-use super::super::super::text::{TextBuilder, TextError};
+use super::super::super::text::{TextCtx, TextError};
 
 use crate::model::exp::sentence::Sentence;
 
@@ -17,7 +17,7 @@ pub struct FinderProps {
 }
 
 pub fn build(
-  text_builder: TextBuilder<'_, WindowContext>,
+  text_builder: TextCtx<'_, WindowContext>,
   client: Rect,
   props: FinderProps,
 ) -> Result<

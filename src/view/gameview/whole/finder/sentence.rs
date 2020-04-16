@@ -1,6 +1,6 @@
 use crate::{
   model::exp::sentence::{Sentence, TypingStr},
-  view::text::{TextBuilder, TextError},
+  view::text::{TextCtx, TextError},
 };
 use sdl2::{
   pixels::Color,
@@ -10,7 +10,7 @@ use sdl2::{
 };
 
 pub fn build(
-  mut text_builder: TextBuilder<'_, WindowContext>,
+  text_builder: TextCtx<'_, WindowContext>,
   client: Rect,
   sentence: Option<Sentence>,
 ) -> Result<
@@ -32,25 +32,34 @@ pub fn build(
       roman.inputted.len() as f64 / full_roman_len as f64;
 
     let will_input_japanese = sentence.origin().to_owned();
-    let will_input_japanese_text = text_builder
-      .color(Color::RGB(0, 0, 0))
-      .text(&will_input_japanese)
-      .build()?;
+    let will_input_japanese_text = {
+      text_builder
+        .borrow_mut()
+        .color(Color::RGB(0, 0, 0))
+        .text(&will_input_japanese)
+        .build()?
+    };
 
     let TypingStr {
       will_input,
       inputted,
     } = sentence.roman();
 
-    let will_input_text = text_builder
-      .color(Color::RGB(0, 0, 0))
-      .text(&will_input)
-      .build()?;
+    let will_input_text = {
+      text_builder
+        .borrow_mut()
+        .color(Color::RGB(0, 0, 0))
+        .text(&will_input)
+        .build()?
+    };
 
-    let inputted_text = text_builder
-      .color(Color::RGB(80, 80, 80))
-      .text(&inputted)
-      .build()?;
+    let inputted_text = {
+      text_builder
+        .borrow_mut()
+        .color(Color::RGB(80, 80, 80))
+        .text(&inputted)
+        .build()?
+    };
 
     Ok(Box::new(move |mut canvas| {
       will_input_japanese_text.render(

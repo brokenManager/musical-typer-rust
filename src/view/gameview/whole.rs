@@ -3,10 +3,9 @@ use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::{Window, WindowContext};
 
-use super::super::text::TextBuilder;
 use super::super::{stats, stats::StatsProps};
 use super::ViewError;
-use crate::model::exp::sentence::Sentence;
+use crate::{model::exp::sentence::Sentence, view::text::TextCtx};
 
 mod finder;
 mod header;
@@ -29,7 +28,7 @@ pub struct WholeProps {
 
 pub fn build(
   client: Rect,
-  builder: TextBuilder<'_, WindowContext>,
+  builder: TextCtx<'_, WindowContext>,
   props: WholeProps,
 ) -> Result<
   impl Fn(&mut Canvas<Window>) -> Result<(), ViewError> + '_,

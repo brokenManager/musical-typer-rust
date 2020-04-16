@@ -5,7 +5,7 @@ use sdl2::{
   video::{Window, WindowContext},
 };
 
-use super::super::super::text::{TextBuilder, TextError};
+use super::super::super::text::{TextCtx, TextError};
 
 pub struct HeaderProps {
   pub title: String,
@@ -14,22 +14,33 @@ pub struct HeaderProps {
 }
 
 pub fn build(
-  mut text_builder: TextBuilder<'_, WindowContext>,
+  text_builder: TextCtx<'_, WindowContext>,
   props: HeaderProps,
 ) -> Result<
   impl Fn(&mut Canvas<Window>) -> Result<(), TextError> + '_,
   TextError,
 > {
   const JAPANESE_GLYPH_WIDTH: u32 = 13;
-  let title_text = text_builder.text(props.title.as_str()).build()?;
-  let author_text = text_builder
-    .text(props.author.as_str())
-    .color(Color::RGB(156, 156, 162))
-    .build()?;
-  let score_text = text_builder
-    .text(format!("{:08}", props.score_point).as_str())
-    .color(Color::RGB(64, 79, 181))
-    .build()?;
+  let title_text = {
+    text_builder
+      .borrow_mut()
+      .text(props.title.as_str())
+      .build()?
+  };
+  let author_text = {
+    text_builder
+      .borrow_mut()
+      .text(props.author.as_str())
+      .color(Color::RGB(156, 156, 162))
+      .build()?
+  };
+  let score_text = {
+    text_builder
+      .borrow_mut()
+      .text(format!("{:08}", props.score_point).as_str())
+      .color(Color::RGB(64, 79, 181))
+      .build()?
+  };
   let title_text_width =
     props.title.len() as u32 * JAPANESE_GLYPH_WIDTH;
   let author_text_width =

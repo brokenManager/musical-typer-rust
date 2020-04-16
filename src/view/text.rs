@@ -2,6 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, RenderTarget, Texture, TextureCreator};
 use sdl2::ttf::Font;
+use std::{cell::RefCell, rc::Rc};
 
 #[derive(Debug)]
 pub enum TextError {
@@ -49,28 +50,19 @@ pub struct TextBuilder<'a, T> {
   texture_creator: &'a TextureCreator<T>,
 }
 
-impl<'a, T> Clone for TextBuilder<'a, T> {
-  fn clone(&self) -> Self {
-    TextBuilder {
-      text: self.text.clone(),
-      color: self.color,
-      font: self.font,
-      texture_creator: self.texture_creator,
-    }
-  }
-}
+pub type TextCtx<'a, T> = Rc<RefCell<TextBuilder<'a, T>>>;
 
 impl<'a, T> TextBuilder<'a, T> {
   pub fn new(
     font: &'a Font<'a, 'static>,
     texture_creator: &'a TextureCreator<T>,
-  ) -> Self {
-    TextBuilder {
+  ) -> Rc<RefCell<Self>> {
+    Rc::new(RefCell::new(TextBuilder {
       text: "".to_owned(),
       color: Color::RGB(0, 0, 0),
       font,
       texture_creator,
-    }
+    }))
   }
 
   pub fn text(&mut self, new_text: &str) -> &mut Self {

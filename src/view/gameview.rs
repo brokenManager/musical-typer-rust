@@ -15,8 +15,7 @@ use std::collections::BTreeSet;
 
 mod whole;
 
-use super::text::TextBuilder;
-use super::ViewError;
+use super::{text::TextBuilder, ViewError};
 use whole::WholeProps;
 
 pub struct GameView {
