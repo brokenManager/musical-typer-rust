@@ -28,9 +28,9 @@ impl Header {
 
     {
       let title_text =
-          text_builder.text(self.title.as_str()).build()?;
+        text_builder.text(self.title.as_str()).build()?;
       let title_text_width =
-          self.title.len() as u32 * JAPANESE_GLYPH_WIDTH;
+        self.title.len() as u32 * JAPANESE_GLYPH_WIDTH;
       title_text.render(
         &mut canvas,
         Rect::new(
@@ -44,11 +44,11 @@ impl Header {
 
     {
       let author_text = text_builder
-          .text(self.author.as_str())
-          .color(Color::RGB(156, 156, 162))
-          .build()?;
+        .text(self.author.as_str())
+        .color(Color::RGB(156, 156, 162))
+        .build()?;
       let author_text_width =
-          self.author.len() as u32 * JAPANESE_GLYPH_WIDTH;
+        self.author.len() as u32 * JAPANESE_GLYPH_WIDTH;
       author_text.render(
         &mut canvas,
         Rect::new(
@@ -62,9 +62,9 @@ impl Header {
 
     {
       let score_text = text_builder
-          .text(format!("{:08}", self.score_point).as_str())
-          .color(Color::RGB(64, 79, 181))
-          .build()?;
+        .text(format!("{:08}", self.score_point).as_str())
+        .color(Color::RGB(64, 79, 181))
+        .build()?;
 
       score_text.render(&mut canvas, Rect::new(0, 50, 300, 50))?;
     }

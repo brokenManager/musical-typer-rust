@@ -34,13 +34,13 @@ pub fn render<'a, 't>(
 
   {
     let header =
-        Header::new(props.title, props.song_author, props.score_point);
+      Header::new(props.title, props.song_author, props.score_point);
     let header_dim = Rect::new(0, 0, client.width(), 100);
     header.draw(&mut canvas, builder)?;
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas
-        .draw_rect(header_dim)
-        .map_err(|e| ViewError::RenderError(e))?;
+      .draw_rect(header_dim)
+      .map_err(|e| ViewError::RenderError(e))?;
   }
 
   {
@@ -49,20 +49,20 @@ pub fn render<'a, 't>(
     finder.draw(&mut canvas, builder, finder_dim)?;
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas
-        .draw_rect(finder_dim)
-        .map_err(|e| ViewError::RenderError(e))?;
+      .draw_rect(finder_dim)
+      .map_err(|e| ViewError::RenderError(e))?;
   }
 
   {
     let keyboard = Keyboard::new(props.pressed_keys, &[]);
     let keyboard_dim =
-        Rect::new(0, client.height() as i32 - 300, client.width(), 300);
+      Rect::new(0, client.height() as i32 - 300, client.width(), 300);
     keyboard.draw(&mut canvas, builder, keyboard_dim)?;
 
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas
-        .draw_rect(keyboard_dim)
-        .map_err(|e| ViewError::RenderError(e))?;
+      .draw_rect(keyboard_dim)
+      .map_err(|e| ViewError::RenderError(e))?;
   }
 
   Ok(())

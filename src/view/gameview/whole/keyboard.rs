@@ -114,7 +114,7 @@ impl Keyboard {
           self.highlighted_keys.contains(&key_char),
           self.pressed_keys.contains(&key_char),
         );
-          cell.draw(&mut canvas, text_builder)?;
+        cell.draw(&mut canvas, text_builder)?;
         x += 1;
       }
       y += 1;
