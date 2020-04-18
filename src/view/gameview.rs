@@ -92,13 +92,12 @@ impl GameView {
         message: e.to_string(),
       })?;
 
-    let builder = TextBuilder::new(&font, &texture_creator);
-
     let mut timer = self
       .ctx
       .timer()
       .map_err(|e| ViewError::InitError { message: e })?;
 
+    let mut builder = TextBuilder::new(&font, &texture_creator);
     let mut mt_events = vec![];
     let mut musics = vec![];
     let mut pressed_key_buf = BTreeSet::new();
@@ -165,7 +164,7 @@ impl GameView {
       whole::render(
         &mut self.canvas,
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
-        builder.clone(),
+        &mut builder,
         &WholeProps {
           pressed_keys: &pressed_key_buf
             .iter()
@@ -194,13 +193,16 @@ impl GameView {
       mt_events =
         self.model.key_press(typed_key_buf_cloned.into_iter());
 
+      let draw_time = time.elapsed().as_secs_f64();
+
       timer.delay((1e3 / 60.0) as u32);
 
       let elapsed = time.elapsed().as_secs_f64();
+
       mt_events.append(&mut self.model.elapse_time(elapsed));
       print!(
         "\rFPS: {}, Playing: {}     ",
-        1.0 / elapsed,
+        1.0 / draw_time,
         sdl2::mixer::Music::is_playing()
       );
     }

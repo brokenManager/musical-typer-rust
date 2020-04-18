@@ -2,6 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, RenderTarget, Texture, TextureCreator};
 use sdl2::ttf::Font;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub enum TextError {
@@ -47,17 +48,7 @@ pub struct TextBuilder<'a, T> {
   color: Color,
   font: &'a Font<'a, 'static>,
   texture_creator: &'a TextureCreator<T>,
-}
-
-impl<'a, T> Clone for TextBuilder<'a, T> {
-  fn clone(&self) -> Self {
-    TextBuilder {
-      text: self.text.clone(),
-      color: self.color,
-      font: self.font,
-      texture_creator: self.texture_creator,
-    }
-  }
+  cache: HashMap<String, Text<'a>>,
 }
 
 impl<'a, T> TextBuilder<'a, T> {
@@ -70,11 +61,17 @@ impl<'a, T> TextBuilder<'a, T> {
       color: Color::RGB(0, 0, 0),
       font,
       texture_creator,
+      cache: HashMap::new(),
     }
   }
 
   pub fn text(&mut self, new_text: &str) -> &mut Self {
-    self.text = new_text.to_owned();
+    if new_text == "" {
+      self.text = String::from(" ");
+    } else {
+      self.text = new_text.to_owned();
+    }
+
     self
   }
 
@@ -83,11 +80,29 @@ impl<'a, T> TextBuilder<'a, T> {
     self
   }
 
-  pub fn build(&self) -> Result<Text<'a>, TextError> {
-    let mut text = self.text.as_str();
-    if text == "" {
-      text = " ";
+  fn cache_key(&self) -> String {
+    format!(
+      "{},{},{},{},{},",
+      self.text,
+      self.color.r,
+      self.color.g,
+      self.color.b,
+      self.color.a
+    )
+  }
+
+  pub fn build(&mut self) -> Result<&Text<'a>, TextError> {
+    let key = self.cache_key();
+    if !self.cache.contains_key(&key) {
+      let rendered = Text::new::<T>(
+        self.font,
+        self.texture_creator,
+        self.text.as_str(),
+        self.color,
+      )?;
+      self.cache.insert(String::from(self.cache_key()), rendered);
     }
-    Text::new::<T>(self.font, self.texture_creator, text, self.color)
+
+    return Ok(self.cache.get(&key).unwrap());
   }
 }
