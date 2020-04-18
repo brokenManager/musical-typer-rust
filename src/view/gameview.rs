@@ -193,13 +193,16 @@ impl GameView {
       mt_events =
         self.model.key_press(typed_key_buf_cloned.into_iter());
 
-      let elapsed = time.elapsed().as_secs_f64();
+      let draw_time = time.elapsed().as_secs_f64();
+
       timer.delay((1e3 / 60.0) as u32);
+
+      let elapsed = time.elapsed().as_secs_f64();
 
       mt_events.append(&mut self.model.elapse_time(elapsed));
       print!(
         "\rFPS: {}, Playing: {}     ",
-        1.0 / elapsed,
+        1.0 / draw_time,
         sdl2::mixer::Music::is_playing()
       );
     }
