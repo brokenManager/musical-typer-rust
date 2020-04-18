@@ -3,6 +3,7 @@ use sdl2::rect::{Point, Rect};
 use sdl2::render::{Canvas, RenderTarget};
 
 use super::super::super::text::{TextBuilder, TextError};
+use crate::view::text::TextAlign;
 
 const CELL_WIDTH: u32 = 60;
 const CELL_HEIGHT: u32 = 70;
@@ -32,7 +33,7 @@ impl KeyCell {
   pub fn draw<'a, T: RenderTarget, U>(
     self,
     mut canvas: &mut Canvas<T>,
-    mut text_builder: &mut TextBuilder<'a, U>,
+    text_builder: &mut TextBuilder<'a, U>,
   ) -> Result<(), TextError> {
     const ORANGE: Color = Color::RGB(209, 154, 29);
     const GREEN: Color = Color::RGB(20, 76, 64);
@@ -65,8 +66,9 @@ impl KeyCell {
         BLACK
       })
       .text(&self.key.to_string())
+      .align(TextAlign::Center)
       .build()?
-      .render(&mut canvas, client)?;
+      .render(&mut canvas, client.center())?;
     Ok(())
   }
 }

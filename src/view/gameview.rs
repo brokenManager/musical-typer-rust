@@ -1,5 +1,7 @@
 use crate::model::exp::scoremap::Scoremap;
-use crate::model::exp::sentence::Sentence;
+use crate::model::exp::{
+  minute_second::Seconds, note::NoteContent, sentence::Sentence,
+};
 use crate::model::game::{
   MusicalTyper, MusicalTyperConfig, MusicalTyperEvent,
 };
@@ -13,8 +15,7 @@ use std::collections::BTreeSet;
 
 mod whole;
 
-use super::text::TextBuilder;
-use super::ViewError;
+use super::{text::TextBuilder, ViewError};
 use whole::WholeProps;
 
 pub struct GameView {
@@ -92,6 +93,18 @@ impl GameView {
         message: e.to_string(),
       })?;
 
+    let all_roman_len =
+      self.score.notes.iter().fold(0, |acc, note| {
+        match note.content() {
+          NoteContent::Sentence { sentence, .. } => {
+            sentence.roman().will_input.len() + acc
+          }
+          _ => acc,
+        }
+      });
+
+    struct TypeTimepoint(Seconds);
+
     let mut timer = self
       .ctx
       .timer()
@@ -104,6 +117,9 @@ impl GameView {
     let mut typed_key_buf = vec![];
     let mut sentence: Option<Sentence> = None;
     let mut score_point = 0;
+    let mut correction_type_count = 0;
+    let mut wrong_type_count = 0;
+    let mut timepoints = std::collections::VecDeque::new();
 
     'main: loop {
       let time = std::time::Instant::now();
@@ -128,7 +144,16 @@ impl GameView {
             Pointed(point) => {
               score_point += point;
             }
-            Typed { mistaken } => {}
+            Typed { mistaken } => {
+              if *mistaken {
+                wrong_type_count += 1;
+              } else {
+                correction_type_count += 1;
+                timepoints.push_back(TypeTimepoint(
+                  self.model.accumulated_time(),
+                ));
+              }
+            }
           }
         }
       }
@@ -161,6 +186,17 @@ impl GameView {
           }
         }
       }
+      {
+        let expire_limit = self.model.accumulated_time() - 5.0;
+        while let Some(front) = timepoints.front() {
+          if front.0 < expire_limit {
+            timepoints.pop_front();
+          } else {
+            break;
+          }
+        }
+      }
+
       whole::render(
         &mut self.canvas,
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
@@ -185,7 +221,6 @@ impl GameView {
           score_point,
         },
       )?;
-
       self.canvas.present();
 
       let typed_key_buf_cloned = typed_key_buf.clone();

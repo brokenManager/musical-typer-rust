@@ -1,10 +1,13 @@
 use sdl2::pixels::Color;
-use sdl2::rect::Rect;
+use sdl2::rect::{Point, Rect};
 use sdl2::render::{Canvas, RenderTarget};
 
 use super::super::super::text::{TextBuilder, TextError};
 
-use crate::model::exp::sentence::{Sentence, TypingStr};
+use crate::{
+  model::exp::sentence::{Sentence, TypingStr},
+  view::text::TextAlign,
+};
 
 pub struct Finder<'a> {
   sentence: &'a Option<Sentence>,
@@ -25,7 +28,7 @@ impl<'a> Finder<'a> {
   pub fn draw<'builder, T: RenderTarget, U>(
     &self,
     mut canvas: &mut Canvas<T>,
-    mut text_builder: &mut TextBuilder<'builder, U>,
+    text_builder: &mut TextBuilder<'builder, U>,
     offset: Rect,
   ) -> Result<(), TextError> {
     let remaining_width =
@@ -40,7 +43,6 @@ impl<'a> Finder<'a> {
       ))
       .map_err(|e| TextError::RenderError(e))?;
 
-    const JAPANESE_GLYPH_WIDTH: u32 = 20;
     const JAPANESE_HEIGHT: u32 = 80;
     let half_x = offset.width() / 2;
 
@@ -55,23 +57,19 @@ impl<'a> Finder<'a> {
       text_builder
         .color(Color::RGB(0, 0, 0))
         .text(will_input_japanese)
+        .line_height(JAPANESE_HEIGHT)
+        .align(TextAlign::Left)
         .build()?
-        .render(
-          &mut canvas,
-          Rect::new(
-            (half_x as f64
-              - (normalized_inputted
-                * will_input_japanese.len() as f64)
-                * JAPANESE_GLYPH_WIDTH as f64) as i32,
+        .render_with(&mut canvas, |(width, _)| {
+          Point::new(
+            (half_x as f64 - normalized_inputted * width as f64)
+              as i32,
             offset.y(),
-            will_input_japanese.len() as u32 * JAPANESE_GLYPH_WIDTH,
-            JAPANESE_HEIGHT,
-          ),
-        )?;
+          )
+        })?;
 
       {
-        const ROMAN_GLYPH_WIDTH: u32 = 20;
-        const ROMAN_HEIGHT: u32 = 20;
+        const ROMAN_HEIGHT: u32 = 40;
         let TypingStr {
           will_input,
           inputted,
@@ -82,30 +80,28 @@ impl<'a> Finder<'a> {
         text_builder
           .color(Color::RGB(0, 0, 0))
           .text(will_input)
+          .line_height(ROMAN_HEIGHT)
+          .align(TextAlign::Left)
           .build()?
           .render(
             &mut canvas,
-            Rect::new(
-              half_x as i32,
+            Point::new(
+              half_x as i32 + 5,
               offset.y() + JAPANESE_HEIGHT as i32,
-              will_input.len() as u32 * ROMAN_GLYPH_WIDTH,
-              ROMAN_HEIGHT + ROMAN_HEIGHT,
             ),
           )?;
 
         text_builder
           .color(Color::RGB(80, 80, 80))
           .text(inputted)
+          .line_height(ROMAN_HEIGHT)
+          .align(TextAlign::Right)
           .build()?
           .render(
             &mut canvas,
-            Rect::new(
-              half_x as i32
-                - (inputted.len() + 1) as i32
-                  * ROMAN_GLYPH_WIDTH as i32,
+            Point::new(
+              half_x as i32 - 5,
               offset.y() + JAPANESE_HEIGHT as i32,
-              inputted.len() as u32 * ROMAN_GLYPH_WIDTH,
-              ROMAN_HEIGHT + ROMAN_HEIGHT,
             ),
           )?;
       }
