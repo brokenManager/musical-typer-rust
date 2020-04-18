@@ -16,7 +16,7 @@ impl std::fmt::Debug for RomanChar {
 
 impl RomanChar {
   pub fn new(styles: &[&'static str]) -> Self {
-    RomanChar {
+    Self {
       styles: Vec::from(styles),
       determined_style: None,
       inputted: String::new(),
@@ -58,10 +58,6 @@ impl RomanChar {
 
   pub fn completed_input(&self) -> bool {
     self.determined_style().len() == self.inputted.len()
-  }
-
-  pub fn origin(&self) -> &str {
-    ""
   }
 
   pub fn fix_style(&mut self, typed: char) {

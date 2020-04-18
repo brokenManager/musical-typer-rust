@@ -67,8 +67,8 @@ impl Sentence {
 
   pub fn yomiagana(&self) -> TypingStr {
     TypingStr {
-      will_input: self.hiragana.will_input_yomigana().to_owned(),
-      inputted: self.hiragana.inputted_yomigana(),
+      will_input: self.hiragana.will_input_yomigana().collect(),
+      inputted: self.hiragana.inputted_yomigana().collect(),
     }
   }
 

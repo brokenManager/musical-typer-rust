@@ -3,6 +3,7 @@ use super::roman_lexer::{parse, RomanParseError};
 
 #[derive(Clone, PartialEq)]
 pub struct RomanStr {
+  yomigana: String,
   chars: Vec<RomanChar>,
   inputting_char: usize,
   inputted: String,
@@ -32,25 +33,29 @@ impl RomanStr {
     let mut parsed: Vec<RomanChar> = vec![];
     parse(&mut parsed, chars.as_slice())?;
     Ok(RomanStr {
+      yomigana: yomigana.to_owned(),
       chars: parsed,
       inputting_char: 0,
       inputted: String::new(),
     })
   }
 
-  pub fn will_input_yomigana(&self) -> &str {
-    ""
-  }
-
-  pub fn inputted_yomigana(&self) -> String {
+  fn inputted_yomigana_index(&self) -> usize {
     self
       .chars
       .iter()
-      .take_while(|c| !c.completed_input())
-      .map(|c| c.origin())
-      .collect::<Vec<&str>>()
-      .join("")
-      .to_owned()
+      .take_while(|c| c.completed_input())
+      .count()
+  }
+
+  pub fn will_input_yomigana(
+    &self,
+  ) -> impl Iterator<Item = char> + '_ {
+    self.yomigana.chars().skip(self.inputted_yomigana_index())
+  }
+
+  pub fn inputted_yomigana(&self) -> impl Iterator<Item = char> + '_ {
+    self.yomigana.chars().take(self.inputted_yomigana_index())
   }
 
   pub fn will_input_roman(&self) -> String {

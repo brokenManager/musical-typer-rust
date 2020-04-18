@@ -18,10 +18,10 @@ pub fn build(
   TextError,
 > {
   if let Some(sentence) = sentence {
-    const JAPANESE_HEIGHT: u32 = 80;
+    const JAPANESE_HEIGHT: u32 = 20;
     let half_x = client.width() / 2;
 
-    const ROMAN_HEIGHT: u32 = 40;
+    const ROMAN_HEIGHT: u32 = 50;
 
     let roman = sentence.roman();
     let full_roman_len =
@@ -40,29 +40,61 @@ pub fn build(
         .build()?
     };
 
-    let TypingStr {
-      will_input,
-      inputted,
-    } = sentence.roman();
+    let will_input_yomigana_text;
+    let inputted_yomigana_text;
+    {
+      let TypingStr {
+        will_input,
+        inputted,
+      } = sentence.yomiagana();
 
-    let will_input_text = {
-      text_builder
-        .borrow_mut()
-        .color(Color::RGB(0, 0, 0))
-        .text(&will_input)
-        .line_height(ROMAN_HEIGHT)
-        .build()?
-    };
+      will_input_yomigana_text = {
+        text_builder
+          .borrow_mut()
+          .color(Color::RGB(0, 0, 0))
+          .text(&will_input)
+          .line_height(ROMAN_HEIGHT)
+          .align(TextAlign::Left)
+          .build()?
+      };
+      inputted_yomigana_text = {
+        text_builder
+          .borrow_mut()
+          .color(Color::RGB(80, 80, 80))
+          .text(&inputted)
+          .line_height(ROMAN_HEIGHT)
+          .align(TextAlign::Right)
+          .build()?
+      };
+    }
 
-    let inputted_text = {
-      text_builder
-        .borrow_mut()
-        .color(Color::RGB(80, 80, 80))
-        .text(&inputted)
-        .line_height(ROMAN_HEIGHT)
-        .align(TextAlign::Right)
-        .build()?
-    };
+    let will_input_roman_text;
+    let inputted_roman_text;
+    {
+      let TypingStr {
+        will_input,
+        inputted,
+      } = sentence.roman();
+
+      will_input_roman_text = {
+        text_builder
+          .borrow_mut()
+          .color(Color::RGB(0, 0, 0))
+          .text(&will_input)
+          .line_height(ROMAN_HEIGHT)
+          .align(TextAlign::Left)
+          .build()?
+      };
+      inputted_roman_text = {
+        text_builder
+          .borrow_mut()
+          .color(Color::RGB(80, 80, 80))
+          .text(&inputted)
+          .line_height(ROMAN_HEIGHT)
+          .align(TextAlign::Right)
+          .build()?
+      };
+    }
 
     Ok(Box::new(move |mut canvas| {
       will_input_japanese_text.render_with(
@@ -74,18 +106,34 @@ pub fn build(
           )
         },
       )?;
-      will_input_text.render(
+      will_input_yomigana_text.render(
         &mut canvas,
         Point::new(
           half_x as i32 + 5,
-          client.y() + JAPANESE_HEIGHT as i32,
+          client.y() + client.height() as i32
+            - 2 * ROMAN_HEIGHT as i32,
         ),
       )?;
-      inputted_text.render(
+      inputted_yomigana_text.render(
         &mut canvas,
         Point::new(
           half_x as i32 - 5,
-          client.y() + JAPANESE_HEIGHT as i32,
+          client.y() + client.height() as i32
+            - 2 * ROMAN_HEIGHT as i32,
+        ),
+      )?;
+      will_input_roman_text.render(
+        &mut canvas,
+        Point::new(
+          half_x as i32 + 5,
+          client.y() + client.height() as i32 - ROMAN_HEIGHT as i32,
+        ),
+      )?;
+      inputted_roman_text.render(
+        &mut canvas,
+        Point::new(
+          half_x as i32 - 5,
+          client.y() + client.height() as i32 - ROMAN_HEIGHT as i32,
         ),
       )?;
       Ok(())
