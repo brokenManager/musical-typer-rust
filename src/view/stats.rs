@@ -3,7 +3,7 @@ use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::{Window, WindowContext};
 
-use super::text::TextCtx;
+use super::text::{TextAlign, TextCtx};
 use super::ViewError;
 
 mod rank;
@@ -35,6 +35,8 @@ pub fn build(
       .borrow_mut()
       .text(&format!("{:04.2} Type/s", props.type_per_second))
       .color(Color::RGB(0, 0, 0))
+      .line_height(20)
+      .align(TextAlign::Center)
       .build()?
   };
 
@@ -43,6 +45,8 @@ pub fn build(
       .borrow_mut()
       .text("正解率")
       .color(Color::RGB(160, 160, 165))
+      .line_height(20)
+      .align(TextAlign::Left)
       .build()?
   };
   let accuracy_percent_text = {
@@ -50,6 +54,7 @@ pub fn build(
       .borrow_mut()
       .text(&format!("{:05.1}%", props.accuracy * 100.0))
       .color(Color::RGB(0, 0, 0))
+      .line_height(client.height() - 20)
       .build()?
   };
 
@@ -58,6 +63,7 @@ pub fn build(
       .borrow_mut()
       .text("達成率")
       .color(Color::RGB(160, 160, 165))
+      .line_height(20)
       .build()?
   };
   let achievement_rate_percent_text = {
@@ -65,6 +71,7 @@ pub fn build(
       .borrow_mut()
       .text(&format!("{:05.1}%", props.achievement_rate * 100.0))
       .color(Color::RGB(64, 79, 181))
+      .line_height(client.height() - 20)
       .build()?
   };
 
@@ -74,6 +81,7 @@ pub fn build(
       .borrow_mut()
       .text("ランク")
       .color(Color::RGB(160, 160, 165))
+      .line_height(20)
       .build()?
   };
   let rank_title_text = {
@@ -81,6 +89,7 @@ pub fn build(
       .borrow_mut()
       .text(rank)
       .color(Color::RGB(64, 79, 181))
+      .line_height(25)
       .build()?
   };
   Ok(move |mut canvas: &mut Canvas<Window>| {
@@ -93,56 +102,39 @@ pub fn build(
       ))
       .map_err(|e| ViewError::RenderError(e))?;
 
-    type_speed_text.render(
-      &mut canvas,
-      Rect::from_center(speed_indicator_center, 100, 20),
-    )?;
+    type_speed_text.render(&mut canvas, speed_indicator_center)?;
 
     accuracy_label_text.render(
       &mut canvas,
-      Rect::new(client.x() + 10, client.y() + 30, 50, 20),
+      Point::new(client.x() + 10, client.y() + 30),
     )?;
     accuracy_percent_text.render(
       &mut canvas,
-      Rect::new(
-        client.x() + 60,
-        client.y() + 30,
-        ((client.width() / 2) as i32 - (client.x() + 60)) as u32,
-        client.height() - 20,
-      ),
+      Point::new(client.x() + 60, client.y() + 30),
     )?;
 
     achievement_rate_label_text.render(
       &mut canvas,
-      Rect::new(
+      Point::new(
         client.width() as i32 / 2 + client.x() + 10,
         client.y() + 30,
-        50,
-        20,
       ),
     )?;
     achievement_rate_percent_text.render(
       &mut canvas,
-      Rect::new(
+      Point::new(
         (client.width() / 2) as i32 + client.x() + 60,
         client.y() + 30,
-        ((client.width() / 2) as i32 - (client.x() + 60)) as u32,
-        client.height() - 20,
       ),
     )?;
 
     rank_label_text.render(
       &mut canvas,
-      Rect::new(client.x() + 10, client.y() - 40, 65, 20),
+      Point::new(client.x() + 10, client.y() - 40),
     )?;
     rank_title_text.render(
       &mut canvas,
-      Rect::new(
-        client.x() + 10,
-        client.y() - 25,
-        15 * rank.len() as u32,
-        25,
-      ),
+      Point::new(client.x() + 10, client.y() - 25),
     )?;
     Ok(())
   })

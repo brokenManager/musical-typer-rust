@@ -1,10 +1,10 @@
 use crate::{
   model::exp::sentence::{Sentence, TypingStr},
-  view::text::{TextCtx, TextError},
+  view::text::{TextAlign, TextCtx, TextError},
 };
 use sdl2::{
   pixels::Color,
-  rect::Rect,
+  rect::{Point, Rect},
   render::Canvas,
   video::{Window, WindowContext},
 };
@@ -18,12 +18,10 @@ pub fn build(
   TextError,
 > {
   if let Some(sentence) = sentence {
-    const JAPANESE_GLYPH_WIDTH: u32 = 20;
     const JAPANESE_HEIGHT: u32 = 80;
     let half_x = client.width() / 2;
 
-    const ROMAN_GLYPH_WIDTH: u32 = 20;
-    const ROMAN_HEIGHT: u32 = 20;
+    const ROMAN_HEIGHT: u32 = 40;
 
     let roman = sentence.roman();
     let full_roman_len =
@@ -37,6 +35,8 @@ pub fn build(
         .borrow_mut()
         .color(Color::RGB(0, 0, 0))
         .text(&will_input_japanese)
+        .line_height(JAPANESE_HEIGHT)
+        .align(TextAlign::Left)
         .build()?
     };
 
@@ -50,6 +50,7 @@ pub fn build(
         .borrow_mut()
         .color(Color::RGB(0, 0, 0))
         .text(&will_input)
+        .line_height(ROMAN_HEIGHT)
         .build()?
     };
 
@@ -58,39 +59,33 @@ pub fn build(
         .borrow_mut()
         .color(Color::RGB(80, 80, 80))
         .text(&inputted)
+        .line_height(ROMAN_HEIGHT)
+        .align(TextAlign::Right)
         .build()?
     };
 
     Ok(Box::new(move |mut canvas| {
-      will_input_japanese_text.render(
+      will_input_japanese_text.render_with(
         &mut canvas,
-        Rect::new(
-          (half_x as f64
-            - (normalized_inputted
-              * will_input_japanese.len() as f64)
-              * JAPANESE_GLYPH_WIDTH as f64) as i32,
-          client.y(),
-          will_input_japanese.len() as u32 * JAPANESE_GLYPH_WIDTH,
-          JAPANESE_HEIGHT,
-        ),
+        |(w, _)| {
+          Point::new(
+            (half_x as f64 - normalized_inputted * w as f64) as i32,
+            client.y(),
+          )
+        },
       )?;
       will_input_text.render(
         &mut canvas,
-        Rect::new(
-          half_x as i32,
+        Point::new(
+          half_x as i32 + 5,
           client.y() + JAPANESE_HEIGHT as i32,
-          will_input.len() as u32 * ROMAN_GLYPH_WIDTH,
-          ROMAN_HEIGHT + ROMAN_HEIGHT,
         ),
       )?;
       inputted_text.render(
         &mut canvas,
-        Rect::new(
-          half_x as i32
-            - (inputted.len() + 1) as i32 * ROMAN_GLYPH_WIDTH as i32,
+        Point::new(
+          half_x as i32 - 5,
           client.y() + JAPANESE_HEIGHT as i32,
-          inputted.len() as u32 * ROMAN_GLYPH_WIDTH,
-          ROMAN_HEIGHT + ROMAN_HEIGHT,
         ),
       )?;
       Ok(())

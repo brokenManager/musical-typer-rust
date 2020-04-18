@@ -5,7 +5,7 @@ use sdl2::{
   video::{Window, WindowContext},
 };
 
-use crate::view::text::{TextCtx, TextError};
+use crate::view::text::{TextAlign, TextCtx, TextError};
 
 const CELL_ASPECT: f64 = 55.0 / 70.0;
 
@@ -48,8 +48,10 @@ impl KeyCell {
         BLACK
       })
       .text(&self.key.to_string())
+      .line_height(self.client.height())
+      .align(TextAlign::Center)
       .build()?
-      .render(&mut canvas, self.client)?;
+      .render(&mut canvas, self.client.center())?;
     Ok(())
   }
 }

@@ -1,11 +1,11 @@
 use sdl2::pixels::Color;
-use sdl2::rect::Rect;
+use sdl2::rect::Point;
 use sdl2::{
   render::Canvas,
   video::{Window, WindowContext},
 };
 
-use super::super::super::text::{TextCtx, TextError};
+use crate::view::text::{TextAlign, TextCtx, TextError};
 
 pub struct HeaderProps {
   pub title: String,
@@ -20,11 +20,13 @@ pub fn build(
   impl Fn(&mut Canvas<Window>) -> Result<(), TextError> + '_,
   TextError,
 > {
-  const JAPANESE_GLYPH_WIDTH: u32 = 13;
   let title_text = {
     text_builder
       .borrow_mut()
       .text(props.title.as_str())
+      .color(Color::RGB(0, 0, 0))
+      .line_height(50)
+      .align(TextAlign::Right)
       .build()?
   };
   let author_text = {
@@ -32,6 +34,8 @@ pub fn build(
       .borrow_mut()
       .text(props.author.as_str())
       .color(Color::RGB(156, 156, 162))
+      .line_height(50)
+      .align(TextAlign::Right)
       .build()?
   };
   let score_text = {
@@ -39,33 +43,14 @@ pub fn build(
       .borrow_mut()
       .text(format!("{:08}", props.score_point).as_str())
       .color(Color::RGB(64, 79, 181))
+      .line_height(50)
       .build()?
   };
-  let title_text_width =
-    props.title.len() as u32 * JAPANESE_GLYPH_WIDTH;
-  let author_text_width =
-    props.author.len() as u32 * JAPANESE_GLYPH_WIDTH;
 
   Ok(move |mut canvas: &mut Canvas<Window>| {
-    title_text.render(
-      &mut canvas,
-      Rect::new(
-        800 - title_text_width as i32,
-        0,
-        title_text_width,
-        50,
-      ),
-    )?;
-    author_text.render(
-      &mut canvas,
-      Rect::new(
-        800 - author_text_width as i32,
-        50,
-        author_text_width,
-        50,
-      ),
-    )?;
-    score_text.render(&mut canvas, Rect::new(0, 50, 300, 50))?;
+    title_text.render(&mut canvas, Point::new(800, 0))?;
+    author_text.render(&mut canvas, Point::new(800, 50))?;
+    score_text.render(&mut canvas, Point::new(0, 50))?;
     Ok(())
   })
 }
