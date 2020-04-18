@@ -22,10 +22,10 @@ impl<'a> Finder<'a> {
     }
   }
 
-  pub fn draw<T: RenderTarget, U>(
+  pub fn draw<'builder, T: RenderTarget, U>(
     &self,
     mut canvas: &mut Canvas<T>,
-    mut text_builder: TextBuilder<'a, U>,
+    mut text_builder: &mut TextBuilder<'builder, U>,
     offset: Rect,
   ) -> Result<(), TextError> {
     let remaining_width =

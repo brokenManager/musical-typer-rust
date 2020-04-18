@@ -32,7 +32,7 @@ impl KeyCell {
   pub fn draw<'a, T: RenderTarget, U>(
     self,
     mut canvas: &mut Canvas<T>,
-    mut text_builder: TextBuilder<'a, U>,
+    mut text_builder: &mut TextBuilder<'a, U>,
   ) -> Result<(), TextError> {
     const ORANGE: Color = Color::RGB(209, 154, 29);
     const GREEN: Color = Color::RGB(20, 76, 64);
@@ -90,7 +90,7 @@ impl Keyboard {
   pub fn draw<'a, T: RenderTarget, U>(
     &self,
     mut canvas: &mut Canvas<T>,
-    text_builder: TextBuilder<'a, U>,
+    text_builder: &mut TextBuilder<'a, U>,
     offset: Rect,
   ) -> Result<(), TextError> {
     let key_chars_rows =
@@ -114,9 +114,7 @@ impl Keyboard {
           self.highlighted_keys.contains(&key_char),
           self.pressed_keys.contains(&key_char),
         );
-        {
-          cell.draw(&mut canvas, text_builder.clone())?;
-        }
+          cell.draw(&mut canvas, text_builder)?;
         x += 1;
       }
       y += 1;

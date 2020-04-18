@@ -26,39 +26,44 @@ pub struct WholeProps<'a> {
 pub fn render<'a, 't>(
   mut canvas: &mut Canvas<Window>,
   client: Rect,
-  builder: TextBuilder<'t, WindowContext>,
+  builder: &mut TextBuilder<'t, WindowContext>,
   props: &'a WholeProps,
 ) -> Result<(), ViewError> {
-  let header =
-    Header::new(props.title, props.song_author, props.score_point);
-  let header_dim = Rect::new(0, 0, client.width(), 100);
-
-  let finder = Finder::new(props.sentence, 0.2);
-  let finder_dim = Rect::new(0, 100, client.width(), 200);
-
-  let keyboard = Keyboard::new(props.pressed_keys, &[]);
-  let keyboard_dim =
-    Rect::new(0, client.height() as i32 - 300, client.width(), 300);
-
   canvas.set_draw_color(Color::RGB(253, 243, 226));
   canvas.clear();
 
-  header.draw(&mut canvas, builder.clone())?;
-  canvas.set_draw_color(Color::RGB(0, 0, 0));
-  canvas
-    .draw_rect(header_dim)
-    .map_err(|e| ViewError::RenderError(e))?;
+  {
+    let header =
+        Header::new(props.title, props.song_author, props.score_point);
+    let header_dim = Rect::new(0, 0, client.width(), 100);
+    header.draw(&mut canvas, builder)?;
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas
+        .draw_rect(header_dim)
+        .map_err(|e| ViewError::RenderError(e))?;
+  }
 
-  finder.draw(&mut canvas, builder.clone(), finder_dim)?;
-  canvas.set_draw_color(Color::RGB(0, 0, 0));
-  canvas
-    .draw_rect(finder_dim)
-    .map_err(|e| ViewError::RenderError(e))?;
+  {
+    let finder = Finder::new(props.sentence, 0.2);
+    let finder_dim = Rect::new(0, 100, client.width(), 200);
+    finder.draw(&mut canvas, builder, finder_dim)?;
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas
+        .draw_rect(finder_dim)
+        .map_err(|e| ViewError::RenderError(e))?;
+  }
 
-  keyboard.draw(&mut canvas, builder.clone(), keyboard_dim)?;
-  canvas.set_draw_color(Color::RGB(0, 0, 0));
-  canvas
-    .draw_rect(keyboard_dim)
-    .map_err(|e| ViewError::RenderError(e))?;
+  {
+    let keyboard = Keyboard::new(props.pressed_keys, &[]);
+    let keyboard_dim =
+        Rect::new(0, client.height() as i32 - 300, client.width(), 300);
+    keyboard.draw(&mut canvas, builder, keyboard_dim)?;
+
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas
+        .draw_rect(keyboard_dim)
+        .map_err(|e| ViewError::RenderError(e))?;
+  }
+
   Ok(())
 }
