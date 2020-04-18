@@ -1,6 +1,6 @@
+use crate::model::exp::scoremap::Scoremap;
 use crate::model::exp::{
-  minute_second::Seconds, note::NoteContent, scoremap::Scoremap,
-  sentence::Sentence,
+  minute_second::Seconds, note::NoteContent, sentence::Sentence,
 };
 use crate::model::game::{
   MusicalTyper, MusicalTyperConfig, MusicalTyperEvent,
@@ -93,8 +93,6 @@ impl GameView {
         message: e.to_string(),
       })?;
 
-    let builder = TextBuilder::new(&font, &texture_creator);
-
     let all_roman_len =
       self.score.notes.iter().fold(0, |acc, note| {
         match note.content() {
@@ -112,6 +110,7 @@ impl GameView {
       .timer()
       .map_err(|e| ViewError::InitError { message: e })?;
 
+    let mut builder = TextBuilder::new(&font, &texture_creator);
     let mut mt_events = vec![];
     let mut musics = vec![];
     let mut pressed_key_buf = BTreeSet::new();
@@ -198,43 +197,30 @@ impl GameView {
         }
       }
 
-      let accuracy = if correction_type_count == 0 {
-        0.0
-      } else {
-        correction_type_count as f64
-          / (correction_type_count + wrong_type_count) as f64
-      };
-      let achievement_rate =
-        correction_type_count as f64 / all_roman_len as f64;
-      let type_per_second = timepoints.len() as f64 / 5.0;
-
-      whole::build(
+      whole::render(
+        &mut self.canvas,
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
-        builder.clone(),
-        WholeProps {
-          pressed_keys: pressed_key_buf
+        &mut builder,
+        &WholeProps {
+          pressed_keys: &pressed_key_buf
             .iter()
             .cloned()
-            .collect::<Vec<char>>(),
-          sentence: sentence.clone(),
+            .collect::<Vec<char>>()
+            .as_slice(),
+          sentence: &sentence,
           title: self
             .score
             .metadata
             .get("title")
-            .cloned()
-            .unwrap_or("曲名不詳".to_owned()),
+            .unwrap_or(&"曲名不詳".to_owned()),
           song_author: self
             .score
             .metadata
             .get("song_author")
-            .cloned()
-            .unwrap_or("作曲者不詳".to_owned()),
+            .unwrap_or(&"作曲者不詳".to_owned()),
           score_point,
-          accuracy,
-          achievement_rate,
-          type_per_second,
         },
-      )?(&mut self.canvas)?;
+      )?;
       self.canvas.present();
 
       let typed_key_buf_cloned = typed_key_buf.clone();
@@ -242,13 +228,16 @@ impl GameView {
       mt_events =
         self.model.key_press(typed_key_buf_cloned.into_iter());
 
+      let draw_time = time.elapsed().as_secs_f64();
+
       timer.delay((1e3 / 60.0) as u32);
 
       let elapsed = time.elapsed().as_secs_f64();
+
       mt_events.append(&mut self.model.elapse_time(elapsed));
       print!(
         "\rFPS: {}, Playing: {}     ",
-        1.0 / elapsed,
+        1.0 / draw_time,
         sdl2::mixer::Music::is_playing()
       );
     }

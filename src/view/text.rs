@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 use sdl2::render::{Canvas, RenderTarget, Texture, TextureCreator};
 use sdl2::ttf::Font;
-use std::{cell::RefCell, rc::Rc};
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub enum TextError {
@@ -19,7 +19,7 @@ pub struct Text<'ttf> {
 
 impl<'ttf> Text<'ttf> {
   fn new<T>(
-    builder: TextBuilder<'ttf, T>,
+    builder: &TextBuilder<'ttf, T>,
   ) -> Result<Self, TextError> {
     let TextBuilder {
       font,
@@ -28,6 +28,7 @@ impl<'ttf> Text<'ttf> {
       align,
       color,
       line_height,
+      ..
     } = builder;
     let text = if text == "" { " " } else { &text };
     let aspect = {
@@ -37,15 +38,15 @@ impl<'ttf> Text<'ttf> {
     };
     let surface = font
       .render(text)
-      .blended(color)
+      .blended(color.clone())
       .map_err(|e| TextError::FontError(e))?;
     let texture = texture_creator
       .create_texture_from_surface(&surface)
       .map_err(|e| TextError::TextureError(e))?;
     Ok(Text {
       texture,
-      size: ((aspect * line_height as f64) as u32, line_height),
-      align,
+      size: ((aspect * *line_height as f64) as u32, *line_height),
+      align: *align,
     })
   }
 
@@ -98,40 +99,32 @@ pub struct TextBuilder<'a, T> {
   align: TextAlign,
   font: &'a Font<'a, 'static>,
   texture_creator: &'a TextureCreator<T>,
+  cache: HashMap<String, Text<'a>>,
 }
-
-impl<'a, T> Clone for TextBuilder<'a, T> {
-  fn clone(&self) -> Self {
-    TextBuilder {
-      text: self.text.clone(),
-      color: self.color.clone(),
-      line_height: self.line_height,
-      align: self.align,
-      font: self.font,
-      texture_creator: self.texture_creator,
-    }
-  }
-}
-
-pub type TextCtx<'a, T> = Rc<RefCell<TextBuilder<'a, T>>>;
 
 impl<'a, T> TextBuilder<'a, T> {
   pub fn new(
     font: &'a Font<'a, 'static>,
     texture_creator: &'a TextureCreator<T>,
-  ) -> Rc<RefCell<Self>> {
-    Rc::new(RefCell::new(TextBuilder {
+  ) -> Self {
+    TextBuilder {
       text: "".to_owned(),
       color: Color::RGB(0, 0, 0),
       line_height: 20,
       align: TextAlign::Left,
       font,
       texture_creator,
-    }))
+      cache: HashMap::new(),
+    }
   }
 
   pub fn text(&mut self, new_text: &str) -> &mut Self {
-    self.text = new_text.to_owned();
+    if new_text == "" {
+      self.text = String::from(" ");
+    } else {
+      self.text = new_text.to_owned();
+    }
+
     self
   }
 
@@ -150,7 +143,24 @@ impl<'a, T> TextBuilder<'a, T> {
     self
   }
 
-  pub fn build(&self) -> Result<Text<'a>, TextError> {
-    Text::new(self.clone())
+  fn cache_key(&self) -> String {
+    format!(
+      "{},{},{},{},{},",
+      self.text,
+      self.color.r,
+      self.color.g,
+      self.color.b,
+      self.color.a
+    )
+  }
+
+  pub fn build(&mut self) -> Result<&Text<'a>, TextError> {
+    let key = self.cache_key();
+    if !self.cache.contains_key(&key) {
+      let rendered = Text::new(self)?;
+      self.cache.insert(String::from(self.cache_key()), rendered);
+    }
+
+    return Ok(self.cache.get(&key).unwrap());
   }
 }
