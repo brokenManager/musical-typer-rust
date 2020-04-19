@@ -99,7 +99,10 @@ impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
       .map_err(|e| ViewError::RenderError(e))
   }
 
-  pub fn text<S>(&mut self, styler: S) -> Result<(), ViewError>
+  pub fn text<'a: 'texture, S>(
+    &'a mut self,
+    styler: S,
+  ) -> Result<(), ViewError>
   where
     S: FnOnce(TextStyle) -> TextStyle,
   {
