@@ -30,7 +30,10 @@ impl KeyCell {
     }
   }
 
-  pub fn draw(self, canvas: &mut Renderer) -> Result<(), ViewError> {
+  pub fn draw<'texture>(
+    self,
+    canvas: &'texture mut Renderer<'_, 'texture>,
+  ) -> Result<(), ViewError> {
     const ORANGE: Color = Color::RGB(209, 154, 29);
     const GREEN: Color = Color::RGB(20, 76, 64);
     const BACK: Color = Color::RGB(253, 243, 226);
@@ -81,9 +84,9 @@ impl Keyboard {
     }
   }
 
-  pub fn draw(
+  pub fn draw<'texture>(
     &self,
-    mut canvas: &mut Renderer,
+    mut canvas: &'texture mut Renderer<'_, 'texture>,
     offset: Rect,
   ) -> Result<(), ViewError> {
     let key_chars_rows =

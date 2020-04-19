@@ -22,8 +22,8 @@ pub struct WholeProps<'a> {
   pub score_point: i32,
 }
 
-pub fn render(
-  mut canvas: &mut Renderer,
+pub fn render<'texture>(
+  mut canvas: &'texture mut Renderer<'_, 'texture>,
   client: Rect,
   props: &WholeProps,
 ) -> Result<(), ViewError> {

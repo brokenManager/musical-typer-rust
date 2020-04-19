@@ -25,9 +25,9 @@ impl<'a> Finder<'a> {
     }
   }
 
-  pub fn draw(
+  pub fn draw<'texture>(
     &self,
-    mut canvas: &mut Renderer,
+    mut canvas: &'texture mut Renderer<'_, 'texture>,
     offset: Rect,
   ) -> Result<(), ViewError> {
     let remaining_width =

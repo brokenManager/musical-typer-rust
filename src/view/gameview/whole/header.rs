@@ -19,9 +19,9 @@ impl Header {
     }
   }
 
-  pub fn draw(
+  pub fn draw<'texture>(
     &self,
-    mut canvas: &mut Renderer,
+    mut canvas: &'texture mut Renderer<'_, 'texture>,
   ) -> Result<(), ViewError> {
     use sdl2::pixels::Color;
 
