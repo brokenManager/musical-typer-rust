@@ -11,24 +11,18 @@ pub enum TextError {
   CacheError(String),
 }
 
-pub struct Text<'canvas> {
-  texture: Texture<'canvas>,
+pub struct Text<'texture> {
+  texture: Texture<'texture>,
   aspect: f64,
 }
 
-impl<'canvas> Text<'canvas> {
-  pub fn new(
+impl<'texture> Text<'texture> {
+  pub fn new<'creator: 'texture>(
     style: &TextStyle,
     font: &Font,
-    texture_creator: &'canvas TextureCreator<WindowContext>,
-  ) -> Result<Text<'canvas>, TextError> {
-    let TextStyle {
-      text,
-      align,
-      color,
-      line_height,
-      ..
-    } = style;
+    texture_creator: &'creator TextureCreator<WindowContext>,
+  ) -> Result<Self, TextError> {
+    let TextStyle { text, color, .. } = style;
     let aspect = {
       let (w, h) =
         font.size_of(text).map_err(|e| TextError::FontError(e))?;

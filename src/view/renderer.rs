@@ -12,14 +12,14 @@ use text::{Text, TextStyle};
 
 pub mod text;
 
-pub struct Renderer<'ttf, 'canvas> {
+pub struct Renderer<'ttf, 'texture> {
   canvas: Canvas<Window>,
   texture_creator: TextureCreator<WindowContext>,
   font: Font<'ttf, 'static>,
-  text_cache: BTreeMap<String, Text<'canvas>>,
+  text_cache: BTreeMap<String, Text<'texture>>,
 }
 
-impl<'ttf, 'canvas> Renderer<'ttf, 'canvas> {
+impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
   pub fn new(
     sdl: &Sdl,
     ttf: &'ttf Sdl2TtfContext,
@@ -107,10 +107,9 @@ impl<'ttf, 'canvas> Renderer<'ttf, 'canvas> {
     let key = style.cache_key();
 
     if !self.text_cache.contains_key(&key) {
-      self.text_cache.insert(
-        key.clone(),
-        Text::new(&style, &self.font, &self.texture_creator)?,
-      );
+      let text =
+        Text::new(&style, &self.font, &self.texture_creator)?;
+      self.text_cache.insert(key.clone(), text);
     }
 
     let text =
