@@ -64,14 +64,16 @@ where
   ) -> Result<Self, ViewError> {
     let handler = Handler::new(&sdl);
     let renderer = Renderer::new(&sdl, &ttf, 800, 600)?;
-    Ok(Router {
+    Ok(Self {
       renderer,
       handler,
       game_view: GameView::new(&renderer, &handler, score, 800, 600)?,
     })
   }
 
-  pub fn run(&mut self) -> Result<(), ViewError> {
+  pub fn run<'a: 'renderer + 'ttf + 'canvas + 'handler + 'sdl>(
+    &'a mut self,
+  ) -> Result<(), ViewError> {
     self.game_view.run()?;
 
     Ok(())

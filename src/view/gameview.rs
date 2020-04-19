@@ -47,7 +47,9 @@ impl<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
     })
   }
 
-  pub fn run(&mut self) -> Result<(), ViewError> {
+  pub fn run<'a: 'ttf + 'canvas>(
+    &'a mut self,
+  ) -> Result<(), ViewError> {
     let all_roman_len =
       self.score.notes.iter().fold(0, |acc, note| {
         match note.content() {
