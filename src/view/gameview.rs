@@ -18,8 +18,8 @@ use whole::WholeProps;
 pub struct GameView<'renderer, 'ttf, 'canvas, 'handler, 'sdl> {
   width: u32,
   height: u32,
-  renderer: &'renderer Renderer<'ttf, 'canvas>,
-  handler: &'handler Handler<'sdl>,
+  renderer: &'renderer mut Renderer<'ttf, 'canvas>,
+  handler: &'handler mut Handler<'sdl>,
   model: MusicalTyper,
   score: Scoremap,
 }
@@ -28,8 +28,8 @@ impl<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
   GameView<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
 {
   pub fn new(
-    renderer: &'renderer Renderer<'ttf, 'canvas>,
-    handler: &'handler Handler<'sdl>,
+    renderer: &'renderer mut Renderer<'ttf, 'canvas>,
+    handler: &'handler mut Handler<'sdl>,
     score: Scoremap,
     width: u32,
     height: u32,

@@ -27,7 +27,7 @@ impl<'a> Finder<'a> {
 
   pub fn draw<'texture>(
     &self,
-    mut canvas: &'texture mut Renderer<'_, 'texture>,
+    canvas: &'texture mut Renderer<'_, 'texture>,
     offset: Rect,
   ) -> Result<(), ViewError> {
     let remaining_width =
@@ -44,12 +44,6 @@ impl<'a> Finder<'a> {
     let half_x = offset.width() / 2;
 
     if let Some(sentence) = self.sentence {
-      let roman = sentence.roman();
-      let full_roman_len =
-        roman.will_input.len() + roman.inputted.len();
-      let normalized_inputted =
-        roman.inputted.len() as f64 / full_roman_len as f64;
-
       let will_input_japanese = sentence.origin();
       canvas.text(|s| {
         s.color(Color::RGB(0, 0, 0))

@@ -2,13 +2,12 @@ use crate::model::exp::scoremap::Scoremap;
 use crate::model::game::MusicalTyperError;
 
 mod gameview;
-mod handler;
-mod renderer;
+pub mod handler;
+pub mod renderer;
 
 use gameview::GameView;
 use handler::{HandleError, Handler};
 use renderer::Renderer;
-use sdl2::{ttf::Sdl2TtfContext, Sdl};
 
 #[derive(Debug)]
 pub enum ViewError {
@@ -45,8 +44,6 @@ impl From<HandleError> for ViewError {
 }
 
 pub struct Router<'renderer, 'ttf, 'canvas, 'handler, 'sdl> {
-  handler: Handler<'sdl>,
-  renderer: Renderer<'ttf, 'canvas>,
   game_view: GameView<'renderer, 'ttf, 'canvas, 'handler, 'sdl>,
 }
 
@@ -58,16 +55,12 @@ where
   'canvas: 'renderer,
 {
   pub fn new(
-    sdl: &'sdl Sdl,
-    ttf: &'ttf Sdl2TtfContext,
+    handler: &'handler mut Handler<'sdl>,
+    renderer: &'renderer mut Renderer<'ttf, 'canvas>,
     score: Scoremap,
   ) -> Result<Self, ViewError> {
-    let handler = Handler::new(&sdl);
-    let renderer = Renderer::new(&sdl, &ttf, 800, 600)?;
     Ok(Self {
-      renderer,
-      handler,
-      game_view: GameView::new(&renderer, &handler, score, 800, 600)?,
+      game_view: GameView::new(renderer, handler, score, 800, 600)?,
     })
   }
 
