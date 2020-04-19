@@ -1,12 +1,12 @@
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
-use sdl2::render::{Canvas, RenderTarget};
-
-use super::super::super::text::{TextBuilder, TextError};
 
 use crate::{
   model::exp::sentence::{Sentence, TypingStr},
-  view::text::TextAlign,
+  view::{
+    renderer::{text::TextAlign, Renderer},
+    ViewError,
+  },
 };
 
 pub struct Finder<'a> {
@@ -25,23 +25,20 @@ impl<'a> Finder<'a> {
     }
   }
 
-  pub fn draw<'builder, T: RenderTarget, U>(
+  pub fn draw(
     &self,
-    mut canvas: &mut Canvas<T>,
-    text_builder: &mut TextBuilder<'builder, U>,
+    mut canvas: &mut Renderer,
     offset: Rect,
-  ) -> Result<(), TextError> {
+  ) -> Result<(), ViewError> {
     let remaining_width =
       (offset.width() as f64 * self.remaining_ratio) as u32;
     canvas.set_draw_color(Color::RGB(203, 193, 176));
-    canvas
-      .fill_rect(Rect::new(
-        offset.x(),
-        offset.y(),
-        remaining_width,
-        offset.height(),
-      ))
-      .map_err(|e| TextError::RenderError(e))?;
+    canvas.fill_rect(Rect::new(
+      offset.x(),
+      offset.y(),
+      remaining_width,
+      offset.height(),
+    ))?;
 
     const JAPANESE_HEIGHT: u32 = 80;
     let half_x = offset.width() / 2;
@@ -54,19 +51,13 @@ impl<'a> Finder<'a> {
         roman.inputted.len() as f64 / full_roman_len as f64;
 
       let will_input_japanese = sentence.origin();
-      text_builder
-        .color(Color::RGB(0, 0, 0))
-        .text(will_input_japanese)
-        .line_height(JAPANESE_HEIGHT)
-        .align(TextAlign::Left)
-        .build()?
-        .render_with(&mut canvas, |(width, _)| {
-          Point::new(
-            (half_x as f64 - normalized_inputted * width as f64)
-              as i32,
-            offset.y(),
-          )
-        })?;
+      canvas.text(|s| {
+        s.color(Color::RGB(0, 0, 0))
+          .text(will_input_japanese)
+          .line_height(JAPANESE_HEIGHT)
+          .align(TextAlign::Left)
+          .pos(Point::new(0, 0))
+      })?;
 
       {
         const ROMAN_HEIGHT: u32 = 40;
@@ -77,33 +68,27 @@ impl<'a> Finder<'a> {
         let will_input = will_input.as_str();
         let inputted = inputted.as_str();
 
-        text_builder
-          .color(Color::RGB(0, 0, 0))
-          .text(will_input)
-          .line_height(ROMAN_HEIGHT)
-          .align(TextAlign::Left)
-          .build()?
-          .render(
-            &mut canvas,
-            Point::new(
+        canvas.text(|s| {
+          s.color(Color::RGB(0, 0, 0))
+            .text(will_input)
+            .line_height(ROMAN_HEIGHT)
+            .align(TextAlign::Left)
+            .pos(Point::new(
               half_x as i32 + 5,
               offset.y() + JAPANESE_HEIGHT as i32,
-            ),
-          )?;
+            ))
+        })?;
 
-        text_builder
-          .color(Color::RGB(80, 80, 80))
-          .text(inputted)
-          .line_height(ROMAN_HEIGHT)
-          .align(TextAlign::Right)
-          .build()?
-          .render(
-            &mut canvas,
-            Point::new(
+        canvas.text(|s| {
+          s.color(Color::RGB(80, 80, 80))
+            .text(inputted)
+            .line_height(ROMAN_HEIGHT)
+            .align(TextAlign::Right)
+            .pos(Point::new(
               half_x as i32 - 5,
               offset.y() + JAPANESE_HEIGHT as i32,
-            ),
-          )?;
+            ))
+        })?;
       }
     }
     Ok(())

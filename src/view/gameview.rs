@@ -7,68 +7,38 @@ use crate::model::game::{
 };
 
 use sdl2::keyboard::Keycode;
-use sdl2::render::Canvas;
-use sdl2::video::Window;
-use sdl2::Sdl;
 
 use std::collections::BTreeSet;
 
 mod whole;
 
-use super::{text::TextBuilder, ViewError};
+use super::{handler::Handler, renderer::Renderer, ViewError};
 use whole::WholeProps;
 
-pub struct GameView {
+pub struct GameView<'renderer, 'ttf, 'canvas, 'handler, 'sdl> {
   width: u32,
   height: u32,
-  ctx: Sdl,
-  canvas: Canvas<Window>,
+  renderer: &'renderer Renderer<'ttf, 'canvas>,
+  handler: &'handler Handler<'sdl>,
   model: MusicalTyper,
   score: Scoremap,
 }
 
-impl GameView {
+impl<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
+  GameView<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
+{
   pub fn new(
+    renderer: &'renderer Renderer<'ttf, 'canvas>,
+    handler: &'handler Handler<'sdl>,
+    score: Scoremap,
     width: u32,
     height: u32,
-    score: Scoremap,
   ) -> Result<Self, ViewError> {
-    let ctx = sdl2::init()
-      .map_err(|e| ViewError::InitError { message: e })?;
-
-    sdl2::mixer::open_audio(
-      44100,
-      sdl2::mixer::DEFAULT_FORMAT,
-      sdl2::mixer::DEFAULT_CHANNELS,
-      1024,
-    )
-    .map_err(|e| ViewError::AudioError { message: e })?;
-
-    let video = ctx
-      .video()
-      .map_err(|e| ViewError::InitError { message: e })?;
-    let window = video
-      .window("Musical Typer", width, height)
-      .position_centered()
-      .opengl()
-      .build()
-      .map_err(|e| ViewError::InitError {
-        message: e.to_string(),
-      })?;
-
-    let mut canvas = window.into_canvas().build().map_err(|e| {
-      ViewError::InitError {
-        message: e.to_string(),
-      }
-    })?;
-    canvas.clear();
-    canvas.present();
-
     Ok(GameView {
       width,
       height,
-      ctx,
-      canvas,
+      renderer,
+      handler,
       model: MusicalTyper::new(
         &score,
         MusicalTyperConfig::default(),
@@ -78,21 +48,6 @@ impl GameView {
   }
 
   pub fn run(&mut self) -> Result<(), ViewError> {
-    let texture_creator = self.canvas.texture_creator();
-
-    let ttf =
-      sdl2::ttf::init().map_err(|e| ViewError::InitError {
-        message: e.to_string(),
-      })?;
-    let font = ttf
-      .load_font(
-        std::path::Path::new("./asset/mplus-1m-medium.ttf"),
-        128,
-      )
-      .map_err(|e| ViewError::FontError {
-        message: e.to_string(),
-      })?;
-
     let all_roman_len =
       self.score.notes.iter().fold(0, |acc, note| {
         match note.content() {
@@ -105,12 +60,6 @@ impl GameView {
 
     struct TypeTimepoint(Seconds);
 
-    let mut timer = self
-      .ctx
-      .timer()
-      .map_err(|e| ViewError::InitError { message: e })?;
-
-    let mut builder = TextBuilder::new(&font, &texture_creator);
     let mut mt_events = vec![];
     let mut musics = vec![];
     let mut pressed_key_buf = BTreeSet::new();
@@ -158,32 +107,31 @@ impl GameView {
         }
       }
       {
-        let mut poller = self.ctx.event_pump().map_err(|e| {
-          ViewError::InitError {
-            message: e.to_string(),
+        use sdl2::event::Event::*;
+        let should_quit = false;
+        self.handler.poll_events(|event| match event {
+          Quit { .. } => {
+            should_quit = true;
           }
+          KeyDown {
+            keycode: Some(keycode),
+            ..
+          } => {
+            let key = keycode_to_char(keycode);
+            if pressed_key_buf.insert(key) {
+              typed_key_buf.push(key);
+            }
+          }
+          KeyUp {
+            keycode: Some(keycode),
+            ..
+          } => {
+            pressed_key_buf.remove(&keycode_to_char(keycode));
+          }
+          _ => {}
         })?;
-        for event in poller.poll_iter() {
-          use sdl2::event::Event::*;
-          match event {
-            Quit { .. } => break 'main,
-            KeyDown {
-              keycode: Some(keycode),
-              ..
-            } => {
-              let key = keycode_to_char(keycode);
-              if pressed_key_buf.insert(key) {
-                typed_key_buf.push(key);
-              }
-            }
-            KeyUp {
-              keycode: Some(keycode),
-              ..
-            } => {
-              pressed_key_buf.remove(&keycode_to_char(keycode));
-            }
-            _ => {}
-          }
+        if should_quit {
+          break 'main;
         }
       }
       {
@@ -198,9 +146,8 @@ impl GameView {
       }
 
       whole::render(
-        &mut self.canvas,
+        &mut self.renderer,
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
-        &mut builder,
         &WholeProps {
           pressed_keys: &pressed_key_buf
             .iter()
@@ -221,7 +168,7 @@ impl GameView {
           score_point,
         },
       )?;
-      self.canvas.present();
+      self.renderer.flush();
 
       let typed_key_buf_cloned = typed_key_buf.clone();
       typed_key_buf.clear();
@@ -230,7 +177,7 @@ impl GameView {
 
       let draw_time = time.elapsed().as_secs_f64();
 
-      timer.delay((1e3 / 60.0) as u32);
+      self.handler.delay((1e3 / 60.0) as u32);
 
       let elapsed = time.elapsed().as_secs_f64();
 
@@ -243,7 +190,7 @@ impl GameView {
     }
     sdl2::mixer::Music::fade_out(500)
       .map_err(|e| ViewError::AudioError { message: e })?;
-    timer.delay(505);
+    self.handler.delay(505);
     sdl2::mixer::Music::halt();
 
     Ok(())

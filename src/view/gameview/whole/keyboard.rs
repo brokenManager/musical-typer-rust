@@ -1,9 +1,9 @@
+use crate::view::{
+  renderer::{text::TextAlign, Renderer},
+  ViewError,
+};
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
-use sdl2::render::{Canvas, RenderTarget};
-
-use super::super::super::text::{TextBuilder, TextError};
-use crate::view::text::TextAlign;
 
 const CELL_WIDTH: u32 = 60;
 const CELL_HEIGHT: u32 = 70;
@@ -30,11 +30,7 @@ impl KeyCell {
     }
   }
 
-  pub fn draw<'a, T: RenderTarget, U>(
-    self,
-    mut canvas: &mut Canvas<T>,
-    text_builder: &mut TextBuilder<'a, U>,
-  ) -> Result<(), TextError> {
+  pub fn draw(self, canvas: &mut Renderer) -> Result<(), ViewError> {
     const ORANGE: Color = Color::RGB(209, 154, 29);
     const GREEN: Color = Color::RGB(20, 76, 64);
     const BACK: Color = Color::RGB(253, 243, 226);
@@ -46,19 +42,15 @@ impl KeyCell {
     } else {
       BACK
     });
-    canvas
-      .fill_rect(client)
-      .map_err(|e| TextError::RenderError(e))?;
+    canvas.fill_rect(client)?;
     canvas.set_draw_color(BLACK);
-    canvas
-      .draw_rect(Rect::from_center(
-        self.center,
-        CELL_WIDTH,
-        CELL_HEIGHT,
-      ))
-      .map_err(|e| TextError::RenderError(e))?;
-    text_builder
-      .color(if self.is_pressed {
+    canvas.draw_rect(Rect::from_center(
+      self.center,
+      CELL_WIDTH,
+      CELL_HEIGHT,
+    ))?;
+    canvas.text(|s| {
+      s.color(if self.is_pressed {
         ORANGE
       } else if self.is_highlighted {
         BACK
@@ -67,8 +59,8 @@ impl KeyCell {
       })
       .text(&self.key.to_string())
       .align(TextAlign::Center)
-      .build()?
-      .render(&mut canvas, client.center())?;
+      .pos(client.center())
+    })?;
     Ok(())
   }
 }
@@ -89,12 +81,11 @@ impl Keyboard {
     }
   }
 
-  pub fn draw<'a, T: RenderTarget, U>(
+  pub fn draw(
     &self,
-    mut canvas: &mut Canvas<T>,
-    text_builder: &mut TextBuilder<'a, U>,
+    mut canvas: &mut Renderer,
     offset: Rect,
-  ) -> Result<(), TextError> {
+  ) -> Result<(), ViewError> {
     let key_chars_rows =
       ["1234567890-", "qwertyuiop", "asdfghjkl", "zxcvbnm"];
     let mut y = 0;
@@ -116,7 +107,7 @@ impl Keyboard {
           self.highlighted_keys.contains(&key_char),
           self.pressed_keys.contains(&key_char),
         );
-        cell.draw(&mut canvas, text_builder)?;
+        cell.draw(&mut canvas)?;
         x += 1;
       }
       y += 1;

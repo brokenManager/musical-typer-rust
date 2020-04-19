@@ -15,6 +15,9 @@ fn main() {
   .unwrap();
 
   use view::Router;
-  let mut router = Router::new(score).unwrap();
+  let sdl = sdl2::init().unwrap();
+  let ttf = sdl2::ttf::init().unwrap();
+
+  let mut router = Router::new(&sdl, &ttf, score).unwrap();
   router.run().unwrap();
 }
