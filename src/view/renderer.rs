@@ -1,65 +1,25 @@
 use super::ViewError;
 use sdl2::{
-  pixels::Color,
-  rect::Rect,
-  render::{Canvas, TextureCreator},
-  ttf::{Font, Sdl2TtfContext},
-  video::{Window, WindowContext},
-  Sdl,
+  pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window,
 };
 use std::collections::BTreeMap;
 use text::{Text, TextStyle};
 
 pub mod text;
 
-pub struct Renderer<'ttf, 'texture> {
-  canvas: Canvas<Window>,
-  texture_creator: TextureCreator<WindowContext>,
+pub struct Renderer<'ttf, 'canvas> {
+  canvas: &'canvas mut Canvas<Window>,
   font: Font<'ttf, 'static>,
-  text_cache: BTreeMap<String, Text<'texture>>,
+  text_cache: BTreeMap<String, Text<'canvas>>,
 }
 
-impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
+impl<'ttf, 'canvas> Renderer<'ttf, 'canvas> {
   pub fn new(
-    sdl: &Sdl,
-    ttf: &'ttf Sdl2TtfContext,
+    canvas: &'canvas mut Canvas<Window>,
+    font: Font<'ttf, 'static>,
     width: u32,
     height: u32,
   ) -> Result<Self, ViewError> {
-    sdl2::mixer::open_audio(
-      44100,
-      sdl2::mixer::DEFAULT_FORMAT,
-      sdl2::mixer::DEFAULT_CHANNELS,
-      1024,
-    )
-    .map_err(|e| ViewError::AudioError { message: e })?;
-
-    let font = ttf
-      .load_font(
-        std::path::Path::new("./asset/mplus-1m-medium.ttf"),
-        128,
-      )
-      .map_err(|e| ViewError::FontError {
-        message: e.to_string(),
-      })?;
-
-    let video = sdl
-      .video()
-      .map_err(|e| ViewError::InitError { message: e })?;
-    let window = video
-      .window("Musical Typer", width, height)
-      .position_centered()
-      .opengl()
-      .build()
-      .map_err(|e| ViewError::InitError {
-        message: e.to_string(),
-      })?;
-
-    let mut canvas = window.into_canvas().build().map_err(|e| {
-      ViewError::InitError {
-        message: e.to_string(),
-      }
-    })?;
     canvas.clear();
     canvas.present();
 
@@ -68,7 +28,6 @@ impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
     Ok(Self {
       canvas,
       font,
-      texture_creator,
       text_cache: BTreeMap::new(),
     })
   }
@@ -99,10 +58,7 @@ impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
       .map_err(|e| ViewError::RenderError(e))
   }
 
-  pub fn text<'a: 'texture, S>(
-    &'a mut self,
-    styler: S,
-  ) -> Result<(), ViewError>
+  pub fn text<S>(&mut self, styler: S) -> Result<(), ViewError>
   where
     S: FnOnce(TextStyle) -> TextStyle,
   {
@@ -110,8 +66,11 @@ impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
     let key = style.cache_key();
 
     if !self.text_cache.contains_key(&key) {
-      let text =
-        Text::new(&style, &self.font, &self.texture_creator)?;
+      let text = Text::new(
+        &style,
+        &self.font,
+        &self.canvas.texture_creator(),
+      )?;
       self.text_cache.insert(key.clone(), text);
     }
 

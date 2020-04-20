@@ -24,12 +24,12 @@ pub struct GameView<'renderer, 'ttf, 'canvas, 'handler, 'sdl> {
   score: Scoremap,
 }
 
-impl<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
-  GameView<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
+impl<'renderer, 'handler>
+  GameView<'renderer, 'renderer, 'renderer, 'handler, 'handler>
 {
   pub fn new(
-    renderer: &'renderer mut Renderer<'ttf, 'canvas>,
-    handler: &'handler mut Handler<'sdl>,
+    renderer: &'renderer mut Renderer<'renderer, 'renderer>,
+    handler: &'handler mut Handler<'handler>,
     score: Scoremap,
     width: u32,
     height: u32,
@@ -47,9 +47,7 @@ impl<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
     })
   }
 
-  pub fn run<'a: 'ttf + 'canvas>(
-    &'a mut self,
-  ) -> Result<(), ViewError> {
+  pub fn run(&mut self) -> Result<(), ViewError> {
     let all_roman_len =
       self.score.notes.iter().fold(0, |acc, note| {
         match note.content() {

@@ -2,8 +2,8 @@ use crate::model::exp::scoremap::Scoremap;
 use crate::model::game::MusicalTyperError;
 
 mod gameview;
-pub mod handler;
-pub mod renderer;
+mod handler;
+mod renderer;
 
 use gameview::GameView;
 use handler::{HandleError, Handler};
@@ -43,32 +43,74 @@ impl From<HandleError> for ViewError {
   }
 }
 
-pub struct Router<'renderer, 'ttf, 'canvas, 'handler, 'sdl> {
-  game_view: GameView<'renderer, 'ttf, 'canvas, 'handler, 'sdl>,
+pub struct Router<'ttf, 'canvas, 'sdl> {
+  handler: Handler<'sdl>,
+  renderer: Renderer<'ttf, 'canvas>,
 }
 
-impl<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
-  Router<'renderer, 'ttf, 'canvas, 'handler, 'sdl>
-where
-  'sdl: 'handler,
-  'ttf: 'renderer,
-  'canvas: 'renderer,
-{
+impl<'ttf, 'canvas, 'sdl> Router<'ttf, 'canvas, 'sdl> {
   pub fn new(
-    handler: &'handler mut Handler<'sdl>,
-    renderer: &'renderer mut Renderer<'ttf, 'canvas>,
-    score: Scoremap,
-  ) -> Result<Self, ViewError> {
-    Ok(Self {
-      game_view: GameView::new(renderer, handler, score, 800, 600)?,
-    })
+    handler: Handler<'sdl>,
+    renderer: Renderer<'ttf, 'canvas>,
+  ) -> Self {
+    Self { handler, renderer }
   }
 
-  pub fn run<'a: 'renderer + 'ttf + 'canvas + 'handler + 'sdl>(
-    &'a mut self,
-  ) -> Result<(), ViewError> {
-    self.game_view.run()?;
+  pub fn run(&mut self, score: Scoremap) -> Result<(), ViewError> {
+    let mut game_view = GameView::new(
+      &mut self.renderer,
+      &mut self.handler,
+      score,
+      800,
+      600,
+    )?;
+    game_view.run()?;
 
     Ok(())
   }
+}
+
+pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
+  let sdl = sdl2::init().unwrap();
+  let ttf = sdl2::ttf::init().unwrap();
+  sdl2::mixer::open_audio(
+    44100,
+    sdl2::mixer::DEFAULT_FORMAT,
+    sdl2::mixer::DEFAULT_CHANNELS,
+    1024,
+  )
+  .map_err(|e| ViewError::AudioError { message: e })?;
+
+  let font = ttf
+    .load_font(
+      std::path::Path::new("./asset/mplus-1m-medium.ttf"),
+      128,
+    )
+    .map_err(|e| ViewError::FontError {
+      message: e.to_string(),
+    })?;
+
+  let video = sdl
+    .video()
+    .map_err(|e| ViewError::InitError { message: e })?;
+  let window = video
+    .window("Musical Typer", 800, 600)
+    .position_centered()
+    .opengl()
+    .build()
+    .map_err(|e| ViewError::InitError {
+      message: e.to_string(),
+    })?;
+
+  let mut canvas = window.into_canvas().build().map_err(|e| {
+    ViewError::InitError {
+      message: e.to_string(),
+    }
+  })?;
+
+  let handler = Handler::new(&sdl);
+  let renderer = Renderer::new(&mut canvas, font, 800, 600)?;
+
+  Router::new(handler, renderer).run(score)?;
+  Ok(())
 }
