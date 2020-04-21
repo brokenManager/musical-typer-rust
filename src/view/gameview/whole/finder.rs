@@ -40,7 +40,7 @@ impl<'a> Finder<'a> {
       offset.height(),
     ))?;
 
-    const JAPANESE_HEIGHT: u32 = 80;
+    const JAPANESE_HEIGHT: u32 = 30;
     let half_x = offset.width() / 2;
 
     if let Some(sentence) = self.sentence {
@@ -50,11 +50,11 @@ impl<'a> Finder<'a> {
           .text(will_input_japanese)
           .line_height(JAPANESE_HEIGHT)
           .align(TextAlign::Left)
-          .pos(Point::new(0, 0))
+          .pos(offset.top_left())
       })?;
 
       {
-        const ROMAN_HEIGHT: u32 = 40;
+        const ROMAN_HEIGHT: u32 = 80;
         let TypingStr {
           will_input,
           inputted,
@@ -69,7 +69,7 @@ impl<'a> Finder<'a> {
             .align(TextAlign::Left)
             .pos(Point::new(
               half_x as i32 + 5,
-              offset.y() + JAPANESE_HEIGHT as i32,
+              offset.bottom() - ROMAN_HEIGHT as i32 - 20,
             ))
         })?;
 
@@ -80,7 +80,7 @@ impl<'a> Finder<'a> {
             .align(TextAlign::Right)
             .pos(Point::new(
               half_x as i32 - 5,
-              offset.y() + JAPANESE_HEIGHT as i32,
+              offset.bottom() - ROMAN_HEIGHT as i32 - 20,
             ))
         })?;
       }

@@ -62,6 +62,7 @@ impl KeyCell {
       })
       .text(&self.key.to_string())
       .align(TextAlign::Center)
+      .line_height(client.height())
       .pos(client.center())
     })?;
     Ok(())
