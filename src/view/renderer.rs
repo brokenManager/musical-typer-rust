@@ -14,6 +14,8 @@ pub mod text;
 pub type RenderCtx<'ttf, 'surface> =
   Rc<RefCell<Renderer<'ttf, 'surface>>>;
 
+pub type ViewResult = Result<(), ViewError>;
+
 pub struct Renderer<'ttf, 'surface> {
   canvas: Canvas<Window>,
   font: Font<'ttf, 'static>,
