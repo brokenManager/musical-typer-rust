@@ -3,35 +3,17 @@ use sdl2::rect::{Point, Rect};
 
 use crate::{
   model::exp::sentence::{Sentence, TypingStr},
-  view::{
-    renderer::{text::TextAlign, RenderCtx},
-    ViewError,
-  },
+  view::renderer::{text::TextAlign, RenderCtx, ViewResult},
 };
 
-pub struct Finder<'a> {
-  sentence: &'a Option<Sentence>,
+pub fn finder(
+  sentence: &Option<Sentence>,
   remaining_ratio: f64,
-}
-
-impl<'a> Finder<'a> {
-  pub fn new(
-    sentence: &'a Option<Sentence>,
-    remaining_ratio: f64,
-  ) -> Self {
-    Finder {
-      sentence,
-      remaining_ratio: remaining_ratio.max(0.).min(1.),
-    }
-  }
-
-  pub fn draw<'texture>(
-    &self,
-    ctx: RenderCtx<'_, 'texture>,
-    offset: Rect,
-  ) -> Result<(), ViewError> {
+) -> impl Fn(RenderCtx, Rect) -> ViewResult + '_ {
+  let remaining_ratio = remaining_ratio.max(0.).min(1.);
+  move |ctx: RenderCtx, offset: Rect| -> ViewResult {
     let remaining_width =
-      (offset.width() as f64 * self.remaining_ratio) as u32;
+      (offset.width() as f64 * remaining_ratio) as u32;
     ctx.borrow_mut().set_draw_color(Color::RGB(203, 193, 176));
     ctx.borrow_mut().fill_rect(Rect::new(
       offset.x(),
@@ -43,7 +25,7 @@ impl<'a> Finder<'a> {
     const JAPANESE_HEIGHT: u32 = 30;
     let half_x = offset.width() / 2;
 
-    if let Some(sentence) = self.sentence {
+    if let Some(sentence) = sentence {
       let will_input_japanese = sentence.origin();
       ctx.borrow_mut().text(|s| {
         s.color(Color::RGB(0, 0, 0))
