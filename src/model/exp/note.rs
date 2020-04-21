@@ -1,8 +1,6 @@
 use super::minute_second::Seconds;
 use super::sentence::Sentence;
 
-pub type SectionId = String;
-
 #[derive(Debug, Clone)]
 pub struct Section {
   pub foreign_note: NoteId,
@@ -21,6 +19,12 @@ impl Section {
       from,
       to,
     }
+  }
+
+  pub fn remaining_ratio(&self, now: Seconds) -> f64 {
+    let duration = self.to - self.from;
+    let elapsed = now - self.from;
+    elapsed / duration
   }
 }
 

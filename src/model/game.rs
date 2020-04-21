@@ -153,6 +153,16 @@ impl MusicalTyper {
   pub fn accumulated_time(&self) -> Seconds {
     self.accumulated_time
   }
+
+  pub fn section_remaining_ratio(&self) -> f64 {
+    self
+      .activity
+      .current_section()
+      .as_ref()
+      .map_or(1.0, |section| {
+        section.remaining_ratio(self.accumulated_time)
+      })
+  }
 }
 
 #[cfg(test)]

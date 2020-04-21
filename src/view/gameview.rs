@@ -176,6 +176,9 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
           type_per_second,
           achievement_rate,
           accuracy,
+          section_remaining_ratio: self
+            .model
+            .section_remaining_ratio(),
         },
       )?;
       self.renderer.borrow_mut().flush();

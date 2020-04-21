@@ -26,6 +26,7 @@ pub struct WholeProps<'a> {
   pub type_per_second: f64,
   pub achievement_rate: f64,
   pub accuracy: f64,
+  pub section_remaining_ratio: f64,
 }
 
 pub fn render<'texture>(
@@ -47,7 +48,10 @@ pub fn render<'texture>(
 
   {
     let finder_dim = Rect::new(0, 100, client.width(), 200);
-    finder(props.sentence, 0.2)(ctx.clone(), finder_dim)?;
+    finder(props.sentence, props.section_remaining_ratio)(
+      ctx.clone(),
+      finder_dim,
+    )?;
     ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
     ctx.borrow_mut().draw_rect(finder_dim)?;
   }
