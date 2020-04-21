@@ -57,9 +57,17 @@ pub fn render<'texture>(
   }
 
   {
+    let hint = props
+      .sentence
+      .as_ref()
+      .and_then(|sentence| sentence.roman().will_input.chars().next())
+      .map_or(vec![], |c| vec![c]);
     let keyboard_dim =
       Rect::new(0, client.height() as i32 - 300, client.width(), 100);
-    keyboard(props.pressed_keys, &[])(ctx.clone(), keyboard_dim)?;
+    keyboard(props.pressed_keys, hint.as_slice())(
+      ctx.clone(),
+      keyboard_dim,
+    )?;
 
     ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
     ctx.borrow_mut().draw_rect(keyboard_dim)?;
