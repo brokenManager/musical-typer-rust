@@ -1,9 +1,9 @@
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 
-use super::ViewError;
 use crate::{
-  model::exp::sentence::Sentence, view::renderer::RenderCtx,
+  model::exp::sentence::Sentence,
+  view::renderer::{RenderCtx, ViewResult},
 };
 
 mod finder;
@@ -26,7 +26,7 @@ pub fn render<'texture>(
   ctx: RenderCtx<'_, 'texture>,
   client: Rect,
   props: &WholeProps,
-) -> Result<(), ViewError> {
+) -> ViewResult {
   ctx.borrow_mut().set_draw_color(Color::RGB(253, 243, 226));
   ctx.borrow_mut().clear();
 
