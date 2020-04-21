@@ -31,10 +31,7 @@ use std::{cell::RefCell, rc::Rc};
 
 impl From<TextError> for ViewError {
   fn from(err: TextError) -> Self {
-    match err {
-      TextError::RenderError(e) => ViewError::RenderError(e),
-      _ => ViewError::TextError(err),
-    }
+    ViewError::TextError(err)
   }
 }
 
@@ -44,14 +41,14 @@ impl From<HandleError> for ViewError {
   }
 }
 
-pub struct Router<'ttf, 'canvas, 'sdl> {
-  handler: Handler<'sdl>,
+pub struct Router<'ttf, 'canvas> {
+  handler: Handler,
   renderer: RenderCtx<'ttf, 'canvas>,
 }
 
-impl<'ttf, 'canvas, 'sdl> Router<'ttf, 'canvas, 'sdl> {
+impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
   pub fn new(
-    handler: Handler<'sdl>,
+    handler: Handler,
     renderer: Renderer<'ttf, 'canvas>,
   ) -> Self {
     Self {
@@ -60,13 +57,10 @@ impl<'ttf, 'canvas, 'sdl> Router<'ttf, 'canvas, 'sdl> {
     }
   }
 
-  pub fn run<'a: 'ttf + 'canvas + 'sdl>(
-    &'a mut self,
-    score: Scoremap,
-  ) -> Result<(), ViewError> {
+  pub fn run(self, score: Scoremap) -> Result<(), ViewError> {
     let mut game_view = GameView::new(
       self.renderer.clone(),
-      &mut self.handler,
+      self.handler,
       score,
       800,
       600,
@@ -115,7 +109,7 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
     }
   })?;
 
-  let handler = Handler::new(&sdl);
+  let handler = Handler::new(sdl);
   let renderer = Renderer::new(canvas, font)?;
 
   Router::new(handler, renderer).run(score)?;

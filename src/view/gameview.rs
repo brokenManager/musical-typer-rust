@@ -15,21 +15,19 @@ mod whole;
 use super::{handler::Handler, renderer::RenderCtx, ViewError};
 use whole::WholeProps;
 
-pub struct GameView<'ttf, 'canvas, 'handler, 'sdl> {
+pub struct GameView<'ttf, 'canvas> {
   width: u32,
   height: u32,
   renderer: RenderCtx<'ttf, 'canvas>,
-  handler: &'handler mut Handler<'sdl>,
+  handler: Handler,
   model: MusicalTyper,
   score: Scoremap,
 }
 
-impl<'renderer, 'handler>
-  GameView<'renderer, 'renderer, 'handler, 'handler>
-{
+impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
   pub fn new(
-    renderer: RenderCtx<'renderer, 'renderer>,
-    handler: &'handler mut Handler<'handler>,
+    renderer: RenderCtx<'ttf, 'canvas>,
+    handler: Handler,
     score: Scoremap,
     width: u32,
     height: u32,
@@ -47,7 +45,7 @@ impl<'renderer, 'handler>
     })
   }
 
-  pub fn run(&'renderer mut self) -> Result<(), ViewError> {
+  pub fn run(&mut self) -> Result<(), ViewError> {
     let all_roman_len =
       self.score.notes.iter().fold(0, |acc, note| {
         match note.content() {
@@ -177,7 +175,7 @@ impl<'renderer, 'handler>
 
       let draw_time = time.elapsed().as_secs_f64();
 
-      self.handler.delay((1e3 / 60.0) as u32);
+      self.handler.delay((1e3 / 60.0) as u32)?;
 
       let elapsed = time.elapsed().as_secs_f64();
 
@@ -190,7 +188,7 @@ impl<'renderer, 'handler>
     }
     sdl2::mixer::Music::fade_out(500)
       .map_err(|e| ViewError::AudioError { message: e })?;
-    self.handler.delay(505);
+    self.handler.delay(505)?;
     sdl2::mixer::Music::halt();
 
     Ok(())

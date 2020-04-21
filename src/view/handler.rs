@@ -8,12 +8,12 @@ pub enum HandleError {
 
 use HandleError::*;
 
-pub struct Handler<'sdl> {
-  sdl: &'sdl Sdl,
+pub struct Handler {
+  sdl: Sdl,
 }
 
-impl<'sdl> Handler<'sdl> {
-  pub fn new(sdl: &'sdl Sdl) -> Self {
+impl Handler {
+  pub fn new(sdl: Sdl) -> Self {
     Self { sdl }
   }
 

@@ -6,8 +6,6 @@ use sdl2::{surface::Surface, ttf::Font};
 pub enum TextError {
   FontError(sdl2::ttf::FontError),
   TextureError(sdl2::render::TextureValueError),
-  RenderError(String),
-  CacheError(String),
 }
 
 pub struct Text<'surface> {

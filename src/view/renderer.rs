@@ -11,17 +11,17 @@ use text::{Text, TextError, TextStyle};
 
 pub mod text;
 
-pub type RenderCtx<'ttf, 'canvas> =
-  Rc<RefCell<Renderer<'ttf, 'canvas>>>;
+pub type RenderCtx<'ttf, 'surface> =
+  Rc<RefCell<Renderer<'ttf, 'surface>>>;
 
-pub struct Renderer<'ttf, 'canvas> {
+pub struct Renderer<'ttf, 'surface> {
   canvas: Canvas<Window>,
   font: Font<'ttf, 'static>,
-  text_cache: BTreeMap<String, Text<'canvas>>,
+  text_cache: BTreeMap<String, Text<'surface>>,
   texture_creator: Rc<TextureCreator<WindowContext>>,
 }
 
-impl<'ttf, 'canvas> Renderer<'ttf, 'canvas> {
+impl<'ttf, 'surface> Renderer<'ttf, 'surface> {
   pub fn new(
     mut canvas: Canvas<Window>,
     font: Font<'ttf, 'static>,
