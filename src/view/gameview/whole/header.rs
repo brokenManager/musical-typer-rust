@@ -1,32 +1,16 @@
-use crate::view::{
-  renderer::{text::TextAlign, RenderCtx},
-  ViewError,
-};
+use crate::view::renderer::{text::TextAlign, RenderCtx, ViewResult};
 use sdl2::rect::Point;
 
-pub struct Header {
-  title: String,
-  author: String,
+pub fn header<'renderer, 'title: 'renderer, 'author: 'renderer>(
+  title: &'title str,
+  author: &'author str,
   score_point: i32,
-}
-
-impl Header {
-  pub fn new(title: &str, author: &str, score_point: i32) -> Self {
-    Header {
-      title: title.to_owned(),
-      author: author.to_owned(),
-      score_point,
-    }
-  }
-
-  pub fn draw<'texture>(
-    &self,
-    ctx: RenderCtx<'_, 'texture>,
-  ) -> Result<(), ViewError> {
+) -> impl Fn(RenderCtx) -> ViewResult + 'renderer {
+  move |ctx: RenderCtx| -> ViewResult {
     use sdl2::pixels::Color;
 
     ctx.borrow_mut().text(|s| {
-      s.text(self.title.as_str())
+      s.text(title)
         .color(Color::RGB(0, 0, 0))
         .line_height(50)
         .align(TextAlign::Right)
@@ -34,7 +18,7 @@ impl Header {
     })?;
 
     ctx.borrow_mut().text(|s| {
-      s.text(self.author.as_str())
+      s.text(author)
         .color(Color::RGB(156, 156, 162))
         .line_height(50)
         .align(TextAlign::Right)
@@ -42,7 +26,7 @@ impl Header {
     })?;
 
     ctx.borrow_mut().text(|s| {
-      s.text(format!("{:08}", self.score_point).as_str())
+      s.text(format!("{:08}", score_point).as_str())
         .color(Color::RGB(64, 79, 181))
         .line_height(50)
         .pos(Point::new(0, 50))

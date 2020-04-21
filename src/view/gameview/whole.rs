@@ -11,7 +11,7 @@ mod header;
 mod keyboard;
 
 use finder::finder;
-use header::Header;
+use header::header;
 use keyboard::Keyboard;
 
 pub struct WholeProps<'a> {
@@ -31,10 +31,10 @@ pub fn render<'texture>(
   ctx.borrow_mut().clear();
 
   {
-    let header =
-      Header::new(props.title, props.song_author, props.score_point);
     let header_dim = Rect::new(0, 0, client.width(), 100);
-    header.draw(ctx.clone())?;
+    header(props.title, props.song_author, props.score_point)(
+      ctx.clone(),
+    )?;
     ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
     ctx.borrow_mut().draw_rect(header_dim)?;
   }
