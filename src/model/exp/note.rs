@@ -87,7 +87,10 @@ impl Note {
     use NoteContent::Sentence;
     use TypeResult::*;
 
-    if let Sentence { sentence, succeed } = &mut self.content {
+    if let Sentence {
+      sentence, succeed, ..
+    } = &mut self.content
+    {
       if sentence.completed() {
         Vacant
       } else if sentence.input(typed) {
