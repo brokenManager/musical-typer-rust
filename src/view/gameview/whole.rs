@@ -3,7 +3,10 @@ use sdl2::rect::Rect;
 
 use crate::{
   model::exp::sentence::Sentence,
-  view::renderer::{RenderCtx, ViewResult},
+  view::{
+    renderer::{RenderCtx, ViewResult},
+    stats::stats,
+  },
 };
 
 mod finder;
@@ -20,6 +23,9 @@ pub struct WholeProps<'a> {
   pub title: &'a str,
   pub song_author: &'a str,
   pub score_point: i32,
+  pub type_per_second: f64,
+  pub achievement_rate: f64,
+  pub accuracy: f64,
 }
 
 pub fn render<'texture>(
@@ -48,11 +54,20 @@ pub fn render<'texture>(
 
   {
     let keyboard_dim =
-      Rect::new(0, client.height() as i32 - 300, client.width(), 300);
+      Rect::new(0, client.height() as i32 - 300, client.width(), 100);
     keyboard(props.pressed_keys, &[])(ctx.clone(), keyboard_dim)?;
 
     ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
     ctx.borrow_mut().draw_rect(keyboard_dim)?;
+  }
+  {
+    let stats_dim =
+      Rect::new(0, client.height() as i32 - 200, client.width(), 200);
+    stats(
+      props.type_per_second,
+      props.achievement_rate,
+      props.accuracy,
+    )(ctx.clone(), stats_dim)?;
   }
 
   Ok(())

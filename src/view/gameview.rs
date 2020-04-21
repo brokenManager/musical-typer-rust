@@ -64,8 +64,8 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
     let mut typed_key_buf = vec![];
     let mut sentence: Option<Sentence> = None;
     let mut score_point = 0;
-    let mut correction_type_count = 0;
-    let mut wrong_type_count = 0;
+    let mut correction_type_count = 0u32;
+    let mut wrong_type_count = 0u32;
     let mut timepoints = std::collections::VecDeque::new();
 
     'main: loop {
@@ -143,6 +143,15 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
         }
       }
 
+      let type_per_second = timepoints.len() as f64 / 5.0;
+      let achievement_rate =
+        (correction_type_count as f64 / all_roman_len as f64).min(1.);
+      let accuracy = if correction_type_count == 0 {
+        0.0
+      } else {
+        correction_type_count as f64
+          / (correction_type_count + wrong_type_count) as f64
+      };
       whole::render(
         self.renderer.clone(),
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
@@ -164,6 +173,9 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
             .get("song_author")
             .unwrap_or(&"作曲者不詳".to_owned()),
           score_point,
+          type_per_second,
+          achievement_rate,
+          accuracy,
         },
       )?;
       self.renderer.borrow_mut().flush();

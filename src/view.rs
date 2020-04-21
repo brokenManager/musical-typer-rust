@@ -4,6 +4,7 @@ use crate::model::game::MusicalTyperError;
 mod gameview;
 mod handler;
 mod renderer;
+mod stats;
 
 use gameview::GameView;
 use handler::{HandleError, Handler};
