@@ -12,23 +12,23 @@ use std::collections::BTreeSet;
 
 mod whole;
 
-use super::{handler::Handler, renderer::Renderer, ViewError};
+use super::{handler::Handler, renderer::RenderCtx, ViewError};
 use whole::WholeProps;
 
-pub struct GameView<'renderer, 'ttf, 'canvas, 'handler, 'sdl> {
+pub struct GameView<'ttf, 'canvas, 'handler, 'sdl> {
   width: u32,
   height: u32,
-  renderer: &'renderer mut Renderer<'ttf, 'canvas>,
+  renderer: RenderCtx<'ttf, 'canvas>,
   handler: &'handler mut Handler<'sdl>,
   model: MusicalTyper,
   score: Scoremap,
 }
 
 impl<'renderer, 'handler>
-  GameView<'renderer, 'renderer, 'renderer, 'handler, 'handler>
+  GameView<'renderer, 'renderer, 'handler, 'handler>
 {
   pub fn new(
-    renderer: &'renderer mut Renderer<'renderer, 'renderer>,
+    renderer: RenderCtx<'renderer, 'renderer>,
     handler: &'handler mut Handler<'handler>,
     score: Scoremap,
     width: u32,
@@ -47,7 +47,7 @@ impl<'renderer, 'handler>
     })
   }
 
-  pub fn run(&mut self) -> Result<(), ViewError> {
+  pub fn run(&'renderer mut self) -> Result<(), ViewError> {
     let all_roman_len =
       self.score.notes.iter().fold(0, |acc, note| {
         match note.content() {
@@ -108,7 +108,7 @@ impl<'renderer, 'handler>
       }
       {
         use sdl2::event::Event::*;
-        let should_quit = false;
+        let mut should_quit = false;
         self.handler.poll_events(|event| match event {
           Quit { .. } => {
             should_quit = true;
@@ -146,7 +146,7 @@ impl<'renderer, 'handler>
       }
 
       whole::render(
-        &mut self.renderer,
+        self.renderer.clone(),
         sdl2::rect::Rect::new(0, 0, self.width, self.height),
         &WholeProps {
           pressed_keys: &pressed_key_buf
@@ -168,7 +168,7 @@ impl<'renderer, 'handler>
           score_point,
         },
       )?;
-      self.renderer.flush();
+      self.renderer.borrow_mut().flush();
 
       let typed_key_buf_cloned = typed_key_buf.clone();
       typed_key_buf.clear();

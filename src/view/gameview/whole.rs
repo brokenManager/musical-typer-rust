@@ -3,7 +3,7 @@ use sdl2::rect::Rect;
 
 use super::ViewError;
 use crate::{
-  model::exp::sentence::Sentence, view::renderer::Renderer,
+  model::exp::sentence::Sentence, view::renderer::RenderCtx,
 };
 
 mod finder;
@@ -23,38 +23,38 @@ pub struct WholeProps<'a> {
 }
 
 pub fn render<'texture>(
-  mut canvas: &'texture mut Renderer<'_, 'texture>,
+  ctx: RenderCtx<'_, 'texture>,
   client: Rect,
   props: &WholeProps,
 ) -> Result<(), ViewError> {
-  canvas.set_draw_color(Color::RGB(253, 243, 226));
-  canvas.clear();
+  ctx.borrow_mut().set_draw_color(Color::RGB(253, 243, 226));
+  ctx.borrow_mut().clear();
 
   {
     let header =
       Header::new(props.title, props.song_author, props.score_point);
     let header_dim = Rect::new(0, 0, client.width(), 100);
-    header.draw(&mut canvas)?;
-    canvas.set_draw_color(Color::RGB(0, 0, 0));
-    canvas.draw_rect(header_dim)?;
+    header.draw(ctx.clone())?;
+    ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
+    ctx.borrow_mut().draw_rect(header_dim)?;
   }
 
   {
     let finder = Finder::new(props.sentence, 0.2);
     let finder_dim = Rect::new(0, 100, client.width(), 200);
-    finder.draw(&mut canvas, finder_dim)?;
-    canvas.set_draw_color(Color::RGB(0, 0, 0));
-    canvas.draw_rect(finder_dim)?;
+    finder.draw(ctx.clone(), finder_dim)?;
+    ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
+    ctx.borrow_mut().draw_rect(finder_dim)?;
   }
 
   {
     let keyboard = Keyboard::new(props.pressed_keys, &[]);
     let keyboard_dim =
       Rect::new(0, client.height() as i32 - 300, client.width(), 300);
-    keyboard.draw(&mut canvas, keyboard_dim)?;
+    keyboard.draw(ctx.clone(), keyboard_dim)?;
 
-    canvas.set_draw_color(Color::RGB(0, 0, 0));
-    canvas.draw_rect(keyboard_dim)?;
+    ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
+    ctx.borrow_mut().draw_rect(keyboard_dim)?;
   }
 
   Ok(())

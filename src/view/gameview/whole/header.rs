@@ -1,5 +1,5 @@
 use crate::view::{
-  renderer::{text::TextAlign, Renderer},
+  renderer::{text::TextAlign, RenderCtx},
   ViewError,
 };
 use sdl2::rect::Point;
@@ -21,11 +21,11 @@ impl Header {
 
   pub fn draw<'texture>(
     &self,
-    canvas: &'texture mut Renderer<'_, 'texture>,
+    ctx: RenderCtx<'_, 'texture>,
   ) -> Result<(), ViewError> {
     use sdl2::pixels::Color;
 
-    canvas.text(|s| {
+    ctx.borrow_mut().text(|s| {
       s.text(self.title.as_str())
         .color(Color::RGB(0, 0, 0))
         .line_height(50)
@@ -33,7 +33,7 @@ impl Header {
         .pos(Point::new(800, 0))
     })?;
 
-    canvas.text(|s| {
+    ctx.borrow_mut().text(|s| {
       s.text(self.author.as_str())
         .color(Color::RGB(156, 156, 162))
         .line_height(50)
@@ -41,7 +41,7 @@ impl Header {
         .pos(Point::new(800, 50))
     })?;
 
-    canvas.text(|s| {
+    ctx.borrow_mut().text(|s| {
       s.text(format!("{:08}", self.score_point).as_str())
         .color(Color::RGB(64, 79, 181))
         .line_height(50)

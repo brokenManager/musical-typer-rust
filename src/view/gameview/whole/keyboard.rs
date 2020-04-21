@@ -1,5 +1,5 @@
 use crate::view::{
-  renderer::{text::TextAlign, Renderer},
+  renderer::{text::TextAlign, RenderCtx},
   ViewError,
 };
 use sdl2::pixels::Color;
@@ -32,7 +32,7 @@ impl KeyCell {
 
   pub fn draw<'texture>(
     self,
-    canvas: &'texture mut Renderer<'_, 'texture>,
+    ctx: RenderCtx<'_, 'texture>,
   ) -> Result<(), ViewError> {
     const ORANGE: Color = Color::RGB(209, 154, 29);
     const GREEN: Color = Color::RGB(20, 76, 64);
@@ -40,19 +40,19 @@ impl KeyCell {
     const BLACK: Color = Color::RGB(0, 0, 0);
     let client =
       Rect::from_center(self.center, CELL_WIDTH, CELL_HEIGHT);
-    canvas.set_draw_color(if self.is_highlighted {
+    ctx.borrow_mut().set_draw_color(if self.is_highlighted {
       GREEN
     } else {
       BACK
     });
-    canvas.fill_rect(client)?;
-    canvas.set_draw_color(BLACK);
-    canvas.draw_rect(Rect::from_center(
+    ctx.borrow_mut().fill_rect(client)?;
+    ctx.borrow_mut().set_draw_color(BLACK);
+    ctx.borrow_mut().draw_rect(Rect::from_center(
       self.center,
       CELL_WIDTH,
       CELL_HEIGHT,
     ))?;
-    canvas.text(|s| {
+    ctx.borrow_mut().text(|s| {
       s.color(if self.is_pressed {
         ORANGE
       } else if self.is_highlighted {
@@ -86,7 +86,7 @@ impl Keyboard {
 
   pub fn draw<'texture>(
     &self,
-    mut canvas: &'texture mut Renderer<'_, 'texture>,
+    ctx: RenderCtx<'_, 'texture>,
     offset: Rect,
   ) -> Result<(), ViewError> {
     let key_chars_rows =
@@ -110,7 +110,7 @@ impl Keyboard {
           self.highlighted_keys.contains(&key_char),
           self.pressed_keys.contains(&key_char),
         );
-        cell.draw(&mut canvas)?;
+        cell.draw(ctx.clone())?;
         x += 1;
       }
       y += 1;

@@ -26,7 +26,8 @@ impl From<MusicalTyperError> for ViewError {
     ViewError::ModelError(err)
   }
 }
-use renderer::text::TextError;
+use renderer::{text::TextError, RenderCtx};
+use std::{cell::RefCell, rc::Rc};
 
 impl From<TextError> for ViewError {
   fn from(err: TextError) -> Self {
@@ -45,7 +46,7 @@ impl From<HandleError> for ViewError {
 
 pub struct Router<'ttf, 'canvas, 'sdl> {
   handler: Handler<'sdl>,
-  renderer: Renderer<'ttf, 'canvas>,
+  renderer: RenderCtx<'ttf, 'canvas>,
 }
 
 impl<'ttf, 'canvas, 'sdl> Router<'ttf, 'canvas, 'sdl> {
@@ -53,12 +54,18 @@ impl<'ttf, 'canvas, 'sdl> Router<'ttf, 'canvas, 'sdl> {
     handler: Handler<'sdl>,
     renderer: Renderer<'ttf, 'canvas>,
   ) -> Self {
-    Self { handler, renderer }
+    Self {
+      handler,
+      renderer: Rc::new(RefCell::new(renderer)),
+    }
   }
 
-  pub fn run(&mut self, score: Scoremap) -> Result<(), ViewError> {
+  pub fn run<'a: 'ttf + 'canvas + 'sdl>(
+    &'a mut self,
+    score: Scoremap,
+  ) -> Result<(), ViewError> {
     let mut game_view = GameView::new(
-      &mut self.renderer,
+      self.renderer.clone(),
       &mut self.handler,
       score,
       800,
@@ -102,14 +109,14 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
       message: e.to_string(),
     })?;
 
-  let mut canvas = window.into_canvas().build().map_err(|e| {
+  let canvas = window.into_canvas().build().map_err(|e| {
     ViewError::InitError {
       message: e.to_string(),
     }
   })?;
 
   let handler = Handler::new(&sdl);
-  let renderer = Renderer::new(&mut canvas, font, 800, 600)?;
+  let renderer = Renderer::new(canvas, font)?;
 
   Router::new(handler, renderer).run(score)?;
   Ok(())

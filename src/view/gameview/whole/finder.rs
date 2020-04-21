@@ -4,7 +4,7 @@ use sdl2::rect::{Point, Rect};
 use crate::{
   model::exp::sentence::{Sentence, TypingStr},
   view::{
-    renderer::{text::TextAlign, Renderer},
+    renderer::{text::TextAlign, RenderCtx},
     ViewError,
   },
 };
@@ -27,13 +27,13 @@ impl<'a> Finder<'a> {
 
   pub fn draw<'texture>(
     &self,
-    canvas: &'texture mut Renderer<'_, 'texture>,
+    ctx: RenderCtx<'_, 'texture>,
     offset: Rect,
   ) -> Result<(), ViewError> {
     let remaining_width =
       (offset.width() as f64 * self.remaining_ratio) as u32;
-    canvas.set_draw_color(Color::RGB(203, 193, 176));
-    canvas.fill_rect(Rect::new(
+    ctx.borrow_mut().set_draw_color(Color::RGB(203, 193, 176));
+    ctx.borrow_mut().fill_rect(Rect::new(
       offset.x(),
       offset.y(),
       remaining_width,
@@ -45,7 +45,7 @@ impl<'a> Finder<'a> {
 
     if let Some(sentence) = self.sentence {
       let will_input_japanese = sentence.origin();
-      canvas.text(|s| {
+      ctx.borrow_mut().text(|s| {
         s.color(Color::RGB(0, 0, 0))
           .text(will_input_japanese)
           .line_height(JAPANESE_HEIGHT)
@@ -62,7 +62,7 @@ impl<'a> Finder<'a> {
         let will_input = will_input.as_str();
         let inputted = inputted.as_str();
 
-        canvas.text(|s| {
+        ctx.borrow_mut().text(|s| {
           s.color(Color::RGB(0, 0, 0))
             .text(will_input)
             .line_height(ROMAN_HEIGHT)
@@ -73,7 +73,7 @@ impl<'a> Finder<'a> {
             ))
         })?;
 
-        canvas.text(|s| {
+        ctx.borrow_mut().text(|s| {
           s.color(Color::RGB(80, 80, 80))
             .text(inputted)
             .line_height(ROMAN_HEIGHT)

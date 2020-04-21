@@ -1,7 +1,6 @@
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
-use sdl2::render::{Texture, TextureCreator};
-use sdl2::{ttf::Font, video::WindowContext};
+use sdl2::{surface::Surface, ttf::Font};
 
 #[derive(Debug)]
 pub enum TextError {
@@ -11,16 +10,15 @@ pub enum TextError {
   CacheError(String),
 }
 
-pub struct Text<'texture> {
-  texture: Texture<'texture>,
+pub struct Text<'surface> {
+  surface: Surface<'surface>,
   aspect: f64,
 }
 
-impl<'texture> Text<'texture> {
-  pub fn new<'creator: 'texture>(
+impl<'surface> Text<'surface> {
+  pub fn new(
     style: &TextStyle,
     font: &Font,
-    texture_creator: &'creator TextureCreator<WindowContext>,
   ) -> Result<Self, TextError> {
     let TextStyle { text, color, .. } = style;
     let aspect = {
@@ -34,14 +32,11 @@ impl<'texture> Text<'texture> {
       .blended(color.clone())
       .map_err(|e| TextError::FontError(e))?;
 
-    let texture = texture_creator
-      .create_texture_from_surface(&surface)
-      .map_err(|e| TextError::TextureError(e))?;
-    Ok(Self { texture, aspect })
+    Ok(Self { surface, aspect })
   }
 
-  pub fn texture(&self) -> &Texture {
-    &self.texture
+  pub fn surface(&self) -> &Surface {
+    &self.surface
   }
 
   pub fn aspect(&self) -> f64 {
