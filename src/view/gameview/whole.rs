@@ -12,7 +12,7 @@ mod keyboard;
 
 use finder::finder;
 use header::header;
-use keyboard::Keyboard;
+use keyboard::keyboard;
 
 pub struct WholeProps<'a> {
   pub pressed_keys: &'a [char],
@@ -47,10 +47,9 @@ pub fn render<'texture>(
   }
 
   {
-    let keyboard = Keyboard::new(props.pressed_keys, &[]);
     let keyboard_dim =
       Rect::new(0, client.height() as i32 - 300, client.width(), 300);
-    keyboard.draw(ctx.clone(), keyboard_dim)?;
+    keyboard(props.pressed_keys, &[])(ctx.clone(), keyboard_dim)?;
 
     ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
     ctx.borrow_mut().draw_rect(keyboard_dim)?;

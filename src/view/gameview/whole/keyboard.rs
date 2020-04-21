@@ -1,46 +1,23 @@
-use crate::view::{
-  renderer::{text::TextAlign, RenderCtx},
-  ViewError,
-};
+use crate::view::renderer::{text::TextAlign, RenderCtx, ViewResult};
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 
 const CELL_WIDTH: u32 = 60;
 const CELL_HEIGHT: u32 = 70;
 
-pub struct KeyCell {
+fn key_cell(
   center: Point,
   key: char,
   is_highlighted: bool,
   is_pressed: bool,
-}
-
-impl KeyCell {
-  fn new(
-    center: Point,
-    key: char,
-    is_highlighted: bool,
-    is_pressed: bool,
-  ) -> Self {
-    KeyCell {
-      center,
-      key,
-      is_highlighted,
-      is_pressed,
-    }
-  }
-
-  pub fn draw<'texture>(
-    self,
-    ctx: RenderCtx<'_, 'texture>,
-  ) -> Result<(), ViewError> {
+) -> impl Fn(RenderCtx) -> ViewResult {
+  move |ctx: RenderCtx| -> ViewResult {
     const ORANGE: Color = Color::RGB(209, 154, 29);
     const GREEN: Color = Color::RGB(20, 76, 64);
     const BACK: Color = Color::RGB(253, 243, 226);
     const BLACK: Color = Color::RGB(0, 0, 0);
-    let client =
-      Rect::from_center(self.center, CELL_WIDTH, CELL_HEIGHT);
-    ctx.borrow_mut().set_draw_color(if self.is_highlighted {
+    let client = Rect::from_center(center, CELL_WIDTH, CELL_HEIGHT);
+    ctx.borrow_mut().set_draw_color(if is_highlighted {
       GREEN
     } else {
       BACK
@@ -48,19 +25,19 @@ impl KeyCell {
     ctx.borrow_mut().fill_rect(client)?;
     ctx.borrow_mut().set_draw_color(BLACK);
     ctx.borrow_mut().draw_rect(Rect::from_center(
-      self.center,
+      center,
       CELL_WIDTH,
       CELL_HEIGHT,
     ))?;
     ctx.borrow_mut().text(|s| {
-      s.color(if self.is_pressed {
+      s.color(if is_pressed {
         ORANGE
-      } else if self.is_highlighted {
+      } else if is_highlighted {
         BACK
       } else {
         BLACK
       })
-      .text(&self.key.to_string())
+      .text(&key.to_string())
       .align(TextAlign::Center)
       .line_height(client.height())
       .pos(client.center())
@@ -69,27 +46,15 @@ impl KeyCell {
   }
 }
 
-pub struct Keyboard {
-  pressed_keys: Vec<char>,
-  highlighted_keys: Vec<char>,
-}
-
-impl Keyboard {
-  pub fn new(
-    pressed_keys: &[char],
-    highlighted_keys: &[char],
-  ) -> Self {
-    Keyboard {
-      pressed_keys: pressed_keys.to_owned(),
-      highlighted_keys: highlighted_keys.to_owned(),
-    }
-  }
-
-  pub fn draw<'texture>(
-    &self,
-    ctx: RenderCtx<'_, 'texture>,
-    offset: Rect,
-  ) -> Result<(), ViewError> {
+pub fn keyboard<
+  'renderer,
+  'pressed: 'renderer,
+  'highlighted: 'renderer,
+>(
+  pressed_keys: &'pressed [char],
+  highlighted_keys: &'highlighted [char],
+) -> impl Fn(RenderCtx, Rect) -> ViewResult + 'renderer {
+  move |ctx: RenderCtx, offset: Rect| -> ViewResult {
     let key_chars_rows =
       ["1234567890-", "qwertyuiop", "asdfghjkl", "zxcvbnm"];
     let mut y = 0;
@@ -105,13 +70,12 @@ impl Keyboard {
             + offset.y()
             + CELL_HEIGHT as i32 * 2 / 3,
         );
-        let cell = KeyCell::new(
+        key_cell(
           center,
           key_char,
-          self.highlighted_keys.contains(&key_char),
-          self.pressed_keys.contains(&key_char),
-        );
-        cell.draw(ctx.clone())?;
+          highlighted_keys.contains(&key_char),
+          pressed_keys.contains(&key_char),
+        )(ctx.clone())?;
         x += 1;
       }
       y += 1;
