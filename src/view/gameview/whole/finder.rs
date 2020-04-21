@@ -35,8 +35,8 @@ pub fn finder(
           .pos(offset.top_left())
       })?;
 
+      const ROMAN_HEIGHT: u32 = 80;
       {
-        const ROMAN_HEIGHT: u32 = 80;
         let TypingStr {
           will_input,
           inputted,
@@ -63,6 +63,43 @@ pub fn finder(
             .pos(Point::new(
               half_x as i32 - 5,
               offset.bottom() - ROMAN_HEIGHT as i32 - 20,
+            ))
+        })?;
+      }
+      const YOMIGANA_HEIGHT: u32 = 80;
+      {
+        let TypingStr {
+          will_input,
+          inputted,
+        } = sentence.yomiagana();
+        let will_input = will_input.as_str();
+        let inputted = inputted.as_str();
+
+        ctx.borrow_mut().text(|s| {
+          s.color(Color::RGB(0, 0, 0))
+            .text(will_input)
+            .line_height(YOMIGANA_HEIGHT)
+            .align(TextAlign::Left)
+            .pos(Point::new(
+              half_x as i32 + 5,
+              offset.bottom()
+                - ROMAN_HEIGHT as i32
+                - YOMIGANA_HEIGHT as i32
+                - 20,
+            ))
+        })?;
+
+        ctx.borrow_mut().text(|s| {
+          s.color(Color::RGB(80, 80, 80))
+            .text(inputted)
+            .line_height(YOMIGANA_HEIGHT)
+            .align(TextAlign::Right)
+            .pos(Point::new(
+              half_x as i32 - 5,
+              offset.bottom()
+                - ROMAN_HEIGHT as i32
+                - YOMIGANA_HEIGHT as i32
+                - 20,
             ))
         })?;
       }
