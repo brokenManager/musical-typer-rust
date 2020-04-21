@@ -22,9 +22,12 @@ impl<'sdl> Handler<'sdl> {
     Ok(())
   }
 
-  pub fn poll_events<F>(&mut self, f: F) -> Result<(), HandleError>
+  pub fn poll_events<F>(
+    &mut self,
+    mut f: F,
+  ) -> Result<(), HandleError>
   where
-    F: Fn(Event),
+    F: FnMut(Event),
   {
     let mut poller = self
       .sdl
