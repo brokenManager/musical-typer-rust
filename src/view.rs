@@ -109,9 +109,10 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
       message: e.to_string(),
     }
   })?;
+  let texture_creator = canvas.texture_creator();
 
   let handler = Handler::new(sdl);
-  let renderer = Renderer::new(canvas, font)?;
+  let renderer = Renderer::new(canvas, font, &texture_creator)?;
 
   Router::new(handler, renderer).run(score)?;
   Ok(())

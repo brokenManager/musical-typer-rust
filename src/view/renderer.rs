@@ -20,18 +20,17 @@ pub struct Renderer<'ttf, 'surface> {
   canvas: Canvas<Window>,
   font: Font<'ttf, 'static>,
   text_cache: HashMap<TextStyle, Text<'surface>>,
-  texture_creator: Rc<TextureCreator<WindowContext>>,
+  texture_creator: &'surface TextureCreator<WindowContext>,
 }
 
 impl<'ttf, 'surface> Renderer<'ttf, 'surface> {
   pub fn new(
     mut canvas: Canvas<Window>,
     font: Font<'ttf, 'static>,
+    texture_creator: &'surface TextureCreator<WindowContext>,
   ) -> Result<Self, ViewError> {
     canvas.clear();
     canvas.present();
-
-    let texture_creator = Rc::new(canvas.texture_creator());
 
     Ok(Self {
       canvas,
@@ -74,7 +73,12 @@ impl<'ttf, 'surface> Renderer<'ttf, 'surface> {
     let style = styler(TextStyle::new());
 
     if !self.text_cache.contains_key(&style) {
-      let text = Text::new(&style, &self.font)?;
+      let text = Text::new(style.clone(), &self.font, |surface| {
+        self
+          .texture_creator
+          .create_texture_from_surface(surface)
+          .map_err(|e| TextError::TextureError(e))
+      })?;
       self.text_cache.insert(style.clone(), text);
     }
 
@@ -83,15 +87,7 @@ impl<'ttf, 'surface> Renderer<'ttf, 'surface> {
       .get_mut(&style)
       .ok_or(ViewError::CacheError)?;
 
-    let texture = self
-      .texture_creator
-      .create_texture_from_surface(&text.surface())
-      .map_err(|e| TextError::TextureError(e))?;
-
-    self
-      .canvas
-      .copy(&texture, None, Some(style.to_rect(text.aspect())))
-      .map_err(|e| ViewError::RenderError(e))?;
+    text.render(&mut self.canvas)?;
     Ok(())
   }
 }

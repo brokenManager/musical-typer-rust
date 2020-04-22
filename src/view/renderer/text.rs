@@ -1,27 +1,37 @@
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
-use sdl2::{surface::Surface, ttf::Font};
+use sdl2::{
+  render::{Canvas, RenderTarget, Texture},
+  surface::Surface,
+  ttf::Font,
+};
 
 #[derive(Debug)]
 pub enum TextError {
   FontError(sdl2::ttf::FontError),
   TextureError(sdl2::render::TextureValueError),
+  RenderError(String),
 }
 
-pub struct Text<'surface> {
-  surface: Surface<'surface>,
+pub struct Text<'texture> {
+  texture: Texture<'texture>,
+  style: TextStyle,
   aspect: f64,
 }
 
-impl<'surface> Text<'surface> {
-  pub fn new(
-    style: &TextStyle,
+impl<'texture> Text<'texture> {
+  pub fn new<C>(
+    style: TextStyle,
     font: &Font,
-  ) -> Result<Self, TextError> {
-    let TextStyle { text, color, .. } = style;
+    creator: C,
+  ) -> Result<Self, TextError>
+  where
+    C: FnOnce(Surface) -> Result<Texture<'texture>, TextError>,
+  {
+    let TextStyle { text, color, .. } = style.clone();
     let aspect = {
       let (w, h) =
-        font.size_of(text).map_err(|e| TextError::FontError(e))?;
+        font.size_of(&text).map_err(|e| TextError::FontError(e))?;
       w as f64 / h as f64
     };
     let text = if text == "" { " " } else { &text };
@@ -30,15 +40,29 @@ impl<'surface> Text<'surface> {
       .blended(color.clone())
       .map_err(|e| TextError::FontError(e))?;
 
-    Ok(Self { surface, aspect })
+    let texture = creator(surface)?;
+
+    Ok(Self {
+      texture,
+      style,
+      aspect,
+    })
   }
 
-  pub fn surface(&self) -> &Surface {
-    &self.surface
-  }
-
-  pub fn aspect(&self) -> f64 {
-    self.aspect
+  pub fn render<R>(
+    &self,
+    canvas: &mut Canvas<R>,
+  ) -> Result<(), TextError>
+  where
+    R: RenderTarget,
+  {
+    canvas
+      .copy(
+        &self.texture,
+        None,
+        Some(self.style.to_rect(self.aspect)),
+      )
+      .map_err(|e| TextError::RenderError(e))
   }
 }
 
