@@ -11,23 +11,23 @@ use text::{Text, TextError, TextStyle};
 
 pub mod text;
 
-pub type RenderCtx<'ttf, 'surface> =
-  Rc<RefCell<Renderer<'ttf, 'surface>>>;
+pub type RenderCtx<'ttf, 'texture> =
+  Rc<RefCell<Renderer<'ttf, 'texture>>>;
 
 pub type ViewResult = Result<(), ViewError>;
 
-pub struct Renderer<'ttf, 'surface> {
+pub struct Renderer<'ttf, 'texture> {
   canvas: Canvas<Window>,
   font: Font<'ttf, 'static>,
-  text_cache: HashMap<TextStyle, Text<'surface>>,
-  texture_creator: &'surface TextureCreator<WindowContext>,
+  text_cache: HashMap<TextStyle, Text<'texture>>,
+  texture_creator: &'texture TextureCreator<WindowContext>,
 }
 
-impl<'ttf, 'surface> Renderer<'ttf, 'surface> {
+impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
   pub fn new(
     mut canvas: Canvas<Window>,
     font: Font<'ttf, 'static>,
-    texture_creator: &'surface TextureCreator<WindowContext>,
+    texture_creator: &'texture TextureCreator<WindowContext>,
   ) -> Result<Self, ViewError> {
     canvas.clear();
     canvas.present();
