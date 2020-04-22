@@ -42,13 +42,14 @@ impl<'surface> Text<'surface> {
   }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub enum TextAlign {
   Left,
   Center,
   Right,
 }
 
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct TextStyle {
   text: String,
   color: Color,
@@ -96,17 +97,6 @@ impl TextStyle {
   pub fn pos(mut self, new_pos: Point) -> Self {
     self.pos = new_pos;
     self
-  }
-
-  pub fn cache_key(&self) -> String {
-    format!(
-      "{},{},{},{},{},",
-      self.text,
-      self.color.r,
-      self.color.g,
-      self.color.b,
-      self.color.a
-    )
   }
 
   pub fn to_rect(&self, aspect: f64) -> Rect {

@@ -6,7 +6,7 @@ use sdl2::{
   ttf::Font,
   video::{Window, WindowContext},
 };
-use std::{cell::RefCell, collections::BTreeMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use text::{Text, TextError, TextStyle};
 
 pub mod text;
@@ -19,7 +19,7 @@ pub type ViewResult = Result<(), ViewError>;
 pub struct Renderer<'ttf, 'surface> {
   canvas: Canvas<Window>,
   font: Font<'ttf, 'static>,
-  text_cache: BTreeMap<String, Text<'surface>>,
+  text_cache: HashMap<TextStyle, Text<'surface>>,
   texture_creator: Rc<TextureCreator<WindowContext>>,
 }
 
@@ -36,7 +36,7 @@ impl<'ttf, 'surface> Renderer<'ttf, 'surface> {
     Ok(Self {
       canvas,
       font,
-      text_cache: BTreeMap::new(),
+      text_cache: HashMap::new(),
       texture_creator,
     })
   }
@@ -72,15 +72,16 @@ impl<'ttf, 'surface> Renderer<'ttf, 'surface> {
     S: FnOnce(TextStyle) -> TextStyle,
   {
     let style = styler(TextStyle::new());
-    let key = style.cache_key();
 
-    if !self.text_cache.contains_key(&key) {
+    if !self.text_cache.contains_key(&style) {
       let text = Text::new(&style, &self.font)?;
-      self.text_cache.insert(key.clone(), text);
+      self.text_cache.insert(style.clone(), text);
     }
 
-    let text =
-      self.text_cache.get_mut(&key).ok_or(ViewError::CacheError)?;
+    let text = self
+      .text_cache
+      .get_mut(&style)
+      .ok_or(ViewError::CacheError)?;
 
     let texture = self
       .texture_creator
