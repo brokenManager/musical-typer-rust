@@ -1,6 +1,7 @@
 pub mod game_activity;
-pub mod minute_second;
-pub mod note;
-pub mod roman;
 pub mod scoremap;
-pub mod sentence;
+pub mod time;
+
+pub use note::sentence;
+pub use scoremap::section;
+pub use section::note;

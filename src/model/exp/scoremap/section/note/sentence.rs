@@ -1,5 +1,8 @@
-use super::roman::roman_lexer::RomanParseError;
-use super::roman::roman_str::RomanStr;
+use roman::roman_lexer::RomanParseError;
+use roman::roman_str::RomanStr;
+use std::fmt::{Debug, Formatter};
+
+pub mod roman;
 
 pub struct TypingStr {
   pub will_input: String,
@@ -12,11 +15,8 @@ pub struct Sentence {
   hiragana: RomanStr,
 }
 
-impl std::fmt::Debug for Sentence {
-  fn fmt(
-    &self,
-    mut f: &mut std::fmt::Formatter<'_>,
-  ) -> std::fmt::Result {
+impl Debug for Sentence {
+  fn fmt(&self, mut f: &mut Formatter<'_>) -> std::fmt::Result {
     write!(&mut f, "{} <-> {:?}", self.origin, self.hiragana)
   }
 }
@@ -27,7 +27,7 @@ impl Sentence {
     to_input: &str,
   ) -> Result<Self, RomanParseError> {
     Ok(Sentence {
-      origin: origin.to_owned(),
+      origin: origin.into(),
       hiragana: RomanStr::new(to_input)?,
     })
   }
@@ -42,21 +42,21 @@ impl Sentence {
       roman_str.input(inputted);
     }
     Ok(Sentence {
-      origin: origin.to_owned(),
+      origin: origin.into(),
       hiragana: roman_str,
     })
   }
 
   pub fn empty() -> Self {
     Sentence {
-      origin: "".to_owned(),
+      origin: "".into(),
       hiragana: RomanStr::new("").unwrap(),
     }
   }
 
   pub fn from(origin: &str, yomigana: RomanStr) -> Self {
     Sentence {
-      origin: origin.to_owned(),
+      origin: origin.into(),
       hiragana: yomigana,
     }
   }
@@ -75,7 +75,7 @@ impl Sentence {
   pub fn roman(&self) -> TypingStr {
     TypingStr {
       will_input: self.hiragana.will_input_roman(),
-      inputted: self.hiragana.inputted_roman().to_owned(),
+      inputted: self.hiragana.inputted_roman().into(),
     }
   }
 

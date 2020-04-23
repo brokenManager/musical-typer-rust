@@ -73,6 +73,8 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
 }
 
 pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
+  use std::path::Path;
+
   let sdl = sdl2::init().unwrap();
   let ttf = sdl2::ttf::init().unwrap();
   sdl2::mixer::open_audio(
@@ -84,10 +86,7 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
   .map_err(|e| ViewError::AudioError { message: e })?;
 
   let font = ttf
-    .load_font(
-      std::path::Path::new("./asset/mplus-1m-medium.ttf"),
-      128,
-    )
+    .load_font(Path::new("./asset/mplus-1m-medium.ttf"), 128)
     .map_err(|e| ViewError::FontError {
       message: e.to_string(),
     })?;

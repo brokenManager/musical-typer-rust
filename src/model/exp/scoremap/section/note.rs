@@ -1,32 +1,8 @@
-use super::minute_second::Seconds;
-use super::sentence::Sentence;
+use scoring::Scoring;
+use sentence::Sentence;
 
-#[derive(Debug, Clone)]
-pub struct Section {
-  pub foreign_note: NoteId,
-  pub from: Seconds,
-  pub to: Seconds,
-}
-
-impl Section {
-  pub fn new(
-    foreign_note: NoteId,
-    from: Seconds,
-    to: Seconds,
-  ) -> Self {
-    Section {
-      foreign_note,
-      from,
-      to,
-    }
-  }
-
-  pub fn remaining_ratio(&self, now: Seconds) -> f64 {
-    let duration = self.to - self.from;
-    let elapsed = now - self.from;
-    elapsed / duration
-  }
-}
+mod scoring;
+pub mod sentence;
 
 #[derive(Debug)]
 pub enum TypeResult {
@@ -47,23 +23,30 @@ pub type NoteId = String;
 #[derive(Debug, Clone)]
 pub struct Note {
   id: NoteId,
-  time: Seconds,
+  duration: Duration,
   content: NoteContent,
+  scoring: Scoring,
 }
 
+use crate::model::exp::time::Duration;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 
 impl Note {
-  fn new(time: f64, content: NoteContent) -> Self {
+  fn new(duration: Duration, content: NoteContent) -> Self {
     let id =
       thread_rng().sample_iter(&Alphanumeric).take(5).collect();
-    Note { id, time, content }
+    Self {
+      id,
+      duration,
+      content,
+      scoring: Scoring::new(),
+    }
   }
 
-  pub fn sentence(time: Seconds, sentence: Sentence) -> Self {
+  pub fn sentence(duration: Duration, sentence: Sentence) -> Self {
     Self::new(
-      time,
+      duration,
       NoteContent::Sentence {
         sentence,
         succeed: false,
@@ -71,27 +54,27 @@ impl Note {
     )
   }
 
-  pub fn caption(time: Seconds, caption: &str) -> Self {
-    Self::new(time, NoteContent::Caption(caption.to_owned()))
+  pub fn caption(duration: Duration, caption: &str) -> Self {
+    Self::new(duration, NoteContent::Caption(caption.into()))
   }
 
-  pub fn blank(time: Seconds) -> Self {
-    Self::new(time, NoteContent::Blank)
+  pub fn blank(duration: Duration) -> Self {
+    Self::new(duration, NoteContent::Blank)
   }
 
   pub fn id(&self) -> NoteId {
     self.id.clone()
   }
 
-  pub fn time(&self) -> Seconds {
-    self.time
+  pub fn duration(&self) -> &Duration {
+    &self.duration
   }
 
   pub fn input(&mut self, typed: char) -> TypeResult {
     use NoteContent::Sentence;
     use TypeResult::*;
 
-    if let Sentence {
+    let res = if let Sentence {
       sentence, succeed, ..
     } = &mut self.content
     {
@@ -105,10 +88,21 @@ impl Note {
       }
     } else {
       Vacant
-    }
+    };
+    self.scoring.point(&res);
+    res
   }
 
   pub fn content(&self) -> &NoteContent {
     &self.content
+  }
+
+  pub fn accuracy(&self) -> f64 {
+    match self.content {
+      NoteContent::Sentence { .. } => {
+        self.scoring.accuracy().as_f64()
+      }
+      _ => 1.0,
+    }
   }
 }
