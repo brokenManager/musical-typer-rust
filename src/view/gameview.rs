@@ -12,7 +12,9 @@ use std::collections::BTreeSet;
 
 mod whole;
 
-use super::{handler::Handler, renderer::RenderCtx, ViewError};
+use super::{
+  handler::Handler, player::Player, renderer::RenderCtx, ViewError,
+};
 use whole::WholeProps;
 
 pub struct GameView<'ttf, 'canvas> {
@@ -59,7 +61,7 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
     struct TypeTimepoint(Seconds);
 
     let mut mt_events = vec![];
-    let mut musics = vec![];
+    let mut player = Player::new();
     let mut pressed_key_buf = BTreeSet::new();
     let mut typed_key_buf = vec![];
     let mut sentence: Option<Sentence> = None;
@@ -75,15 +77,7 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
           use MusicalTyperEvent::*;
           match mt_event {
             PlayBgm(bgm_name) => {
-              let bgm_file_path = format!("score/{}", bgm_name);
-              let music = sdl2::mixer::Music::from_file(
-                std::path::Path::new(&bgm_file_path),
-              )
-              .map_err(|e| ViewError::AudioError { message: e })?;
-              music
-                .play(0)
-                .map_err(|e| ViewError::AudioError { message: e })?;
-              musics.push(music);
+              player.change_bgm(bgm_name)?;
             }
             UpdateSentence(new_sentence) => {
               sentence = Some(new_sentence.clone());
@@ -201,10 +195,8 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
         sdl2::mixer::Music::is_playing()
       );
     }
-    sdl2::mixer::Music::fade_out(500)
-      .map_err(|e| ViewError::AudioError { message: e })?;
+    player.stop_bgm(500)?;
     self.handler.delay(505)?;
-    sdl2::mixer::Music::halt();
 
     Ok(())
   }

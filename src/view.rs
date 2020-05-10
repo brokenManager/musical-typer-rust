@@ -3,6 +3,7 @@ use crate::model::game::MusicalTyperError;
 
 mod gameview;
 mod handler;
+mod player;
 mod renderer;
 mod stats;
 
@@ -15,7 +16,7 @@ pub enum ViewError {
   ModelError(MusicalTyperError),
   InitError { message: String },
   FontError { message: String },
-  AudioError { message: String },
+  PlayerError(PlayerError),
   TextError(TextError),
   RenderError(String),
   CacheError,
@@ -27,6 +28,7 @@ impl From<MusicalTyperError> for ViewError {
     ViewError::ModelError(err)
   }
 }
+use player::PlayerError;
 use renderer::{text::TextError, RenderCtx};
 use std::{cell::RefCell, rc::Rc};
 
@@ -39,6 +41,12 @@ impl From<TextError> for ViewError {
 impl From<HandleError> for ViewError {
   fn from(err: HandleError) -> Self {
     ViewError::HandleError(err)
+  }
+}
+
+impl From<PlayerError> for ViewError {
+  fn from(err: PlayerError) -> Self {
+    ViewError::PlayerError(err)
   }
 }
 
@@ -81,7 +89,7 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
     sdl2::mixer::DEFAULT_CHANNELS,
     1024,
   )
-  .map_err(|e| ViewError::AudioError { message: e })?;
+  .map_err(|e| PlayerError::AudioError(e))?;
 
   let font = ttf
     .load_font(
