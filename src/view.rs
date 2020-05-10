@@ -90,6 +90,7 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
     1024,
   )
   .map_err(|e| PlayerError::AudioError(e))?;
+  sdl2::mixer::allocate_channels(32);
 
   let font = ttf
     .load_font(

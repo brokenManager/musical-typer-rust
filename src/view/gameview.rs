@@ -13,7 +13,10 @@ use std::collections::BTreeSet;
 mod whole;
 
 use super::{
-  handler::Handler, player::Player, renderer::RenderCtx, ViewError,
+  handler::Handler,
+  player::{Player, SEKind},
+  renderer::RenderCtx,
+  ViewError,
 };
 use whole::WholeProps;
 
@@ -88,11 +91,13 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
             Typed { mistaken } => {
               if *mistaken {
                 wrong_type_count += 1;
+                player.play_se(SEKind::Fail)?;
               } else {
                 correction_type_count += 1;
                 timepoints.push_back(TypeTimepoint(
                   self.model.accumulated_time(),
                 ));
+                player.play_se(SEKind::Correct)?;
               }
             }
           }
