@@ -1,14 +1,15 @@
-use crate::model::exp::scoremap::Scoremap;
-use crate::model::exp::{
-  minute_second::Seconds, note::NoteContent, sentence::Sentence,
-};
-use crate::model::game::{
-  MusicalTyper, MusicalTyperConfig, MusicalTyperEvent,
+use crate::model::{
+  exp::{scoremap::Scoremap, sentence::Sentence, time::Seconds},
+  game::{MusicalTyper, MusicalTyperConfig, MusicalTyperEvent},
 };
 
 use sdl2::keyboard::Keycode;
 
-use std::collections::BTreeSet;
+use std::{
+  collections::{BTreeSet, VecDeque},
+  path::Path,
+  time::Instant,
+};
 
 mod whole;
 
@@ -21,7 +22,6 @@ pub struct GameView<'ttf, 'canvas> {
   renderer: RenderCtx<'ttf, 'canvas>,
   handler: Handler,
   model: MusicalTyper,
-  score: Scoremap,
 }
 
 impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
@@ -37,24 +37,12 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
       height,
       renderer,
       handler,
-      model: MusicalTyper::new(
-        &score,
-        MusicalTyperConfig::default(),
-      )?,
-      score,
+      model: MusicalTyper::new(score, MusicalTyperConfig::default())?,
     })
   }
 
   pub fn run(&mut self) -> Result<(), ViewError> {
-    let all_roman_len =
-      self.score.notes.iter().fold(0, |acc, note| {
-        match note.content() {
-          NoteContent::Sentence { sentence, .. } => {
-            sentence.roman().will_input.len() + acc
-          }
-          _ => acc,
-        }
-      });
+    let all_roman_len = self.model.all_roman_len();
 
     struct TypeTimepoint(Seconds);
 
@@ -66,19 +54,19 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
     let mut score_point = 0;
     let mut correction_type_count = 0u32;
     let mut wrong_type_count = 0u32;
-    let mut timepoints = std::collections::VecDeque::new();
+    let mut timepoints = VecDeque::new();
 
     'main: loop {
-      let time = std::time::Instant::now();
+      let time = Instant::now();
       {
         for mt_event in mt_events.iter() {
           use MusicalTyperEvent::*;
           match mt_event {
             PlayBgm(bgm_name) => {
               let bgm_file_path = format!("score/{}", bgm_name);
-              let music = sdl2::mixer::Music::from_file(
-                std::path::Path::new(&bgm_file_path),
-              )
+              let music = sdl2::mixer::Music::from_file(Path::new(
+                &bgm_file_path,
+              ))
               .map_err(|e| ViewError::AudioError { message: e })?;
               music
                 .play(0)
@@ -100,6 +88,12 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
                   self.model.accumulated_time(),
                 ));
               }
+            }
+            MissedSentence(sentence) => {
+              // TODO: Queue a missed animation
+            }
+            CompletedSentence(sentence) => {
+              // TODO: Queue a completed animation
             }
           }
         }
@@ -133,7 +127,7 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
         }
       }
       {
-        let expire_limit = self.model.accumulated_time() - 5.0;
+        let expire_limit = self.model.accumulated_time() - 5.0.into();
         while let Some(front) = timepoints.front() {
           if front.0 < expire_limit {
             timepoints.pop_front();
@@ -162,16 +156,8 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
             .collect::<Vec<char>>()
             .as_slice(),
           sentence: &sentence,
-          title: self
-            .score
-            .metadata
-            .get("title")
-            .unwrap_or(&"曲名不詳".to_owned()),
-          song_author: self
-            .score
-            .metadata
-            .get("song_author")
-            .unwrap_or(&"作曲者不詳".to_owned()),
+          title: &self.model.get_metadata("title"),
+          song_author: &self.model.get_metadata("song_author"),
           score_point,
           type_per_second,
           achievement_rate,
@@ -190,11 +176,13 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
 
       let draw_time = time.elapsed().as_secs_f64();
 
-      self.handler.delay((1e3 / 60.0) as u32)?;
+      self
+        .handler
+        .delay((1e3 / 60.0 - draw_time * 1e3).max(0.0) as u32)?;
 
       let elapsed = time.elapsed().as_secs_f64();
 
-      mt_events.append(&mut self.model.elapse_time(elapsed));
+      mt_events.append(&mut self.model.elapse_time(elapsed.into()));
       print!(
         "\rFPS: {}, Playing: {}     ",
         1.0 / draw_time,

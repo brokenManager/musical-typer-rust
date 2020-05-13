@@ -1,5 +1,6 @@
 use super::roman_char::RomanChar;
 use super::roman_lexer::{parse, RomanParseError};
+use std::fmt::{Debug, Formatter};
 
 #[derive(Clone, PartialEq)]
 pub struct RomanStr {
@@ -9,11 +10,8 @@ pub struct RomanStr {
   inputted: String,
 }
 
-impl std::fmt::Debug for RomanStr {
-  fn fmt(
-    &self,
-    mut f: &mut std::fmt::Formatter<'_>,
-  ) -> std::fmt::Result {
+impl Debug for RomanStr {
+  fn fmt(&self, mut f: &mut Formatter<'_>) -> std::fmt::Result {
     write!(
       &mut f,
       "{:?}",
@@ -33,7 +31,7 @@ impl RomanStr {
     let mut parsed: Vec<RomanChar> = vec![];
     parse(&mut parsed, chars.as_slice())?;
     Ok(RomanStr {
-      yomigana: yomigana.to_owned(),
+      yomigana: yomigana.into(),
       chars: parsed,
       inputting_char: 0,
       inputted: String::new(),
@@ -63,11 +61,11 @@ impl RomanStr {
       .chars
       .iter()
       .map(|roman_char: &RomanChar| {
-        roman_char.determined_style().to_owned()
+        roman_char.determined_style().into()
       })
       .collect::<Vec<String>>()
       .join("")[self.inputted_roman().len()..]
-      .to_owned()
+      .into()
   }
 
   pub fn inputted_roman(&self) -> &str {
@@ -136,24 +134,24 @@ fn hello() -> Result<(), RomanParseError> {
 fn toy() -> Result<(), RomanParseError> {
   let mut hello = RomanStr::new("おもちゃ")?;
   assert_eq!(hello.inputted_roman(), "");
-  assert_eq!(hello.will_input_roman(), "omocha");
+  assert_eq!(hello.will_input_roman(), "omotya");
   assert!(hello.input('o'));
   assert_eq!(hello.inputted_roman(), "o");
-  assert_eq!(hello.will_input_roman(), "mocha");
+  assert_eq!(hello.will_input_roman(), "motya");
   assert!(hello.input('m'));
   assert_eq!(hello.inputted_roman(), "om");
-  assert_eq!(hello.will_input_roman(), "ocha");
+  assert_eq!(hello.will_input_roman(), "otya");
   assert!(hello.input('o'));
   assert_eq!(hello.inputted_roman(), "omo");
-  assert_eq!(hello.will_input_roman(), "cha");
-  assert!(hello.input('t'));
-  assert_eq!(hello.inputted_roman(), "omot");
-  assert_eq!(hello.will_input_roman(), "ya");
+  assert_eq!(hello.will_input_roman(), "tya");
+  assert!(hello.input('c'));
+  assert_eq!(hello.inputted_roman(), "omoc");
+  assert_eq!(hello.will_input_roman(), "ha");
   assert!(hello.input('y'));
-  assert_eq!(hello.inputted_roman(), "omoty");
+  assert_eq!(hello.inputted_roman(), "omocy");
   assert_eq!(hello.will_input_roman(), "a");
   assert!(hello.input('a'));
-  assert_eq!(hello.inputted_roman(), "omotya");
+  assert_eq!(hello.inputted_roman(), "omocya");
   assert_eq!(hello.will_input_roman(), "");
   Ok(())
 }
