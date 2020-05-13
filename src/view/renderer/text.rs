@@ -85,7 +85,7 @@ pub struct TextStyle {
 impl TextStyle {
   pub fn new() -> Self {
     TextStyle {
-      text: "".to_owned(),
+      text: "".into(),
       color: Color::RGB(0, 0, 0),
       line_height: 20,
       align: TextAlign::Left,
@@ -97,7 +97,7 @@ impl TextStyle {
     if new_text == "" {
       self.text = String::from(" ");
     } else {
-      self.text = new_text.to_owned();
+      self.text = new_text.into();
     }
 
     self
