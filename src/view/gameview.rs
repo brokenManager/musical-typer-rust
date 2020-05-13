@@ -7,7 +7,6 @@ use sdl2::keyboard::Keycode;
 
 use std::{
   collections::{BTreeSet, VecDeque},
-  path::Path,
   time::Instant,
 };
 
@@ -89,9 +88,11 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
               }
             }
             MissedSentence(sentence) => {
+              player.play_se(SEKind::MissedSentence)?;
               // TODO: Queue a missed animation
             }
             CompletedSentence(sentence) => {
+              player.play_se(SEKind::PerfectSentence)?;
               // TODO: Queue a completed animation
             }
           }
