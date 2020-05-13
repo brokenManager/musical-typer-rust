@@ -8,6 +8,7 @@ pub enum HandleError {
 
 use HandleError::*;
 
+#[derive(Clone)]
 pub struct Handler {
   sdl: Sdl,
 }

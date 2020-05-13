@@ -12,7 +12,9 @@ use std::collections::BTreeSet;
 
 mod whole;
 
-use super::{handler::Handler, renderer::RenderCtx, ViewError};
+use super::{
+  handler::Handler, renderer::RenderCtx, View, ViewError, ViewRoute,
+};
 use whole::WholeProps;
 
 pub struct GameView<'ttf, 'canvas> {
@@ -44,8 +46,10 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
       score,
     })
   }
+}
 
-  pub fn run(&mut self) -> Result<(), ViewError> {
+impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
+  fn run(&mut self) -> Result<(), ViewError> {
     let all_roman_len =
       self.score.notes.iter().fold(0, |acc, note| {
         match note.content() {
@@ -207,6 +211,10 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
     sdl2::mixer::Music::halt();
 
     Ok(())
+  }
+
+  fn next_route(&self) -> Option<ViewRoute> {
+    Some(ViewRoute::Quit)
   }
 }
 

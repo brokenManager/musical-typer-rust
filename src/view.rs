@@ -42,6 +42,17 @@ impl From<HandleError> for ViewError {
   }
 }
 
+pub trait View {
+  fn run(&mut self) -> Result<(), ViewError>;
+  fn next_route(&self) -> Option<ViewRoute>;
+}
+
+pub enum ViewRoute {
+  GameView,
+  ResultView,
+  Quit,
+}
+
 pub struct Router<'ttf, 'canvas> {
   handler: Handler,
   renderer: RenderCtx<'ttf, 'canvas>,
@@ -59,14 +70,36 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
   }
 
   pub fn run(self, score: Scoremap) -> Result<(), ViewError> {
-    let mut game_view = GameView::new(
-      self.renderer.clone(),
-      self.handler,
-      score,
-      800,
-      600,
-    )?;
-    game_view.run()?;
+    let mut view: Option<Box<dyn View>> =
+      Some(Box::new(GameView::new(
+        self.renderer.clone(),
+        self.handler.clone(),
+        score.clone(),
+        800,
+        600,
+      )?));
+    while let Some(boxed_view) = view.as_mut() {
+      boxed_view.run()?;
+      let next = boxed_view.next_route();
+      match next {
+        Some(ViewRoute::GameView) => {
+          view.replace(Box::new(GameView::new(
+            self.renderer.clone(),
+            self.handler.clone(),
+            score.clone(),
+            800,
+            600,
+          )?));
+        }
+        Some(ViewRoute::ResultView) => {
+          view = None;
+        }
+        Some(ViewRoute::Quit) => {
+          view = None;
+        }
+        _ => {}
+      };
+    }
 
     Ok(())
   }

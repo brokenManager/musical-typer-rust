@@ -16,7 +16,7 @@ pub enum ScoremapError {
 
 pub type ScoremapMetadata = HashMap<String, String>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Scoremap {
   pub metadata: ScoremapMetadata,
   pub notes: Vec<Note>,
