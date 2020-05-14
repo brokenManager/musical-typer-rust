@@ -62,6 +62,7 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
     let mut correction_type_count = 0u32;
     let mut wrong_type_count = 0u32;
     let mut timepoints = VecDeque::new();
+    let mut ended_game = false;
 
     'main: loop {
       let time = Instant::now();
@@ -197,6 +198,10 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
       );
     }
     player.stop_bgm(500)?;
+    if !ended_game {
+      player.play_se(SEKind::GameOver)?;
+      self.handler.delay(2500)?;
+    }
     self.handler.delay(505)?;
 
     Ok(())
