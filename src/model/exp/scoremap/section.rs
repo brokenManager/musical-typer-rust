@@ -3,7 +3,7 @@ use note::{Note, NoteContent, NoteId, TypeResult};
 
 pub mod note;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Section {
   notes: Vec<Note>,
   current_note_index: usize,
@@ -88,7 +88,7 @@ impl Section {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Sections {
   sections: Vec<Section>,
   current_section_index: usize,
