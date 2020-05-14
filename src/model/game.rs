@@ -28,6 +28,7 @@ pub enum MusicalTyperEvent {
   UpdateSentence(Sentence),
   MissedSentence(Sentence),
   CompletedSentence(Sentence),
+  DidPerfectSection,
   Pointed(i32),
   Typed(MusicalTypeResult),
 }
@@ -160,7 +161,10 @@ impl MusicalTyper {
         .current_section()
         .map(|section| 1.0 <= section.accuracy())
       {
-        events.push(Pointed(self.config.perfect_section as i32));
+        events.append(&mut vec![
+          Pointed(self.config.perfect_section as i32),
+          DidPerfectSection,
+        ]);
       }
       if let Some(true) = self
         .activity

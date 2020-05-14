@@ -103,6 +103,10 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
               player.play_se(SEKind::PerfectSentence)?;
               // TODO: Queue a completed animation
             }
+            DidPerfectSection => {
+              player.play_se(SEKind::PerfectSection)?;
+              // TODO: Queue a perfect animation
+            }
           }
         }
       }
