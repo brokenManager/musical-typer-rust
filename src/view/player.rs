@@ -53,6 +53,7 @@ fn loaad_chunks() -> Result<Chunks, PlayerError> {
       }
     }
   }
+  Channel::all().set_volume(112); // the max is 128
   Ok(chunks)
 }
 
