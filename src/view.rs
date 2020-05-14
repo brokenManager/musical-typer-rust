@@ -3,6 +3,7 @@ use crate::model::game::MusicalTyperError;
 
 mod gameview;
 mod handler;
+mod player;
 mod renderer;
 mod stats;
 
@@ -15,7 +16,7 @@ pub enum ViewError {
   ModelError(MusicalTyperError),
   InitError { message: String },
   FontError { message: String },
-  AudioError { message: String },
+  PlayerError(PlayerError),
   TextError(TextError),
   RenderError(String),
   CacheError,
@@ -27,6 +28,7 @@ impl From<MusicalTyperError> for ViewError {
     ViewError::ModelError(err)
   }
 }
+use player::PlayerError;
 use renderer::{text::TextError, RenderCtx};
 use std::{cell::RefCell, rc::Rc};
 
@@ -51,6 +53,12 @@ pub enum ViewRoute {
   GameView,
   ResultView,
   Quit,
+}
+
+impl From<PlayerError> for ViewError {
+  fn from(err: PlayerError) -> Self {
+    ViewError::PlayerError(err)
+  }
 }
 
 pub struct Router<'ttf, 'canvas> {
@@ -106,6 +114,8 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
 }
 
 pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
+  use std::path::Path;
+
   let sdl = sdl2::init().unwrap();
   let ttf = sdl2::ttf::init().unwrap();
   sdl2::mixer::open_audio(
@@ -114,13 +124,11 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
     sdl2::mixer::DEFAULT_CHANNELS,
     1024,
   )
-  .map_err(|e| ViewError::AudioError { message: e })?;
+  .map_err(|e| PlayerError::AudioError(e))?;
+  sdl2::mixer::allocate_channels(32);
 
   let font = ttf
-    .load_font(
-      std::path::Path::new("./asset/mplus-1m-medium.ttf"),
-      128,
-    )
+    .load_font(Path::new("./asset/mplus-1m-medium.ttf"), 128)
     .map_err(|e| ViewError::FontError {
       message: e.to_string(),
     })?;

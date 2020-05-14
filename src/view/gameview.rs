@@ -1,19 +1,25 @@
-use crate::model::exp::scoremap::Scoremap;
-use crate::model::exp::{
-  minute_second::Seconds, note::NoteContent, sentence::Sentence,
-};
-use crate::model::game::{
-  MusicalTyper, MusicalTyperConfig, MusicalTyperEvent,
+use crate::model::{
+  exp::{scoremap::Scoremap, sentence::Sentence, time::Seconds},
+  game::{
+    MusicalTypeResult, MusicalTyper, MusicalTyperConfig,
+    MusicalTyperEvent,
+  },
 };
 
 use sdl2::keyboard::Keycode;
 
-use std::collections::BTreeSet;
+use std::{
+  collections::{BTreeSet, VecDeque},
+  time::Instant,
+};
 
 mod whole;
 
 use super::{
-  handler::Handler, renderer::RenderCtx, View, ViewError, ViewRoute,
+  handler::Handler,
+  player::{Player, SEKind},
+  renderer::RenderCtx,
+  View, ViewError, ViewRoute,
 };
 use whole::WholeProps;
 
@@ -23,7 +29,6 @@ pub struct GameView<'ttf, 'canvas> {
   renderer: RenderCtx<'ttf, 'canvas>,
   handler: Handler,
   model: MusicalTyper,
-  score: Scoremap,
 }
 
 impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
@@ -39,55 +44,36 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
       height,
       renderer,
       handler,
-      model: MusicalTyper::new(
-        &score,
-        MusicalTyperConfig::default(),
-      )?,
-      score,
+      model: MusicalTyper::new(score, MusicalTyperConfig::default())?,
     })
   }
 }
 
 impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
   fn run(&mut self) -> Result<(), ViewError> {
-    let all_roman_len =
-      self.score.notes.iter().fold(0, |acc, note| {
-        match note.content() {
-          NoteContent::Sentence { sentence, .. } => {
-            sentence.roman().will_input.len() + acc
-          }
-          _ => acc,
-        }
-      });
+    let all_roman_len = self.model.all_roman_len();
 
     struct TypeTimepoint(Seconds);
 
     let mut mt_events = vec![];
-    let mut musics = vec![];
+    let mut player = Player::new();
     let mut pressed_key_buf = BTreeSet::new();
     let mut typed_key_buf = vec![];
     let mut sentence: Option<Sentence> = None;
     let mut score_point = 0;
     let mut correction_type_count = 0u32;
     let mut wrong_type_count = 0u32;
-    let mut timepoints = std::collections::VecDeque::new();
+    let mut timepoints = VecDeque::new();
+    let mut ended_game = false;
 
     'main: loop {
-      let time = std::time::Instant::now();
+      let time = Instant::now();
       {
         for mt_event in mt_events.iter() {
           use MusicalTyperEvent::*;
           match mt_event {
             PlayBgm(bgm_name) => {
-              let bgm_file_path = format!("score/{}", bgm_name);
-              let music = sdl2::mixer::Music::from_file(
-                std::path::Path::new(&bgm_file_path),
-              )
-              .map_err(|e| ViewError::AudioError { message: e })?;
-              music
-                .play(0)
-                .map_err(|e| ViewError::AudioError { message: e })?;
-              musics.push(music);
+              player.change_bgm(bgm_name)?;
             }
             UpdateSentence(new_sentence) => {
               sentence = Some(new_sentence.clone());
@@ -95,15 +81,33 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
             Pointed(point) => {
               score_point += point;
             }
-            Typed { mistaken } => {
-              if *mistaken {
+            Typed(result) => match result {
+              MusicalTypeResult::Missed => {
                 wrong_type_count += 1;
-              } else {
+                player.play_se(SEKind::Fail)?;
+              }
+              MusicalTypeResult::Correct => {
                 correction_type_count += 1;
                 timepoints.push_back(TypeTimepoint(
                   self.model.accumulated_time(),
                 ));
+                player.play_se(SEKind::Correct)?;
               }
+              MusicalTypeResult::Vacant => {
+                player.play_se(SEKind::Vacant)?;
+              }
+            },
+            MissedSentence(sentence) => {
+              player.play_se(SEKind::MissedSentence)?;
+              // TODO: Queue a missed animation
+            }
+            CompletedSentence(sentence) => {
+              player.play_se(SEKind::PerfectSentence)?;
+              // TODO: Queue a completed animation
+            }
+            DidPerfectSection => {
+              player.play_se(SEKind::PerfectSection)?;
+              // TODO: Queue a perfect animation
             }
           }
         }
@@ -137,7 +141,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
         }
       }
       {
-        let expire_limit = self.model.accumulated_time() - 5.0;
+        let expire_limit = self.model.accumulated_time() - 5.0.into();
         while let Some(front) = timepoints.front() {
           if front.0 < expire_limit {
             timepoints.pop_front();
@@ -166,16 +170,8 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
             .collect::<Vec<char>>()
             .as_slice(),
           sentence: &sentence,
-          title: self
-            .score
-            .metadata
-            .get("title")
-            .unwrap_or(&"曲名不詳".to_owned()),
-          song_author: self
-            .score
-            .metadata
-            .get("song_author")
-            .unwrap_or(&"作曲者不詳".to_owned()),
+          title: &self.model.get_metadata("title"),
+          song_author: &self.model.get_metadata("song_author"),
           score_point,
           type_per_second,
           achievement_rate,
@@ -194,21 +190,25 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
 
       let draw_time = time.elapsed().as_secs_f64();
 
-      self.handler.delay((1e3 / 60.0) as u32)?;
+      self
+        .handler
+        .delay((1e3 / 60.0 - draw_time * 1e3).max(0.0) as u32)?;
 
       let elapsed = time.elapsed().as_secs_f64();
 
-      mt_events.append(&mut self.model.elapse_time(elapsed));
+      mt_events.append(&mut self.model.elapse_time(elapsed.into()));
       print!(
         "\rFPS: {}, Playing: {}     ",
         1.0 / draw_time,
         sdl2::mixer::Music::is_playing()
       );
     }
-    sdl2::mixer::Music::fade_out(500)
-      .map_err(|e| ViewError::AudioError { message: e })?;
+    player.stop_bgm(500)?;
+    if !ended_game {
+      player.play_se(SEKind::GameOver)?;
+      self.handler.delay(2500)?;
+    }
     self.handler.delay(505)?;
-    sdl2::mixer::Music::halt();
 
     Ok(())
   }

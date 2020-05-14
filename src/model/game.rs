@@ -1,19 +1,37 @@
-use super::exp::game_activity::GameActivity;
-use super::exp::minute_second::Seconds;
-use super::exp::roman::roman_lexer::RomanParseError;
-use super::exp::scoremap::lexer::ScoremapLexError;
-use super::exp::scoremap::{Scoremap, ScoremapError};
-use super::exp::sentence::Sentence;
+use super::exp::{
+  game_activity::GameActivity,
+  note::NoteContent,
+  scoremap::{
+    lexer::ScoremapLexError, Scoremap, ScoremapError,
+    ScoremapMetadata,
+  },
+  sentence::{roman::roman_lexer::RomanParseError, Sentence},
+  time::Seconds,
+};
+use std::io::Error;
+use MusicalTyperError::*;
+use MusicalTyperEvent::*;
+
+#[cfg(test)]
+mod tests;
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum MusicalTypeResult {
+  Correct,
+  Missed,
+  Vacant,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum MusicalTyperEvent {
   PlayBgm(String),
   UpdateSentence(Sentence),
+  MissedSentence(Sentence),
+  CompletedSentence(Sentence),
+  DidPerfectSection,
   Pointed(i32),
-  Typed { mistaken: bool },
+  Typed(MusicalTypeResult),
 }
-
-use MusicalTyperEvent::*;
 
 #[derive(Debug)]
 pub enum MusicalTyperError {
@@ -22,10 +40,8 @@ pub enum MusicalTyperError {
   ScoremapBuildError(ScoremapError),
 }
 
-use MusicalTyperError::*;
-
-impl From<std::io::Error> for MusicalTyperError {
-  fn from(err: std::io::Error) -> Self {
+impl From<Error> for MusicalTyperError {
+  fn from(err: Error) -> Self {
     MusicalTyperError::FileReadError {
       reason: err.to_string(),
     }
@@ -77,6 +93,7 @@ impl Default for MusicalTyperConfig {
 
 pub struct MusicalTyper {
   activity: GameActivity,
+  metadata: ScoremapMetadata,
   accumulated_time: Seconds,
   event_queue: Vec<MusicalTyperEvent>,
   config: MusicalTyperConfig,
@@ -84,22 +101,23 @@ pub struct MusicalTyper {
 
 impl MusicalTyper {
   pub fn new(
-    score: &Scoremap,
+    score: Scoremap,
     config: MusicalTyperConfig,
   ) -> Result<Self, MusicalTyperError> {
     let mut event_queue = vec![];
-    let activity = GameActivity::new(&score.notes);
+    let activity = GameActivity::new(score.sections);
 
-    let metadata = &score.metadata;
+    let metadata = score.metadata;
     if let Some(song_data) = metadata.get("song_data") {
-      event_queue.push(PlayBgm(song_data.to_owned()));
+      event_queue.push(PlayBgm(song_data.into()));
     } else {
       return Err(SongDataNotFound);
     }
 
     Ok(MusicalTyper {
       activity,
-      accumulated_time: 0.0,
+      metadata,
+      accumulated_time: 0.0.into(),
       event_queue,
       config,
     })
@@ -110,25 +128,56 @@ impl MusicalTyper {
     &mut self,
     typed: impl Iterator<Item = char>,
   ) -> Vec<MusicalTyperEvent> {
+    let prev_sentence = self.activity.current_sentence();
+    let prev_completed = prev_sentence.completed();
     for typed in typed {
-      use super::exp::note::TypeResult::*;
-      match self.activity.input(typed) {
+      use super::exp::scoremap::section::note::TypeResult::*;
+      let result = self.activity.input(typed);
+      match result {
         Succeed => {
           self.event_queue.append(&mut vec![
             Pointed(self.config.correct_type as i32),
-            Typed { mistaken: false },
+            Typed(MusicalTypeResult::Correct),
           ]);
         }
         Mistaken => {
           self.event_queue.append(&mut vec![
             Pointed(-(self.config.wrong_type as i32)),
-            Typed { mistaken: true },
+            Typed(MusicalTypeResult::Missed),
           ]);
         }
-        Vacant => {}
+        Vacant => {
+          self.event_queue.push(Typed(MusicalTypeResult::Vacant));
+        }
       }
     }
-    self.pack_events()
+    let curr_sentence = self.activity.current_sentence();
+    let curr_completed = curr_sentence.completed();
+
+    let mut events = vec![];
+    if !prev_completed && curr_completed {
+      if let Some(true) = self
+        .activity
+        .current_section()
+        .map(|section| 1.0 <= section.accuracy())
+      {
+        events.append(&mut vec![
+          Pointed(self.config.perfect_section as i32),
+          DidPerfectSection,
+        ]);
+      }
+      if let Some(true) = self
+        .activity
+        .current_note()
+        .map(|note| 1.0 <= note.accuracy())
+      {
+        events.push(Pointed(self.config.perfect_sentence as i32));
+      }
+      events.push(Pointed(self.config.complete_sentence as i32));
+      events.push(CompletedSentence(prev_sentence));
+    }
+
+    [self.pack_events(), events].concat()
   }
 
   #[must_use]
@@ -137,8 +186,22 @@ impl MusicalTyper {
     delta_time: Seconds,
   ) -> Vec<MusicalTyperEvent> {
     self.accumulated_time += delta_time;
-    self.activity.update_time(self.accumulated_time);
-    self.pack_events()
+
+    let completed = self.activity.current_sentence().completed();
+    let prev_sentence = self.activity.current_sentence();
+    let prev_note_id = self.activity.current_note_id();
+
+    self.activity.update_time(self.accumulated_time.clone());
+
+    let curr_note_id = self.activity.current_note_id();
+
+    let mut events = vec![];
+    if !completed && (prev_note_id != curr_note_id) {
+      events.push(Pointed(-(self.config.missed_sentence as i32)));
+      events.push(MissedSentence(prev_sentence));
+    }
+
+    [self.pack_events(), events].concat()
   }
 
   fn pack_events(&mut self) -> Vec<MusicalTyperEvent> {
@@ -151,119 +214,37 @@ impl MusicalTyper {
   }
 
   pub fn accumulated_time(&self) -> Seconds {
-    self.accumulated_time
+    self.accumulated_time.clone()
   }
 
   pub fn section_remaining_ratio(&self) -> f64 {
-    self
-      .activity
-      .current_section()
-      .as_ref()
-      .map_or(1.0, |section| {
-        section.remaining_ratio(self.accumulated_time)
-      })
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use super::super::exp::sentence::Sentence;
-  use super::{MusicalTyperError, MusicalTyperEvent};
-
-  enum Input {
-    Wait(f64),
-    KeyPress(&'static str),
+    self.activity.remaining_ratio(self.accumulated_time.clone())
   }
 
-  use Input::*;
-
-  #[test]
-  fn op1() -> Result<(), MusicalTyperError> {
-    use super::super::exp::scoremap::Scoremap;
-    use super::{MusicalTyper, MusicalTyperConfig};
-
-    let test_score = Scoremap::from_str(
-      r#"
-# Sample 1
-:title TEST
-:score_author Mikuro さいな
-:song_data void.ogg
-:bpm 222.22
-
-[start]
-*2.22
-打鍵テスト
-:だけんてすと
-
-*3.0
-[end]
-"#,
-      |config| config.ignore_invalid_properties(true),
-    )?;
-
-    let inputs = &[Wait(2.22), KeyPress("dakentesuto"), Wait(1.0)];
-    use MusicalTyperEvent::*;
-    let expected_events = vec![
-      PlayBgm("void.ogg".to_owned()),
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "",
-      )?),
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      Pointed(10),
-      Typed { mistaken: false },
-      UpdateSentence(Sentence::new_with_inputted(
-        "打鍵テスト",
-        "だけんてすと",
-        "dakentesuto",
-      )?),
-      UpdateSentence(Sentence::empty()),
-    ];
-
-    let mut game =
-      MusicalTyper::new(&test_score, MusicalTyperConfig::default())?;
-
-    let mut actual_events = vec![];
-
-    for input in inputs {
-      match input {
-        Wait(time) => {
-          actual_events.append(&mut game.elapse_time(*time))
+  pub fn all_roman_len(&self) -> usize {
+    self.activity.sections().iter().fold(0, |acc, section| {
+      section.iter().fold(0, |acc, note| match note.content() {
+        NoteContent::Sentence { sentence, .. } => {
+          sentence.roman().will_input.len() + acc
         }
-        KeyPress(key) => {
-          actual_events.append(&mut game.key_press(key.chars()))
-        }
-      }
-    }
+        _ => acc,
+      }) + acc
+    })
+  }
 
-    for (i, (expected, actual)) in
-      expected_events.iter().zip(actual_events.iter()).enumerate()
-    {
-      assert_eq!(expected, actual, "index: {}", i);
+  pub fn get_metadata(&'_ self, key: &str) -> String {
+    match key {
+      "title" => self
+        .metadata
+        .get("title")
+        .cloned()
+        .unwrap_or("曲名不詳".into()),
+      "song_author" => self
+        .metadata
+        .get("song_author")
+        .cloned()
+        .unwrap_or("作曲者不詳".into()),
+      _ => "".into(),
     }
-    println!("{:?}", actual_events.last().unwrap());
-    assert_eq!(expected_events.len(), actual_events.len());
-
-    Ok(())
   }
 }
