@@ -16,13 +16,20 @@ use MusicalTyperEvent::*;
 mod tests;
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum MusicalTypeResult {
+  Correct,
+  Missed,
+  Vacant,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum MusicalTyperEvent {
   PlayBgm(String),
   UpdateSentence(Sentence),
   MissedSentence(Sentence),
   CompletedSentence(Sentence),
   Pointed(i32),
-  Typed { mistaken: bool },
+  Typed(MusicalTypeResult),
 }
 
 #[derive(Debug)]
@@ -124,20 +131,23 @@ impl MusicalTyper {
     let prev_completed = prev_sentence.completed();
     for typed in typed {
       use super::exp::scoremap::section::note::TypeResult::*;
-      match self.activity.input(typed) {
+      let result = self.activity.input(typed);
+      match result {
         Succeed => {
           self.event_queue.append(&mut vec![
             Pointed(self.config.correct_type as i32),
-            Typed { mistaken: false },
+            Typed(MusicalTypeResult::Correct),
           ]);
         }
         Mistaken => {
           self.event_queue.append(&mut vec![
             Pointed(-(self.config.wrong_type as i32)),
-            Typed { mistaken: true },
+            Typed(MusicalTypeResult::Missed),
           ]);
         }
-        Vacant => {}
+        Vacant => {
+          self.event_queue.push(Typed(MusicalTypeResult::Vacant));
+        }
       }
     }
     let curr_sentence = self.activity.current_sentence();

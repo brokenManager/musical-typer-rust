@@ -1,6 +1,9 @@
 use crate::model::{
   exp::{scoremap::Scoremap, sentence::Sentence, time::Seconds},
-  game::{MusicalTyper, MusicalTyperConfig, MusicalTyperEvent},
+  game::{
+    MusicalTypeResult, MusicalTyper, MusicalTyperConfig,
+    MusicalTyperEvent,
+  },
 };
 
 use sdl2::keyboard::Keycode;
@@ -75,18 +78,22 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
             Pointed(point) => {
               score_point += point;
             }
-            Typed { mistaken } => {
-              if *mistaken {
+            Typed(result) => match result {
+              MusicalTypeResult::Missed => {
                 wrong_type_count += 1;
                 player.play_se(SEKind::Fail)?;
-              } else {
+              }
+              MusicalTypeResult::Correct => {
                 correction_type_count += 1;
                 timepoints.push_back(TypeTimepoint(
                   self.model.accumulated_time(),
                 ));
                 player.play_se(SEKind::Correct)?;
               }
-            }
+              MusicalTypeResult::Vacant => {
+                player.play_se(SEKind::Vacant)?;
+              }
+            },
             MissedSentence(sentence) => {
               player.play_se(SEKind::MissedSentence)?;
               // TODO: Queue a missed animation
