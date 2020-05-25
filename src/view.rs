@@ -2,14 +2,14 @@ use crate::model::exp::{
   game_activity::GameScore, scoremap::Scoremap,
 };
 use crate::model::game::MusicalTyperError;
-use gameview::GameView;
+use game_view::GameView;
 use handler::{HandleError, Handler};
 use player::PlayerError;
 use renderer::Renderer;
 use renderer::{text::TextError, RenderCtx};
 use std::{cell::RefCell, rc::Rc};
 
-mod gameview;
+mod game_view;
 mod handler;
 mod player;
 mod renderer;
