@@ -26,6 +26,21 @@ pub struct GameScore {
 }
 
 impl GameScore {
+  pub fn new(
+    score_point: i32,
+    achievement_rate: f64,
+    accuracy: f64,
+  ) -> Self {
+    Self {
+      score_point,
+      achievement_rate,
+      accuracy,
+      correction_type_count: 0,
+      wrong_type_count: 0,
+      all_roman_len: 0,
+    }
+  }
+
   fn update(&mut self, type_result: &TypeResult) {
     match type_result {
       TypeResult::Mistaken => {
