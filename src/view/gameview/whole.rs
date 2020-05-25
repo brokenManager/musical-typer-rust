@@ -31,9 +31,15 @@ pub struct WholeProps<'a> {
 
 pub fn render<'texture>(
   ctx: RenderCtx<'_, 'texture>,
-  client: Rect,
   props: &WholeProps,
 ) -> ViewResult {
+  let client = sdl2::rect::Rect::new(
+    0,
+    0,
+    ctx.borrow().width(),
+    ctx.borrow().height(),
+  );
+
   ctx.borrow_mut().set_draw_color(Color::RGB(253, 243, 226));
   ctx.borrow_mut().clear();
 

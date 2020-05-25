@@ -17,6 +17,8 @@ pub type RenderCtx<'ttf, 'texture> =
 pub type ViewResult = Result<(), ViewError>;
 
 pub struct Renderer<'ttf, 'texture> {
+  width: u32,
+  height: u32,
   canvas: Canvas<Window>,
   font: Font<'ttf, 'static>,
   text_cache: HashMap<TextStyle, Text<'texture>>,
@@ -25,6 +27,8 @@ pub struct Renderer<'ttf, 'texture> {
 
 impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
   pub fn new(
+    width: u32,
+    height: u32,
     mut canvas: Canvas<Window>,
     font: Font<'ttf, 'static>,
     texture_creator: &'texture TextureCreator<WindowContext>,
@@ -33,11 +37,21 @@ impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
     canvas.present();
 
     Ok(Self {
+      width,
+      height,
       canvas,
       font,
       text_cache: HashMap::new(),
       texture_creator,
     })
+  }
+
+  pub fn width(&self) -> u32 {
+    self.width
+  }
+
+  pub fn height(&self) -> u32 {
+    self.height
   }
 
   pub fn flush(&mut self) {

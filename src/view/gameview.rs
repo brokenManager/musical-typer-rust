@@ -24,8 +24,6 @@ use super::{
 use whole::WholeProps;
 
 pub struct GameView<'ttf, 'canvas> {
-  width: u32,
-  height: u32,
   renderer: RenderCtx<'ttf, 'canvas>,
   handler: Handler,
   model: MusicalTyper,
@@ -36,12 +34,8 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
     renderer: RenderCtx<'ttf, 'canvas>,
     handler: Handler,
     score: Scoremap,
-    width: u32,
-    height: u32,
   ) -> Result<Self, ViewError> {
     Ok(GameView {
-      width,
-      height,
       renderer,
       handler,
       model: MusicalTyper::new(score, MusicalTyperConfig::default())?,
@@ -162,7 +156,6 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
       };
       whole::render(
         self.renderer.clone(),
-        sdl2::rect::Rect::new(0, 0, self.width, self.height),
         &WholeProps {
           pressed_keys: &pressed_key_buf
             .iter()

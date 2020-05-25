@@ -83,8 +83,6 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
         self.renderer.clone(),
         self.handler.clone(),
         score.clone(),
-        800,
-        600,
       )?));
     while let Some(boxed_view) = view.as_mut() {
       boxed_view.run()?;
@@ -95,8 +93,6 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
             self.renderer.clone(),
             self.handler.clone(),
             score.clone(),
-            800,
-            600,
           )?));
         }
         Some(ViewRoute::ResultView) => {
@@ -153,7 +149,8 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
   let texture_creator = canvas.texture_creator();
 
   let handler = Handler::new(sdl);
-  let renderer = Renderer::new(canvas, font, &texture_creator)?;
+  let renderer =
+    Renderer::new(800, 600, canvas, font, &texture_creator)?;
 
   Router::new(handler, renderer).run(score)?;
   Ok(())
