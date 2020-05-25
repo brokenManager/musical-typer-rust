@@ -29,7 +29,6 @@ pub enum MusicalTyperEvent {
   MissedSentence(Sentence),
   CompletedSentence(Sentence),
   DidPerfectSection,
-  Pointed(i32),
   Typed(MusicalTypeResult),
 }
 
@@ -123,6 +122,10 @@ impl MusicalTyper {
     })
   }
 
+  pub fn activity(&self) -> &GameActivity {
+    &self.activity
+  }
+
   #[must_use]
   pub fn key_press(
     &mut self,
@@ -135,16 +138,12 @@ impl MusicalTyper {
       let result = self.activity.input(typed);
       match result {
         Succeed => {
-          self.event_queue.append(&mut vec![
-            Pointed(self.config.correct_type as i32),
-            Typed(MusicalTypeResult::Correct),
-          ]);
+          self.activity.point(self.config.correct_type as i32);
+          self.event_queue.push(Typed(MusicalTypeResult::Correct));
         }
         Mistaken => {
-          self.event_queue.append(&mut vec![
-            Pointed(-(self.config.wrong_type as i32)),
-            Typed(MusicalTypeResult::Missed),
-          ]);
+          self.activity.point(-(self.config.wrong_type as i32));
+          self.event_queue.push(Typed(MusicalTypeResult::Missed));
         }
         Vacant => {
           self.event_queue.push(Typed(MusicalTypeResult::Vacant));
@@ -161,19 +160,17 @@ impl MusicalTyper {
         .current_section()
         .map(|section| 1.0 <= section.accuracy())
       {
-        events.append(&mut vec![
-          Pointed(self.config.perfect_section as i32),
-          DidPerfectSection,
-        ]);
+        self.activity.point(self.config.perfect_section as i32);
+        events.push(DidPerfectSection);
       }
       if let Some(true) = self
         .activity
         .current_note()
         .map(|note| 1.0 <= note.accuracy())
       {
-        events.push(Pointed(self.config.perfect_sentence as i32));
+        self.activity.point(self.config.perfect_sentence as i32);
       }
-      events.push(Pointed(self.config.complete_sentence as i32));
+      self.activity.point(self.config.complete_sentence as i32);
       events.push(CompletedSentence(prev_sentence));
     }
 
@@ -197,7 +194,7 @@ impl MusicalTyper {
 
     let mut events = vec![];
     if !completed && (prev_note_id != curr_note_id) {
-      events.push(Pointed(-(self.config.missed_sentence as i32)));
+      self.activity.point(-(self.config.missed_sentence as i32));
       events.push(MissedSentence(prev_sentence));
     }
 
@@ -219,17 +216,6 @@ impl MusicalTyper {
 
   pub fn section_remaining_ratio(&self) -> f64 {
     self.activity.remaining_ratio(self.accumulated_time.clone())
-  }
-
-  pub fn all_roman_len(&self) -> usize {
-    self.activity.sections().iter().fold(0, |acc, section| {
-      section.iter().fold(0, |acc, note| match note.content() {
-        NoteContent::Sentence { sentence, .. } => {
-          sentence.roman().will_input.len() + acc
-        }
-        _ => acc,
-      }) + acc
-    })
   }
 
   pub fn get_metadata(&'_ self, key: &str) -> String {

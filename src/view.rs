@@ -1,15 +1,19 @@
-use crate::model::exp::scoremap::Scoremap;
+use crate::model::exp::{
+  game_activity::GameActivity, scoremap::Scoremap,
+};
 use crate::model::game::MusicalTyperError;
+use gameview::GameView;
+use handler::{HandleError, Handler};
+use player::PlayerError;
+use renderer::Renderer;
+use renderer::{text::TextError, RenderCtx};
+use std::{cell::RefCell, rc::Rc};
 
 mod gameview;
 mod handler;
 mod player;
 mod renderer;
 mod stats;
-
-use gameview::GameView;
-use handler::{HandleError, Handler};
-use renderer::Renderer;
 
 #[derive(Debug)]
 pub enum ViewError {
@@ -28,9 +32,6 @@ impl From<MusicalTyperError> for ViewError {
     ViewError::ModelError(err)
   }
 }
-use player::PlayerError;
-use renderer::{text::TextError, RenderCtx};
-use std::{cell::RefCell, rc::Rc};
 
 impl From<TextError> for ViewError {
   fn from(err: TextError) -> Self {
@@ -51,7 +52,7 @@ pub trait View {
 
 pub enum ViewRoute {
   GameView,
-  ResultView,
+  ResultView(GameActivity),
   Quit,
 }
 
@@ -95,7 +96,7 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
             score.clone(),
           )?));
         }
-        Some(ViewRoute::ResultView) => {
+        Some(ViewRoute::ResultView(_)) => {
           view = None;
         }
         Some(ViewRoute::Quit) => {

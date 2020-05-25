@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 
 use crate::{
-  model::exp::sentence::Sentence,
+  model::exp::{game_activity::GameScore, sentence::Sentence},
   view::{
     renderer::{RenderCtx, ViewResult},
     stats::stats,
@@ -22,10 +22,8 @@ pub struct WholeProps<'a> {
   pub sentence: &'a Option<Sentence>,
   pub title: &'a str,
   pub song_author: &'a str,
-  pub score_point: i32,
   pub type_per_second: f64,
-  pub achievement_rate: f64,
-  pub accuracy: f64,
+  pub score: GameScore,
   pub section_remaining_ratio: f64,
 }
 
@@ -45,7 +43,7 @@ pub fn render<'texture>(
 
   {
     let header_dim = Rect::new(0, 0, client.width(), 100);
-    header(props.title, props.song_author, props.score_point)(
+    header(props.title, props.song_author, props.score.score_point)(
       ctx.clone(),
     )?;
     ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
@@ -83,8 +81,8 @@ pub fn render<'texture>(
       Rect::new(0, client.height() as i32 - 200, client.width(), 200);
     stats(
       props.type_per_second,
-      props.achievement_rate,
-      props.accuracy,
+      props.score.achievement_rate,
+      props.score.accuracy,
     )(ctx.clone(), stats_dim)?;
   }
 

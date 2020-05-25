@@ -45,8 +45,6 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
 
 impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
   fn run(&mut self) -> Result<(), ViewError> {
-    let all_roman_len = self.model.all_roman_len();
-
     struct TypeTimepoint(Seconds);
 
     let mut mt_events = vec![];
@@ -54,9 +52,6 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
     let mut pressed_key_buf = BTreeSet::new();
     let mut typed_key_buf = vec![];
     let mut sentence: Option<Sentence> = None;
-    let mut score_point = 0;
-    let mut correction_type_count = 0u32;
-    let mut wrong_type_count = 0u32;
     let mut timepoints = VecDeque::new();
     let mut ended_game = false;
 
@@ -72,16 +67,11 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
             UpdateSentence(new_sentence) => {
               sentence = Some(new_sentence.clone());
             }
-            Pointed(point) => {
-              score_point += point;
-            }
             Typed(result) => match result {
               MusicalTypeResult::Missed => {
-                wrong_type_count += 1;
                 player.play_se(SEKind::Fail)?;
               }
               MusicalTypeResult::Correct => {
-                correction_type_count += 1;
                 timepoints.push_back(TypeTimepoint(
                   self.model.accumulated_time(),
                 ));
@@ -146,14 +136,6 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
       }
 
       let type_per_second = timepoints.len() as f64 / 5.0;
-      let achievement_rate =
-        (correction_type_count as f64 / all_roman_len as f64).min(1.);
-      let accuracy = if correction_type_count == 0 {
-        0.0
-      } else {
-        correction_type_count as f64
-          / (correction_type_count + wrong_type_count) as f64
-      };
       whole::render(
         self.renderer.clone(),
         &WholeProps {
@@ -165,10 +147,8 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
           sentence: &sentence,
           title: &self.model.get_metadata("title"),
           song_author: &self.model.get_metadata("song_author"),
-          score_point,
           type_per_second,
-          achievement_rate,
-          accuracy,
+          score: self.model.activity().score(),
           section_remaining_ratio: self
             .model
             .section_remaining_ratio(),
