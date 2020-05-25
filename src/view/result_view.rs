@@ -68,7 +68,7 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
       self.renderer.borrow_mut().clear();
 
       let header_dim = Rect::new(0, 0, client.width(), 100);
-      header(&self.music_info, self.score.score_point)(
+      header(header_dim, &self.music_info, self.score.score_point)(
         self.renderer.clone(),
       )?;
       let stats_dim = Rect::new(

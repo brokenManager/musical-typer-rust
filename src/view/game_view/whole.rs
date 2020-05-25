@@ -42,7 +42,9 @@ pub fn render<'texture>(
 
   {
     let header_dim = Rect::new(0, 0, client.width(), 100);
-    header(&props.music_info, props.score.score_point)(ctx.clone())?;
+    header(header_dim, &props.music_info, props.score.score_point)(
+      ctx.clone(),
+    )?;
     ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
     ctx.borrow_mut().draw_rect(header_dim)?;
   }
