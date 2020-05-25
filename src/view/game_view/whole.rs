@@ -4,17 +4,15 @@ use sdl2::rect::Rect;
 use crate::{
   model::exp::{game_activity::GameScore, sentence::Sentence},
   view::{
+    components::{header, stats},
     renderer::{RenderCtx, ViewResult},
-    stats::stats,
   },
 };
 
 mod finder;
-mod header;
 mod keyboard;
 
 use finder::finder;
-use header::header;
 use keyboard::keyboard;
 
 pub struct WholeProps<'a> {

@@ -10,12 +10,12 @@ use renderer::{text::TextError, RenderCtx};
 use result_view::ResultView;
 use std::{cell::RefCell, rc::Rc};
 
+mod components;
 mod game_view;
 mod handler;
 mod player;
 mod renderer;
 mod result_view;
-mod stats;
 
 #[derive(Debug)]
 pub enum ViewError {

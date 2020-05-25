@@ -1,5 +1,5 @@
 use super::{
-  handler::Handler, renderer::RenderCtx, stats::stats, View,
+  components::stats, handler::Handler, renderer::RenderCtx, View,
 };
 use crate::model::exp::game_activity::GameScore;
 use sdl2::{pixels::Color, rect::Rect};

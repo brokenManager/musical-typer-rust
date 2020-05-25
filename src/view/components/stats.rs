@@ -1,7 +1,9 @@
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 
-use super::renderer::{text::TextAlign, RenderCtx, ViewResult};
+use super::super::renderer::{
+  text::TextAlign, RenderCtx, ViewResult,
+};
 use crate::model::exp::game_activity::GameScore;
 
 mod rank;
