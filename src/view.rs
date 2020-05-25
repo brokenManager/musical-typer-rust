@@ -50,7 +50,7 @@ impl From<HandleError> for ViewError {
 
 pub trait View {
   fn run(&mut self) -> Result<(), ViewError>;
-  fn next_route(&self) -> Option<ViewRoute>;
+  fn next_route(&self) -> ViewRoute;
 }
 
 pub enum ViewRoute {
@@ -93,14 +93,14 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
       boxed_view.run()?;
       let next = boxed_view.next_route();
       match next {
-        Some(ViewRoute::GameView) => {
+        ViewRoute::GameView => {
           view.replace(Box::new(GameView::new(
             self.renderer.clone(),
             self.handler.clone(),
             score.clone(),
           )?));
         }
-        Some(ViewRoute::ResultView(score, info)) => {
+        ViewRoute::ResultView(score, info) => {
           view = Some(Box::new(ResultView::new(
             self.renderer.clone(),
             self.handler.clone(),
@@ -108,10 +108,9 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
             info,
           )));
         }
-        Some(ViewRoute::Quit) => {
+        ViewRoute::Quit => {
           view = None;
         }
-        _ => {}
       };
     }
 

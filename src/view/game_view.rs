@@ -189,14 +189,14 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
     Ok(())
   }
 
-  fn next_route(&self) -> Option<ViewRoute> {
+  fn next_route(&self) -> ViewRoute {
     if !self.ended_game {
-      return Some(ViewRoute::Quit);
+      return ViewRoute::Quit;
     }
-    Some(ViewRoute::ResultView(
+    ViewRoute::ResultView(
       self.model.activity().score(),
       self.model.get_metadata().get_music_info(),
-    ))
+    )
   }
 }
 

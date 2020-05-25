@@ -103,7 +103,7 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
     Ok(())
   }
 
-  fn next_route(&self) -> Option<super::ViewRoute> {
-    Some(super::ViewRoute::Quit)
+  fn next_route(&self) -> super::ViewRoute {
+    super::ViewRoute::Quit
   }
 }
