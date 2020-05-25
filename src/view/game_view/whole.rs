@@ -79,11 +79,10 @@ pub fn render<'texture>(
   {
     let stats_dim =
       Rect::new(0, client.height() as i32 - 200, client.width(), 200);
-    stats(
-      props.type_per_second,
-      props.score.achievement_rate,
-      props.score.accuracy,
-    )(ctx.clone(), stats_dim)?;
+    stats(props.type_per_second, props.score.clone())(
+      ctx.clone(),
+      stats_dim,
+    )?;
   }
 
   Ok(())

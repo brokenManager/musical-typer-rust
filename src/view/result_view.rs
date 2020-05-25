@@ -23,8 +23,10 @@ impl<'ttf, 'canvas> ResultView<'ttf, 'canvas> {
 
 impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
   fn run(&mut self) -> Result<(), super::ViewError> {
+    
     Ok(())
   }
+
   fn next_route(&self) -> Option<super::ViewRoute> {
     Some(super::ViewRoute::Quit)
   }

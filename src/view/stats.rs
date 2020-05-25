@@ -2,14 +2,17 @@ use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 
 use super::renderer::{text::TextAlign, RenderCtx, ViewResult};
+use crate::model::exp::game_activity::GameScore;
 
 mod rank;
 
 pub fn stats(
   type_per_second: f64,
-  achievement_rate: f64,
-  accuracy: f64,
+  score: GameScore,
 ) -> impl Fn(RenderCtx, Rect) -> ViewResult {
+  let accuracy = score.accuracy;
+  let achievement_rate = score.achievement_rate;
+
   let speed_indicator_color = if 4.0 < type_per_second {
     Color::RGB(250, 119, 109)
   } else {
