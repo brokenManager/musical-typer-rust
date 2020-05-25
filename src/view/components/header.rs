@@ -20,7 +20,7 @@ pub fn header<'renderer, 'info: 'renderer>(
         .color(Color::RGB(0, 0, 0))
         .line_height(50)
         .align(TextAlign::Right)
-        .pos(client.top_left().offset(800, 0))
+        .pos(client.top_right().offset(0, 0))
     })?;
 
     ctx.borrow_mut().text(|s| {
@@ -28,7 +28,7 @@ pub fn header<'renderer, 'info: 'renderer>(
         .color(Color::RGB(156, 156, 162))
         .line_height(50)
         .align(TextAlign::Right)
-        .pos(client.top_left().offset(800, 50))
+        .pos(client.top_right().offset(0, 50))
     })?;
 
     ctx.borrow_mut().text(|s| {
