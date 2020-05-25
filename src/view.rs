@@ -7,12 +7,14 @@ use handler::{HandleError, Handler};
 use player::PlayerError;
 use renderer::Renderer;
 use renderer::{text::TextError, RenderCtx};
+use result_view::ResultView;
 use std::{cell::RefCell, rc::Rc};
 
 mod game_view;
 mod handler;
 mod player;
 mod renderer;
+mod result_view;
 mod stats;
 
 #[derive(Debug)]
@@ -97,7 +99,11 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
           )?));
         }
         Some(ViewRoute::ResultView(score)) => {
-          view = None;
+          view = Some(Box::new(ResultView::new(
+            self.renderer.clone(),
+            self.handler.clone(),
+            score,
+          )));
         }
         Some(ViewRoute::Quit) => {
           view = None;
