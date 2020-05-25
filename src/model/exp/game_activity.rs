@@ -7,7 +7,6 @@ use super::{
   },
   time::Seconds,
 };
-use crate::model::game::MusicalTypeResult;
 
 enum State {
   BeforeStart,
@@ -28,13 +27,11 @@ pub struct GameScore {
 
 impl GameScore {
   fn update(&mut self, type_result: &TypeResult) {
-    use TypeResult::*;
-
     match type_result {
-      Missed => {
+      TypeResult::Mistaken => {
         self.wrong_type_count += 1;
       }
-      Correct => {
+      TypeResult::Succeed => {
         self.correction_type_count += 1;
       }
       _ => return,
