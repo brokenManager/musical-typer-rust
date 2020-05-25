@@ -30,6 +30,7 @@ pub enum MusicalTyperEvent {
   CompletedSentence(Sentence),
   DidPerfectSection,
   Typed(MusicalTypeResult),
+  EndOfScore,
 }
 
 #[derive(Debug)]
@@ -191,6 +192,10 @@ impl MusicalTyper {
     self.activity.update_time(self.accumulated_time.clone());
 
     let curr_note_id = self.activity.current_note_id();
+
+    if curr_note_id == "" {
+      return vec![EndOfScore];
+    }
 
     let mut events = vec![];
     if !completed && (prev_note_id != curr_note_id) {

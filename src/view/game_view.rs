@@ -94,6 +94,9 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
               player.play_se(SEKind::PerfectSection)?;
               // TODO: Queue a perfect animation
             }
+            EndOfScore => {
+              self.ended_game = true;
+            }
           }
         }
       }
