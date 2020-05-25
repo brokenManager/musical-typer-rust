@@ -1,5 +1,5 @@
 use crate::model::exp::{
-  game_activity::GameActivity, scoremap::Scoremap,
+  game_activity::GameScore, scoremap::Scoremap,
 };
 use crate::model::game::MusicalTyperError;
 use gameview::GameView;
@@ -52,7 +52,7 @@ pub trait View {
 
 pub enum ViewRoute {
   GameView,
-  ResultView(GameActivity),
+  ResultView(GameScore),
   Quit,
 }
 
@@ -96,7 +96,7 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
             score.clone(),
           )?));
         }
-        Some(ViewRoute::ResultView(_)) => {
+        Some(ViewRoute::ResultView(score)) => {
           view = None;
         }
         Some(ViewRoute::Quit) => {

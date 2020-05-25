@@ -187,7 +187,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
   }
 
   fn next_route(&self) -> Option<ViewRoute> {
-    Some(ViewRoute::Quit)
+    Some(ViewRoute::ResultView(self.model.activity().score()))
   }
 }
 
