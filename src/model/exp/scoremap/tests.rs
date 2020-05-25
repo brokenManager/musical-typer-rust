@@ -385,7 +385,7 @@ fn case1() -> Result<(), super::ScoremapError> {
     );
   }
   assert_eq!(expected_notes.len(), score.sections.len());
-  for (k, v) in score.metadata.iter() {
+  for (k, v) in score.metadata.0.iter() {
     assert_eq!(
       v,
       match k.as_str() {

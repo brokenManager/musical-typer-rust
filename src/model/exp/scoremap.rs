@@ -16,7 +16,39 @@ pub enum ScoremapError {
   ParseError(ScoremapParseError),
 }
 
-pub type ScoremapMetadata = HashMap<String, String>;
+#[readonly::make]
+pub struct MusicInfo {
+  pub title: String,
+  pub song_author: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ScoremapMetadata(HashMap<String, String>);
+
+impl ScoremapMetadata {
+  pub fn new() -> Self {
+    Self(HashMap::new())
+  }
+
+  pub fn get(&self, key: &str) -> Option<&String> {
+    self.0.get(key)
+  }
+
+  pub fn get_music_info(&self) -> MusicInfo {
+    MusicInfo {
+      title: self
+        .0
+        .get("title")
+        .cloned()
+        .unwrap_or("曲名不詳".into()),
+      song_author: self
+        .0
+        .get("song_author")
+        .cloned()
+        .unwrap_or("作曲者不詳".into()),
+    }
+  }
+}
 
 #[derive(Debug, Clone)]
 pub struct Scoremap {

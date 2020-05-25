@@ -2,7 +2,9 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 
 use crate::{
-  model::exp::{game_activity::GameScore, sentence::Sentence},
+  model::exp::{
+    game_activity::GameScore, scoremap::MusicInfo, sentence::Sentence,
+  },
   view::{
     components::{header, stats},
     renderer::{RenderCtx, ViewResult},
@@ -18,8 +20,7 @@ use keyboard::keyboard;
 pub struct WholeProps<'a> {
   pub pressed_keys: &'a [char],
   pub sentence: &'a Option<Sentence>,
-  pub title: &'a str,
-  pub song_author: &'a str,
+  pub music_info: MusicInfo,
   pub type_per_second: f64,
   pub score: GameScore,
   pub section_remaining_ratio: f64,
@@ -41,9 +42,7 @@ pub fn render<'texture>(
 
   {
     let header_dim = Rect::new(0, 0, client.width(), 100);
-    header(props.title, props.song_author, props.score.score_point)(
-      ctx.clone(),
-    )?;
+    header(&props.music_info, props.score.score_point)(ctx.clone())?;
     ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
     ctx.borrow_mut().draw_rect(header_dim)?;
   }

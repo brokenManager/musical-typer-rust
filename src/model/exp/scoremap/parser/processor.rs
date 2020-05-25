@@ -215,7 +215,7 @@ pub fn property_processor(
         reason: "プロパティの指定は歌詞定義の外のみ有効です。",
       }));
     }
-    metadata.insert(key.clone(), value.clone());
+    metadata.0.insert(key.clone(), value.clone());
   }
   None
 }

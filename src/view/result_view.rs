@@ -1,7 +1,12 @@
 use super::{
-  components::stats, handler::Handler, renderer::RenderCtx, View,
+  components::{header, stats},
+  handler::Handler,
+  renderer::RenderCtx,
+  View,
 };
-use crate::model::exp::game_activity::GameScore;
+use crate::model::exp::{
+  game_activity::GameScore, scoremap::MusicInfo,
+};
 use sdl2::{pixels::Color, rect::Rect};
 use std::time::Instant;
 
@@ -9,6 +14,7 @@ pub struct ResultView<'ttf, 'canvas> {
   renderer: RenderCtx<'ttf, 'canvas>,
   handler: Handler,
   score: GameScore,
+  music_info: MusicInfo,
 }
 
 impl<'ttf, 'canvas> ResultView<'ttf, 'canvas> {
@@ -16,11 +22,13 @@ impl<'ttf, 'canvas> ResultView<'ttf, 'canvas> {
     renderer: RenderCtx<'ttf, 'canvas>,
     handler: Handler,
     score: GameScore,
+    music_info: MusicInfo,
   ) -> Self {
     Self {
       renderer,
       handler,
       score,
+      music_info,
     }
   }
 }
@@ -59,6 +67,10 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         .set_draw_color(Color::RGB(253, 243, 226));
       self.renderer.borrow_mut().clear();
 
+      let header_dim = Rect::new(0, 0, client.width(), 100);
+      header(&self.music_info, self.score.score_point)(
+        self.renderer.clone(),
+      )?;
       let stats_dim = Rect::new(
         0,
         client.height() as i32 - 300,

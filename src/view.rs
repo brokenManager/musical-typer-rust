@@ -1,5 +1,6 @@
 use crate::model::exp::{
-  game_activity::GameScore, scoremap::Scoremap,
+  game_activity::GameScore,
+  scoremap::{MusicInfo, Scoremap, ScoremapMetadata},
 };
 use crate::model::game::MusicalTyperError;
 use game_view::GameView;
@@ -54,7 +55,7 @@ pub trait View {
 
 pub enum ViewRoute {
   GameView,
-  ResultView(GameScore),
+  ResultView(GameScore, MusicInfo),
   Quit,
 }
 
@@ -86,6 +87,7 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
         self.renderer.clone(),
         self.handler.clone(),
         GameScore::new(1000000, 0.5, 0.25),
+        ScoremapMetadata::new().get_music_info(),
       )));
     while let Some(boxed_view) = view.as_mut() {
       boxed_view.run()?;
@@ -98,11 +100,12 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
             score.clone(),
           )?));
         }
-        Some(ViewRoute::ResultView(score)) => {
+        Some(ViewRoute::ResultView(score, info)) => {
           view = Some(Box::new(ResultView::new(
             self.renderer.clone(),
             self.handler.clone(),
             score,
+            info,
           )));
         }
         Some(ViewRoute::Quit) => {

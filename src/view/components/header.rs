@@ -1,13 +1,18 @@
-use crate::view::renderer::{text::TextAlign, RenderCtx, ViewResult};
+use crate::{
+  model::exp::scoremap::MusicInfo,
+  view::renderer::{text::TextAlign, RenderCtx, ViewResult},
+};
 use sdl2::rect::Point;
 
-pub fn header<'renderer, 'title: 'renderer, 'author: 'renderer>(
-  title: &'title str,
-  author: &'author str,
+pub fn header<'renderer, 'info: 'renderer>(
+  music_info: &'info MusicInfo,
   score_point: i32,
 ) -> impl Fn(RenderCtx) -> ViewResult + 'renderer {
   move |ctx: RenderCtx| -> ViewResult {
     use sdl2::pixels::Color;
+
+    let title = &music_info.title;
+    let author = &music_info.song_author;
 
     ctx.borrow_mut().text(|s| {
       s.text(title)

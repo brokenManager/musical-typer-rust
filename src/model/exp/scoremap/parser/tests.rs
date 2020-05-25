@@ -6,7 +6,7 @@ use super::{
   parse, Note, ScoremapParseError, Token, TokenContent,
 };
 use crate::model::exp::{
-  scoremap::Scoremap,
+  scoremap::{Scoremap, ScoremapMetadata},
   time::{Duration, MinuteSecond},
 };
 use std::collections::HashMap;
@@ -699,7 +699,7 @@ fn case1() -> Result<(), ScoremapParseError> {
       m.insert("score_author".into(), "Mikuro さいな".into());
       m.insert("song_data".into(), "twinkle-grace.ogg".into());
       m.insert("bpm".into(), "200".into());
-      m
+      ScoremapMetadata(m)
     },
     sections: Sections::new(vec![
       vec![Note::caption(dur.clone(), "満点星の約束")],
@@ -929,7 +929,7 @@ fn case1() -> Result<(), ScoremapParseError> {
   };
   let actual = parse(input.as_slice())?;
 
-  assert_eq!(expected.metadata, actual.metadata);
+  assert_eq!(expected.metadata.0, actual.metadata.0);
 
   for (section_idx, (expected, actual)) in expected
     .sections
@@ -1065,7 +1065,7 @@ fn case2() -> Result<(), ScoremapParseError> {
       m.insert("score_author".into(), "Mikuro さいな".into());
       m.insert("song_data".into(), "void.ogg".into());
       m.insert("bpm".into(), "222.22".into());
-      m
+      ScoremapMetadata(m)
     },
     sections: Sections::new(vec![vec![
       Note::blank(duration.clone()),
@@ -1083,7 +1083,7 @@ fn case2() -> Result<(), ScoremapParseError> {
   };
   let actual = parse(input.as_slice())?;
 
-  assert_eq!(expected.metadata, actual.metadata);
+  assert_eq!(expected.metadata.0, actual.metadata.0);
 
   for (section_idx, (expected, actual)) in expected
     .sections

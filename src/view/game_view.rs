@@ -149,8 +149,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
             .collect::<Vec<char>>()
             .as_slice(),
           sentence: &sentence,
-          title: &self.model.get_metadata("title"),
-          song_author: &self.model.get_metadata("song_author"),
+          music_info: self.model.get_metadata().get_music_info(),
           type_per_second,
           score: self.model.activity().score(),
           section_remaining_ratio: self
@@ -194,7 +193,10 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
     if !self.ended_game {
       return Some(ViewRoute::Quit);
     }
-    Some(ViewRoute::ResultView(self.model.activity().score()))
+    Some(ViewRoute::ResultView(
+      self.model.activity().score(),
+      self.model.get_metadata().get_music_info(),
+    ))
   }
 }
 

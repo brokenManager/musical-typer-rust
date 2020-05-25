@@ -1,6 +1,5 @@
 use super::exp::{
   game_activity::GameActivity,
-  note::NoteContent,
   scoremap::{
     lexer::ScoremapLexError, Scoremap, ScoremapError,
     ScoremapMetadata,
@@ -223,19 +222,7 @@ impl MusicalTyper {
     self.activity.remaining_ratio(self.accumulated_time.clone())
   }
 
-  pub fn get_metadata(&'_ self, key: &str) -> String {
-    match key {
-      "title" => self
-        .metadata
-        .get("title")
-        .cloned()
-        .unwrap_or("曲名不詳".into()),
-      "song_author" => self
-        .metadata
-        .get("song_author")
-        .cloned()
-        .unwrap_or("作曲者不詳".into()),
-      _ => "".into(),
-    }
+  pub fn get_metadata(&self) -> &ScoremapMetadata {
+    &self.metadata
   }
 }
