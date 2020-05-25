@@ -27,6 +27,7 @@ pub struct GameView<'ttf, 'canvas> {
   renderer: RenderCtx<'ttf, 'canvas>,
   handler: Handler,
   model: MusicalTyper,
+  ended_game: bool,
 }
 
 impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
@@ -39,6 +40,7 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
       renderer,
       handler,
       model: MusicalTyper::new(score, MusicalTyperConfig::default())?,
+      ended_game: false,
     })
   }
 }
@@ -53,7 +55,6 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
     let mut typed_key_buf = vec![];
     let mut sentence: Option<Sentence> = None;
     let mut timepoints = VecDeque::new();
-    let mut ended_game = false;
 
     'main: loop {
       let time = Instant::now();
@@ -177,7 +178,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
       );
     }
     player.stop_bgm(500)?;
-    if !ended_game {
+    if !self.ended_game {
       player.play_se(SEKind::GameOver)?;
       self.handler.delay(2500)?;
     }
@@ -187,6 +188,9 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
   }
 
   fn next_route(&self) -> Option<ViewRoute> {
+    if !self.ended_game {
+      return None;
+    }
     Some(ViewRoute::ResultView(self.model.activity().score()))
   }
 }
