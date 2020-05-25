@@ -61,7 +61,7 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
 
       let stats_dim = Rect::new(
         0,
-        client.height() as i32 - 200,
+        client.height() as i32 - 300,
         client.width(),
         200,
       );
@@ -69,6 +69,17 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         self.renderer.clone(),
         stats_dim,
       )?;
+      {
+        use super::renderer::text::TextAlign;
+        self.renderer.borrow_mut().text(|style| {
+          style
+            .align(TextAlign::Right)
+            .text("何かキーを押すと終了")
+            .color(Color::RGB(36, 141, 255))
+            .line_height(60)
+            .pos(client.bottom_right().offset(0, -60))
+        })?;
+      }
 
       self.renderer.borrow_mut().flush();
 
