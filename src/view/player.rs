@@ -94,7 +94,9 @@ impl<'music> Player<'music> {
       "missing such audio file: {}",
       name
     )))?;
-    Channel::all().play(chunk, 0).map_err(|e| AudioError(e))?;
+    let _ = Channel::all().play(chunk, 0).map_err(|e| {
+      eprintln!("{:?}", e);
+    });
     Ok(())
   }
 
