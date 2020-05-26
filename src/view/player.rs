@@ -42,15 +42,13 @@ fn loaad_chunks() -> Result<Chunks, PlayerError> {
   let mut chunks: Chunks = HashMap::new();
   for entry in path.read_dir()? {
     let file = entry?;
-    if let Some(ext) = file.path().extension() {
-      if ext == "wav" {
-        chunks.insert(
-          file.path().file_stem().map_or("".into(), |name| {
-            name.to_string_lossy().to_string()
-          }),
-          Chunk::from_file(file.path()).map_err(|e| AudioError(e))?,
-        );
-      }
+    if file.path().extension().map_or(false, |ext| ext == "wav") {
+      chunks.insert(
+        file.path().file_stem().map_or("".into(), |name| {
+          name.to_string_lossy().to_string()
+        }),
+        Chunk::from_file(file.path()).map_err(|e| AudioError(e))?,
+      );
     }
   }
   Channel::all().set_volume(112); // the max is 128
@@ -101,16 +99,15 @@ impl<'music> Player<'music> {
   }
 
   pub fn play_se(&self, kind: SEKind) -> Result<(), PlayerError> {
+    use SEKind::*;
     match kind {
-      SEKind::Correct => self.play_se_file("correct"),
-      SEKind::Fail => self.play_se_file("fail"),
-      SEKind::Vacant => self.play_se_file("vacant"),
-      SEKind::GameOver => self.play_se_file("gameover"),
-      SEKind::MissedSentence => self.play_se_file("missed"),
-      SEKind::PerfectSentence => {
-        self.play_se_file("perfect_sentence")
-      }
-      SEKind::PerfectSection => self.play_se_file("perfect_section"),
+      Correct => self.play_se_file("correct"),
+      Fail => self.play_se_file("fail"),
+      Vacant => self.play_se_file("vacant"),
+      GameOver => self.play_se_file("gameover"),
+      MissedSentence => self.play_se_file("missed"),
+      PerfectSentence => self.play_se_file("perfect_sentence"),
+      PerfectSection => self.play_se_file("perfect_section"),
     }
   }
 }
