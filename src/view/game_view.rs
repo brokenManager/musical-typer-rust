@@ -180,14 +180,10 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
         sdl2::mixer::Music::is_playing()
       );
     }
-    player.stop_bgm(500)?;
     if !self.ended_game {
+      player.stop_bgm(500)?;
       player.play_se(SEKind::GameOver)?;
       self.handler.delay(2500)?;
-    }
-    self.handler.delay(505)?;
-
-    if !self.ended_game {
       return Ok(ViewRoute::Quit);
     }
     Ok(ViewRoute::ResultView(
