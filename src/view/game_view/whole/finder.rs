@@ -28,14 +28,14 @@ pub fn finder(
     if let Some(sentence) = sentence {
       let will_input_japanese = sentence.origin();
       ctx.borrow_mut().text(|s| {
-        s.color(Color::RGB(0, 0, 0))
+        s.color(Color::RGB(80, 80, 80))
           .text(will_input_japanese)
           .line_height(JAPANESE_HEIGHT)
           .align(TextAlign::Left)
           .pos(offset.top_left())
       })?;
 
-      const ROMAN_HEIGHT: u32 = 80;
+      const ROMAN_HEIGHT: u32 = 40;
       {
         let TypingStr {
           will_input,

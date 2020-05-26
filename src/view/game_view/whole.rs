@@ -50,7 +50,7 @@ pub fn render<'texture>(
   }
 
   {
-    let finder_dim = Rect::new(0, 100, client.width(), 200);
+    let finder_dim = Rect::new(0, 100, client.width(), 150);
     finder(props.sentence, props.section_remaining_ratio)(
       ctx.clone(),
       finder_dim,
@@ -66,7 +66,7 @@ pub fn render<'texture>(
       .and_then(|sentence| sentence.roman().will_input.chars().next())
       .map_or(vec![], |c| vec![c]);
     let keyboard_dim =
-      Rect::new(0, client.height() as i32 - 300, client.width(), 100);
+      Rect::new(0, client.height() as i32 - 350, client.width(), 200);
     keyboard(props.pressed_keys, hint.as_slice())(
       ctx.clone(),
       keyboard_dim,
@@ -77,7 +77,7 @@ pub fn render<'texture>(
   }
   {
     let stats_dim =
-      Rect::new(0, client.height() as i32 - 200, client.width(), 200);
+      Rect::new(0, client.height() as i32 - 150, client.width(), 150);
     stats(props.type_per_second, props.score.clone())(
       ctx.clone(),
       stats_dim,
