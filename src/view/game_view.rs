@@ -53,7 +53,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
     let mut player = Player::new();
     let mut pressed_key_buf = BTreeSet::new();
     let mut typed_key_buf = vec![];
-    let mut sentence: Option<Sentence> = None;
+    let mut sentence = Sentence::empty();
     let mut timepoints = VecDeque::new();
 
     'main: loop {
@@ -66,7 +66,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
               player.change_bgm(bgm_name)?;
             }
             UpdateSentence(new_sentence) => {
-              sentence = Some(new_sentence.clone());
+              sentence = new_sentence.clone();
             }
             Typed(result) => match result {
               MusicalTypeResult::Missed => {

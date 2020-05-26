@@ -19,7 +19,7 @@ use keyboard::keyboard;
 
 pub struct WholeProps<'a> {
   pub pressed_keys: &'a [char],
-  pub sentence: &'a Option<Sentence>,
+  pub sentence: &'a Sentence,
   pub music_info: MusicInfo,
   pub type_per_second: f64,
   pub score: GameScore,
@@ -60,8 +60,10 @@ pub fn render<'texture>(
   {
     let hint = props
       .sentence
-      .as_ref()
-      .and_then(|sentence| sentence.roman().will_input.chars().next())
+      .roman()
+      .will_input
+      .chars()
+      .next()
       .map_or(vec![], |c| vec![c]);
     let keyboard_dim =
       Rect::new(0, client.height() as i32 - 350, client.width(), 200);

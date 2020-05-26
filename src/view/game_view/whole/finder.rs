@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub fn finder(
-  sentence: &Option<Sentence>,
+  sentence: &Sentence,
   remaining_ratio: f64,
 ) -> impl Fn(RenderCtx, Rect) -> ViewResult + '_ {
   let remaining_ratio = remaining_ratio.max(0.).min(1.);
@@ -27,86 +27,84 @@ pub fn finder(
 
     const JAPANESE_HEIGHT: u32 = 30;
     let half_x = offset.width() / 2;
+    let will_input_japanese = sentence.origin();
+    ctx.borrow_mut().text(|s| {
+      s.color(Color::RGB(80, 80, 80))
+        .text(will_input_japanese)
+        .line_height(JAPANESE_HEIGHT)
+        .align(TextAlign::Left)
+        .pos(offset.top_left())
+    })?;
 
-    if let Some(sentence) = sentence {
-      let will_input_japanese = sentence.origin();
+    const ROMAN_HEIGHT: u32 = 40;
+    {
+      let TypingStr {
+        will_input,
+        inputted,
+      } = sentence.roman();
+      let will_input = will_input.as_str();
+      let inputted = inputted.as_str();
+
       ctx.borrow_mut().text(|s| {
-        s.color(Color::RGB(80, 80, 80))
-          .text(will_input_japanese)
-          .line_height(JAPANESE_HEIGHT)
+        s.color(Color::RGB(0, 0, 0))
+          .text(will_input)
+          .line_height(ROMAN_HEIGHT)
           .align(TextAlign::Left)
-          .pos(offset.top_left())
+          .pos(Point::new(
+            half_x as i32 + 5,
+            offset.bottom() - ROMAN_HEIGHT as i32 - 20,
+          ))
       })?;
 
-      const ROMAN_HEIGHT: u32 = 40;
-      {
-        let TypingStr {
-          will_input,
-          inputted,
-        } = sentence.roman();
-        let will_input = will_input.as_str();
-        let inputted = inputted.as_str();
-
-        ctx.borrow_mut().text(|s| {
-          s.color(Color::RGB(0, 0, 0))
-            .text(will_input)
-            .line_height(ROMAN_HEIGHT)
-            .align(TextAlign::Left)
-            .pos(Point::new(
-              half_x as i32 + 5,
-              offset.bottom() - ROMAN_HEIGHT as i32 - 20,
-            ))
-        })?;
-
-        ctx.borrow_mut().text(|s| {
-          s.color(Color::RGB(80, 80, 80))
-            .text(inputted)
-            .line_height(ROMAN_HEIGHT)
-            .align(TextAlign::Right)
-            .pos(Point::new(
-              half_x as i32 - 5,
-              offset.bottom() - ROMAN_HEIGHT as i32 - 20,
-            ))
-        })?;
-      }
-      const YOMIGANA_HEIGHT: u32 = 80;
-      {
-        let TypingStr {
-          will_input,
-          inputted,
-        } = sentence.yomiagana();
-        let will_input = will_input.as_str();
-        let inputted = inputted.as_str();
-
-        ctx.borrow_mut().text(|s| {
-          s.color(Color::RGB(0, 0, 0))
-            .text(will_input)
-            .line_height(YOMIGANA_HEIGHT)
-            .align(TextAlign::Left)
-            .pos(Point::new(
-              half_x as i32 + 5,
-              offset.bottom()
-                - ROMAN_HEIGHT as i32
-                - YOMIGANA_HEIGHT as i32
-                - 20,
-            ))
-        })?;
-
-        ctx.borrow_mut().text(|s| {
-          s.color(Color::RGB(80, 80, 80))
-            .text(inputted)
-            .line_height(YOMIGANA_HEIGHT)
-            .align(TextAlign::Right)
-            .pos(Point::new(
-              half_x as i32 - 5,
-              offset.bottom()
-                - ROMAN_HEIGHT as i32
-                - YOMIGANA_HEIGHT as i32
-                - 20,
-            ))
-        })?;
-      }
+      ctx.borrow_mut().text(|s| {
+        s.color(Color::RGB(80, 80, 80))
+          .text(inputted)
+          .line_height(ROMAN_HEIGHT)
+          .align(TextAlign::Right)
+          .pos(Point::new(
+            half_x as i32 - 5,
+            offset.bottom() - ROMAN_HEIGHT as i32 - 20,
+          ))
+      })?;
     }
+    const YOMIGANA_HEIGHT: u32 = 80;
+    {
+      let TypingStr {
+        will_input,
+        inputted,
+      } = sentence.yomiagana();
+      let will_input = will_input.as_str();
+      let inputted = inputted.as_str();
+
+      ctx.borrow_mut().text(|s| {
+        s.color(Color::RGB(0, 0, 0))
+          .text(will_input)
+          .line_height(YOMIGANA_HEIGHT)
+          .align(TextAlign::Left)
+          .pos(Point::new(
+            half_x as i32 + 5,
+            offset.bottom()
+              - ROMAN_HEIGHT as i32
+              - YOMIGANA_HEIGHT as i32
+              - 20,
+          ))
+      })?;
+
+      ctx.borrow_mut().text(|s| {
+        s.color(Color::RGB(80, 80, 80))
+          .text(inputted)
+          .line_height(YOMIGANA_HEIGHT)
+          .align(TextAlign::Right)
+          .pos(Point::new(
+            half_x as i32 - 5,
+            offset.bottom()
+              - ROMAN_HEIGHT as i32
+              - YOMIGANA_HEIGHT as i32
+              - 20,
+          ))
+      })?;
+    }
+
     Ok(())
   }
 }
