@@ -1,7 +1,7 @@
 use super::exp::{
   game_activity::GameActivity,
   scoremap::{
-    lexer::ScoremapLexError, Scoremap, ScoremapError,
+    lexer::ScoremapLexError, MusicInfo, Scoremap, ScoremapError,
     ScoremapMetadata,
   },
   sentence::{roman::roman_lexer::RomanParseError, Sentence},
@@ -222,7 +222,7 @@ impl MusicalTyper {
     self.activity.remaining_ratio(self.accumulated_time.clone())
   }
 
-  pub fn get_metadata(&self) -> &ScoremapMetadata {
-    &self.metadata
+  pub fn music_info(&self) -> MusicInfo {
+    self.metadata.get_music_info()
   }
 }
