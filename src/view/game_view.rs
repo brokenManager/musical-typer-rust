@@ -96,6 +96,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
             }
             EndOfScore => {
               self.ended_game = true;
+              break 'main;
             }
           }
         }

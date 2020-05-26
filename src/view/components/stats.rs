@@ -49,10 +49,21 @@ pub fn stats(
     })?;
     ctx.borrow_mut().text(|s| {
       s.text(&format!("{:05.1}%", accuracy * 100.0))
-        .color(Color::RGB(174, 83, 76))
+        .color(Color::RGB(
+          (250.0 * accuracy) as u8,
+          (120.0 * accuracy) as u8,
+          (110.0 * accuracy) as u8,
+        ))
         .line_height(client.height() - 20)
         .pos(client.top_left().clone().offset(10, 30))
     })?;
+    ctx.borrow_mut().set_draw_color(Color::RGB(250, 120, 110));
+    ctx.borrow_mut().draw_rect(Rect::new(
+      client.left() + 10,
+      client.bottom() - 10,
+      (client.width() as f64 * 0.5 * accuracy) as u32,
+      2,
+    ))?;
 
     ctx.borrow_mut().text(|s| {
       s.text("達成率")
