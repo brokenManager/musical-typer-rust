@@ -1,5 +1,6 @@
 use super::exp::{
   game_activity::GameActivity,
+  note::TypeResult,
   scoremap::{
     lexer::ScoremapLexError, MusicInfo, Scoremap, ScoremapError,
     ScoremapMetadata,
@@ -19,6 +20,16 @@ pub enum MusicalTypeResult {
   Correct,
   Missed,
   Vacant,
+}
+
+impl From<TypeResult> for MusicalTypeResult {
+  fn from(res: TypeResult) -> Self {
+    match res {
+      TypeResult::Succeed => MusicalTypeResult::Correct,
+      TypeResult::Mistaken => MusicalTypeResult::Missed,
+      TypeResult::Vacant => MusicalTypeResult::Vacant,
+    }
+  }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -136,37 +147,31 @@ impl MusicalTyper {
     for typed in typed {
       use super::exp::scoremap::section::note::TypeResult::*;
       let result = self.activity.input(typed);
-      match result {
-        Succeed => {
-          self.activity.point(self.config.correct_type as i32);
-          self.event_queue.push(Typed(MusicalTypeResult::Correct));
-        }
-        Mistaken => {
-          self.activity.point(-(self.config.wrong_type as i32));
-          self.event_queue.push(Typed(MusicalTypeResult::Missed));
-        }
-        Vacant => {
-          self.event_queue.push(Typed(MusicalTypeResult::Vacant));
-        }
-      }
+      let point = match result {
+        Succeed => self.config.correct_type as i32,
+        Mistaken => -(self.config.wrong_type as i32),
+        _ => 0,
+      };
+      self.activity.point(point);
+      self.event_queue.push(Typed(result.into()));
     }
     let curr_sentence = self.activity.current_sentence();
     let curr_completed = curr_sentence.completed();
 
     let mut events = vec![];
     if !prev_completed && curr_completed {
-      if let Some(true) = self
+      if self
         .activity
         .current_section()
-        .map(|section| 1.0 <= section.accuracy())
+        .map_or(false, |section| 1.0 <= section.accuracy())
       {
         self.activity.point(self.config.perfect_section as i32);
         events.push(DidPerfectSection);
       }
-      if let Some(true) = self
+      if self
         .activity
         .current_note()
-        .map(|note| 1.0 <= note.accuracy())
+        .map_or(false, |note| 1.0 <= note.accuracy())
       {
         self.activity.point(self.config.perfect_sentence as i32);
       }
