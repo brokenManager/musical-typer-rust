@@ -49,8 +49,7 @@ impl From<HandleError> for ViewError {
 }
 
 pub trait View {
-  fn run(&mut self) -> Result<(), ViewError>;
-  fn next_route(&self) -> ViewRoute;
+  fn run(&mut self) -> Result<ViewRoute, ViewError>;
 }
 
 pub enum ViewRoute {
@@ -89,8 +88,7 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
         score.clone(),
       )?));
     while let Some(boxed_view) = view.as_mut() {
-      boxed_view.run()?;
-      let next = boxed_view.next_route();
+      let next = boxed_view.run()?;
       match next {
         ViewRoute::GameView => {
           view.replace(Box::new(GameView::new(

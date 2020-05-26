@@ -190,11 +190,11 @@ impl MusicalTyper {
 
     self.activity.update_time(self.accumulated_time.clone());
 
-    let curr_note_id = self.activity.current_note_id();
-
-    if curr_note_id == "" {
+    if self.activity.is_game_over() {
       return vec![EndOfScore];
     }
+
+    let curr_note_id = self.activity.current_note_id();
 
     let mut events = vec![];
     if !completed && (prev_note_id != curr_note_id) {

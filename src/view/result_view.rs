@@ -2,7 +2,7 @@ use super::{
   components::{header, stats},
   handler::Handler,
   renderer::RenderCtx,
-  View,
+  View, ViewRoute,
 };
 use crate::model::exp::{
   game_activity::GameScore, scoremap::MusicInfo,
@@ -34,7 +34,7 @@ impl<'ttf, 'canvas> ResultView<'ttf, 'canvas> {
 }
 
 impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
-  fn run(&mut self) -> Result<(), super::ViewError> {
+  fn run(&mut self) -> Result<ViewRoute, super::ViewError> {
     let client = Rect::new(
       0,
       0,
@@ -100,10 +100,6 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         .handler
         .delay((1e3 / 60.0 - draw_time * 1e3).max(0.0) as u32)?;
     }
-    Ok(())
-  }
-
-  fn next_route(&self) -> super::ViewRoute {
-    super::ViewRoute::Quit
+    Ok(ViewRoute::Quit)
   }
 }

@@ -46,7 +46,7 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
 }
 
 impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
-  fn run(&mut self) -> Result<(), ViewError> {
+  fn run(&mut self) -> Result<ViewRoute, ViewError> {
     struct TypeTimepoint(Seconds);
 
     let mut mt_events = vec![];
@@ -187,17 +187,13 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
     }
     self.handler.delay(505)?;
 
-    Ok(())
-  }
-
-  fn next_route(&self) -> ViewRoute {
     if !self.ended_game {
-      return ViewRoute::Quit;
+      return Ok(ViewRoute::Quit);
     }
-    ViewRoute::ResultView(
+    Ok(ViewRoute::ResultView(
       self.model.activity().score(),
       self.model.get_metadata().get_music_info(),
-    )
+    ))
   }
 }
 

@@ -158,4 +158,12 @@ impl GameActivity {
   pub fn score(&self) -> GameScore {
     self.score.clone()
   }
+
+  pub fn is_game_over(&self) -> bool {
+    if let State::GameOver = self.state {
+      true
+    } else {
+      false
+    }
+  }
 }
