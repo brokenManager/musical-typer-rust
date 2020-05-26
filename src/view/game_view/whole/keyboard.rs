@@ -33,7 +33,7 @@ fn key_cell(
       } else {
         BLACK
       })
-      .text(&key.to_string())
+      .text(&key.to_string().to_uppercase())
       .align(TextAlign::Center)
       .line_height(client.height())
       .pos(client.center())
