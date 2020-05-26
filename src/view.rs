@@ -64,7 +64,7 @@ impl From<PlayerError> for ViewError {
   }
 }
 
-pub struct Router<'ttf, 'canvas> {
+struct Router<'ttf, 'canvas> {
   handler: Handler,
   renderer: RenderCtx<'ttf, 'canvas>,
 }
@@ -98,7 +98,7 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
           )?));
         }
         ViewRoute::ResultView(score, info) => {
-          view = Some(Box::new(ResultView::new(
+          view.replace(Box::new(ResultView::new(
             self.renderer.clone(),
             self.handler.clone(),
             score,
