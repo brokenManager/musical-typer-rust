@@ -12,6 +12,9 @@ pub fn finder(
 ) -> impl Fn(RenderCtx, Rect) -> ViewResult + '_ {
   let remaining_ratio = remaining_ratio.max(0.).min(1.);
   move |ctx: RenderCtx, offset: Rect| -> ViewResult {
+    ctx.borrow_mut().set_draw_color(Color::RGB(230, 220, 200));
+    ctx.borrow_mut().fill_rect(offset)?;
+
     let remaining_width =
       (offset.width() as f64 * remaining_ratio) as u32;
     ctx.borrow_mut().set_draw_color(Color::RGB(203, 193, 176));

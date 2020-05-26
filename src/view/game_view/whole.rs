@@ -55,8 +55,6 @@ pub fn render<'texture>(
       ctx.clone(),
       finder_dim,
     )?;
-    ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
-    ctx.borrow_mut().draw_rect(finder_dim)?;
   }
 
   {
