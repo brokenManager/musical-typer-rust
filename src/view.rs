@@ -1,6 +1,6 @@
 use crate::model::exp::{
   game_activity::GameScore,
-  scoremap::{MusicInfo, Scoremap, ScoremapMetadata},
+  scoremap::{MusicInfo, Scoremap},
 };
 use crate::model::game::MusicalTyperError;
 use game_view::GameView;

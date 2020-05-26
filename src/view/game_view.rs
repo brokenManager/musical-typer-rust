@@ -82,11 +82,11 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
                 player.play_se(SEKind::Vacant)?;
               }
             },
-            MissedSentence(sentence) => {
+            MissedSentence(_sentence) => {
               player.play_se(SEKind::MissedSentence)?;
               // TODO: Queue a missed animation
             }
-            CompletedSentence(sentence) => {
+            CompletedSentence(_sentence) => {
               player.play_se(SEKind::PerfectSentence)?;
               // TODO: Queue a completed animation
             }
