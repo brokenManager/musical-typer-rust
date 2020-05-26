@@ -2,7 +2,7 @@ use crate::view::renderer::{text::TextAlign, RenderCtx, ViewResult};
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 
-const CELL_ASPECT: f64 = 60.0 / 70.0;
+const CELL_ASPECT: f64 = 1.0;
 
 fn key_cell(
   key: char,
@@ -15,14 +15,21 @@ fn key_cell(
     const GREEN: Color = Color::RGB(20, 76, 64);
     const BACK: Color = Color::RGB(253, 243, 226);
     const BLACK: Color = Color::RGB(0, 0, 0);
+
+    let border_dim = Rect::from_center(
+      client.center(),
+      client.width() - 5,
+      client.height() - 5,
+    );
     ctx.borrow_mut().set_draw_color(if is_highlighted {
       GREEN
     } else {
       BACK
     });
-    ctx.borrow_mut().fill_rect(client)?;
+    ctx.borrow_mut().fill_rect(border_dim)?;
     ctx.borrow_mut().set_draw_color(BLACK);
-    ctx.borrow_mut().draw_rect(client)?;
+    ctx.borrow_mut().draw_rect(border_dim)?;
+
     ctx.borrow_mut().text(|s| {
       s.color(if is_pressed {
         ORANGE
