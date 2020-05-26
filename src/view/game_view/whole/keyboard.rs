@@ -15,6 +15,7 @@ fn key_cell(
     const GREEN: Color = Color::RGB(20, 76, 64);
     const BACK: Color = Color::RGB(253, 243, 226);
     const BLACK: Color = Color::RGB(0, 0, 0);
+    const GLAY: Color = Color::RGB(195, 195, 190);
 
     let border_dim = Rect::from_center(
       client.center(),
@@ -34,7 +35,7 @@ fn key_cell(
       s.color(if is_pressed {
         ORANGE
       } else if is_highlighted {
-        BACK
+        GLAY
       } else if key == 'f' || key == 'j' {
         BLUE
       } else {
