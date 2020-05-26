@@ -10,6 +10,7 @@ fn key_cell(
   is_pressed: bool,
 ) -> impl Fn(RenderCtx, Rect) -> ViewResult {
   move |ctx: RenderCtx, client: Rect| -> ViewResult {
+    const BLUE: Color = Color::RGB(64, 80, 180);
     const ORANGE: Color = Color::RGB(209, 154, 29);
     const GREEN: Color = Color::RGB(20, 76, 64);
     const BACK: Color = Color::RGB(253, 243, 226);
@@ -27,6 +28,8 @@ fn key_cell(
         ORANGE
       } else if is_highlighted {
         BACK
+      } else if key == 'f' || key == 'j' {
+        BLUE
       } else {
         BLACK
       })
