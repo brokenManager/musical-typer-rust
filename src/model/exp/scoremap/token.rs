@@ -1,5 +1,5 @@
 use crate::model::exp::{
-  scoremap::section::note::sentence::roman::roman_str::RomanStr,
+  scoremap::sections::section::note::sentence::roman::roman_str::RomanStr,
   time::MinuteSecond,
 };
 

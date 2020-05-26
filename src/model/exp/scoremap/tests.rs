@@ -1,7 +1,7 @@
 #[test]
 fn case1() -> Result<(), super::ScoremapError> {
   use super::{super::time::Duration, lexer::ScoremapLoadConfig};
-  use crate::model::exp::scoremap::section::note::Note;
+  use crate::model::exp::scoremap::sections::section::note::Note;
 
   let score = super::Scoremap::from_str(
     r#"
@@ -152,7 +152,7 @@ fn case1() -> Result<(), super::ScoremapError> {
   "#,
     |config: ScoremapLoadConfig| -> ScoremapLoadConfig { config },
   )?;
-  use super::section::note::sentence::Sentence;
+  use super::sections::section::note::sentence::Sentence;
   let mut dur = Duration::new(0.0, 18.6).unwrap();
   let expected_notes: Vec<Vec<Note>> = vec![
     vec![Note::caption(dur.clone(), "満点星の約束")],
@@ -404,7 +404,7 @@ fn case1() -> Result<(), super::ScoremapError> {
 
 #[test]
 fn case2() -> Result<(), super::ScoremapError> {
-  use super::section::note::Note;
+  use super::sections::section::note::Note;
   use crate::model::exp::time::Duration;
   let score = super::Scoremap::from_str(
     r#"
@@ -424,7 +424,7 @@ fn case2() -> Result<(), super::ScoremapError> {
 "#,
     |config| config.ignore_invalid_properties(true),
   )?;
-  use super::section::note::sentence::Sentence;
+  use super::sections::section::note::sentence::Sentence;
   let mut dur = Duration::new(0.0, 2.22).unwrap();
   let expected_notes: Vec<Vec<Note>> = vec![vec![
     Note::blank(dur.clone()),

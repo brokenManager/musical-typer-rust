@@ -1,12 +1,11 @@
 use super::{
-  super::section::{
-    note::sentence::{roman::roman_str::RomanStr, Sentence},
-    Sections,
+  super::super::section::note::sentence::{
+    roman::roman_str::RomanStr, Sentence,
   },
   parse, Note, ScoremapParseError, Token, TokenContent,
 };
 use crate::model::exp::{
-  scoremap::{Scoremap, ScoremapMetadata},
+  scoremap::{sections::Sections, Scoremap, ScoremapMetadata},
   time::{Duration, MinuteSecond},
 };
 use std::collections::HashMap;

@@ -1,9 +1,9 @@
-use section::Sections;
+use sections::Sections;
 use std::{collections::HashMap, fs::File};
 
 pub mod lexer;
 pub mod parser;
-pub mod section;
+pub mod sections;
 mod tests;
 pub mod token;
 

@@ -1,5 +1,5 @@
 use super::{
-  section::{note::Note, Sections},
+  sections::{section::note::Note, Sections},
   token::{Token, TokenContent},
   Scoremap,
 };

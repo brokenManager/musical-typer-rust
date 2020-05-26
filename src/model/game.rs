@@ -145,7 +145,7 @@ impl MusicalTyper {
     let prev_sentence = self.activity.current_sentence();
     let prev_completed = prev_sentence.completed();
     for typed in typed {
-      use super::exp::scoremap::section::note::TypeResult::*;
+      use super::exp::scoremap::sections::section::note::TypeResult::*;
       let result = self.activity.input(typed);
       let point = match result {
         Succeed => self.config.correct_type as i32,
