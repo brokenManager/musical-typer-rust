@@ -59,23 +59,24 @@ pub fn keyboard<
   highlighted_keys: &'highlighted [char],
 ) -> impl Fn(RenderCtx, Rect) -> ViewResult + 'renderer {
   move |ctx: RenderCtx, offset: Rect| -> ViewResult {
-    let key_chars_rows =
-      ["1234567890-", "qwertyuiop", "asdfghjkl", "zxcvbnm"];
+    let key_chars_rows = [
+      "1234567890-^¥",
+      "qwertyuiop@[",
+      "asdfghjkl;:]",
+      "zxcvbnm,./\\",
+    ];
     let cell_height =
       offset.height() as f64 / key_chars_rows.len() as f64;
     let cell_width = cell_height * CELL_ASPECT;
 
     for (y, key_chars_row) in key_chars_rows.iter().enumerate() {
       let y = y as f64;
+      let row_amount = key_chars_row.len() as f64;
+      let margin = offset.width() as f64 - row_amount * cell_width;
       for (x, key_char) in key_chars_row.chars().enumerate() {
-        let x = x as f64;
-        let width = key_chars_row.len() as u32 - 1;
+        let x = x as f64 + 1.0;
         let center = Point::new(
-          (x * cell_width
-            + offset.x() as f64
-            + (offset.width() as f64 - width as f64 * cell_width)
-              as f64
-              / 2.0) as i32,
+          (x * cell_width + offset.x() as f64 + margin / 2.0) as i32,
           (y * cell_height + offset.y() as f64 + cell_height / 2.0)
             as i32,
         );
