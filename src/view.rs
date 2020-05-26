@@ -83,12 +83,11 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
 
   pub fn run(self, score: Scoremap) -> Result<(), ViewError> {
     let mut view: Option<Box<dyn View>> =
-      Some(Box::new(ResultView::new(
+      Some(Box::new(GameView::new(
         self.renderer.clone(),
         self.handler.clone(),
-        GameScore::new(1000000, 0.5, 0.25),
-        ScoremapMetadata::new().get_music_info(),
-      )));
+        score.clone(),
+      )?));
     while let Some(boxed_view) = view.as_mut() {
       boxed_view.run()?;
       let next = boxed_view.next_route();
