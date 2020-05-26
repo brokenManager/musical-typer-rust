@@ -49,7 +49,7 @@ pub fn stats(
     })?;
     ctx.borrow_mut().text(|s| {
       s.text(&format!("{:05.1}%", accuracy * 100.0))
-        .color(Color::RGB(0, 0, 0))
+        .color(Color::RGB(174, 83, 76))
         .line_height(client.height() - 20)
         .pos(client.top_left().clone().offset(10, 30))
     })?;
