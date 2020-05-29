@@ -1,5 +1,5 @@
 use super::{
-  components::{header, stats},
+  components::{button, header, stats},
   handler::Handler,
   renderer::RenderCtx,
   View, ViewRoute,
@@ -7,10 +7,7 @@ use super::{
 use crate::model::exp::{
   game_activity::GameScore, scoremap::MusicInfo,
 };
-use sdl2::{
-  pixels::Color,
-  rect::{Point, Rect},
-};
+use sdl2::{pixels::Color, rect::Rect};
 use std::time::Instant;
 
 pub struct ResultView<'ttf, 'canvas> {
@@ -45,12 +42,13 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
       self.renderer.borrow().height(),
     );
 
-    let mut mouse_pos = Point::new(0, 0);
-    let mut mouse_pressed = false;
-    let mut started_pressing = Point::new(0, 0);
-    let mut ended_pressing = Point::new(0, 0);
+    enum Dst {
+      Game,
+      Quit,
+    }
+    let mut will_navigate_to = None;
 
-    'main: loop {
+    loop {
       let time = Instant::now();
       {
         use sdl2::event::Event::*;
@@ -62,32 +60,10 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
           KeyDown { .. } => {
             should_quit = true;
           }
-          MouseMotion { x, y, .. } => {
-            mouse_pos = Point::new(x, y);
-          }
-          MouseButtonDown {
-            x, y, mouse_btn, ..
-          } => {
-            use sdl2::mouse::MouseButton::*;
-            if let Left = mouse_btn {
-              mouse_pressed = true;
-              started_pressing = Point::new(x, y);
-              ended_pressing = Point::new(0, 0);
-            }
-          }
-          MouseButtonUp {
-            x, y, mouse_btn, ..
-          } => {
-            use sdl2::mouse::MouseButton::*;
-            if let Left = mouse_btn {
-              mouse_pressed = false;
-              ended_pressing = Point::new(x, y);
-            }
-          }
           _ => {}
         })?;
         if should_quit {
-          break 'main;
+          will_navigate_to = Some(Dst::Quit);
         }
       }
 
@@ -122,26 +98,15 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
           WIDTH,
           HEIGHT,
         );
-        let on_hover = retry_button_area.contains_point(mouse_pos);
+        button(
+          retry_button_area,
+          Color::RGB(10, 14, 10),
+          Color::RGB(220, 224, 220),
+          || {
+            will_navigate_to = Some(Dst::Game);
+          },
+        )(self.renderer.clone(), self.handler.mouse_state())?;
 
-        if on_hover {
-          self
-            .renderer
-            .borrow_mut()
-            .set_draw_color(Color::RGB(220, 224, 220));
-          self.renderer.borrow_mut().fill_rect(retry_button_area)?;
-        }
-
-        if retry_button_area.contains_point(started_pressing)
-          && retry_button_area.contains_point(ended_pressing)
-        {
-          return Ok(ViewRoute::GameView);
-        }
-        self
-          .renderer
-          .borrow_mut()
-          .set_draw_color(Color::RGB(10, 14, 10));
-        self.renderer.borrow_mut().draw_rect(retry_button_area)?;
         use super::renderer::text::TextAlign;
         self.renderer.borrow_mut().text(|style| {
           style
@@ -149,10 +114,7 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
             .text("再挑戦")
             .color(Color::RGB(36, 141, 255))
             .line_height(60)
-            .pos(client.bottom_right().offset(
-              -(WIDTH as i32) / 2 - MARGIN as i32,
-              -(HEIGHT as i32) / 2 - MARGIN as i32,
-            ))
+            .pos(retry_button_area.center())
         })?;
       }
 
@@ -162,7 +124,13 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
       self
         .handler
         .delay((1e3 / 60.0 - draw_time * 1e3).max(0.0) as u32)?;
+
+      if let Some(will_navigate_to) = will_navigate_to {
+        match will_navigate_to {
+          Dst::Game => return Ok(ViewRoute::GameView),
+          Dst::Quit => return Ok(ViewRoute::Quit),
+        }
+      }
     }
-    Ok(ViewRoute::Quit)
   }
 }
