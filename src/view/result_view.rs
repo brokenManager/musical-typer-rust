@@ -46,6 +46,9 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
     );
 
     let mut mouse_pos = Point::new(0, 0);
+    let mut mouse_pressed = false;
+    let mut started_pressing = Point::new(0, 0);
+    let mut ended_pressing = Point::new(0, 0);
 
     'main: loop {
       let time = Instant::now();
@@ -61,6 +64,25 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
           }
           MouseMotion { x, y, .. } => {
             mouse_pos = Point::new(x, y);
+          }
+          MouseButtonDown {
+            x, y, mouse_btn, ..
+          } => {
+            use sdl2::mouse::MouseButton::*;
+            if let Left = mouse_btn {
+              mouse_pressed = true;
+              started_pressing = Point::new(x, y);
+              ended_pressing = Point::new(0, 0);
+            }
+          }
+          MouseButtonUp {
+            x, y, mouse_btn, ..
+          } => {
+            use sdl2::mouse::MouseButton::*;
+            if let Left = mouse_btn {
+              mouse_pressed = false;
+              ended_pressing = Point::new(x, y);
+            }
           }
           _ => {}
         })?;
@@ -108,6 +130,12 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
             .borrow_mut()
             .set_draw_color(Color::RGB(220, 224, 220));
           self.renderer.borrow_mut().fill_rect(retry_button_area)?;
+        }
+
+        if retry_button_area.contains_point(started_pressing)
+          && retry_button_area.contains_point(ended_pressing)
+        {
+          return Ok(ViewRoute::GameView);
         }
         self
           .renderer
