@@ -44,13 +44,19 @@ impl Sections {
   }
 
   pub fn update(&mut self, time: Seconds) -> Option<&Section> {
+    let mut index_opt = None;
     for (index, section) in self.sections.iter_mut().enumerate() {
       if section.update(&time) {
-        self.current_section_index = index;
+        index_opt = Some(index);
         break;
       }
     }
-    self.current_section()
+    if let Some(index) = index_opt {
+      self.current_section_index = index;
+      self.current_section()
+    } else {
+      None
+    }
   }
 
   pub fn iter(&self) -> impl Iterator<Item = &Section> {
