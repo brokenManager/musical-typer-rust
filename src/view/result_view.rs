@@ -82,14 +82,31 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         stats_dim,
       )?;
       {
+        const WIDTH: u32 = 240;
+        const HEIGHT: u32 = 80;
+        const MARGIN: u32 = 20;
+        let retry_button_area = Rect::new(
+          client.width() as i32 - WIDTH as i32 - MARGIN as i32,
+          client.height() as i32 - HEIGHT as i32 - MARGIN as i32,
+          WIDTH,
+          HEIGHT,
+        );
+        self
+          .renderer
+          .borrow_mut()
+          .set_draw_color(Color::RGB(10, 14, 10));
+        self.renderer.borrow_mut().draw_rect(retry_button_area)?;
         use super::renderer::text::TextAlign;
         self.renderer.borrow_mut().text(|style| {
           style
-            .align(TextAlign::Right)
-            .text("何かキーを押すと終了")
+            .align(TextAlign::Center)
+            .text("再挑戦")
             .color(Color::RGB(36, 141, 255))
             .line_height(60)
-            .pos(client.bottom_right().offset(0, -60))
+            .pos(client.bottom_right().offset(
+              -(WIDTH as i32) / 2 - MARGIN as i32,
+              -(HEIGHT as i32) / 2 - MARGIN as i32,
+            ))
         })?;
       }
 
