@@ -127,7 +127,7 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
 
       if let Some(will_navigate_to) = will_navigate_to {
         match will_navigate_to {
-          Dst::Game => return Ok(ViewRoute::GameView),
+          Dst::Game => return Ok(ViewRoute::Retry),
           Dst::Quit => return Ok(ViewRoute::Quit),
         }
       }

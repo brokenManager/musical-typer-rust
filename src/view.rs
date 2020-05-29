@@ -53,7 +53,9 @@ pub trait View {
 }
 
 pub enum ViewRoute {
-  GameView,
+  SelectMusic,
+  Start(Scoremap),
+  Retry,
   ResultView(GameScore, MusicInfo),
   Quit,
 }
@@ -91,7 +93,9 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
     while let Some(boxed_view) = view.as_mut() {
       let next = boxed_view.run()?;
       match next {
-        ViewRoute::GameView => {
+        ViewRoute::SelectMusic => {}
+        ViewRoute::Start(_) => {}
+        ViewRoute::Retry => {
           view.replace(Box::new(GameView::new(
             self.renderer.clone(),
             self.handler.clone(),
