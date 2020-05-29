@@ -7,7 +7,10 @@ use super::{
 use crate::model::exp::{
   game_activity::GameScore, scoremap::MusicInfo,
 };
-use sdl2::{pixels::Color, rect::Rect};
+use sdl2::{
+  pixels::Color,
+  rect::{Point, Rect},
+};
 use std::time::Instant;
 
 pub struct ResultView<'ttf, 'canvas> {
@@ -42,6 +45,8 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
       self.renderer.borrow().height(),
     );
 
+    let mut mouse_pos = Point::new(0, 0);
+
     'main: loop {
       let time = Instant::now();
       {
@@ -53,6 +58,9 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
           }
           KeyDown { .. } => {
             should_quit = true;
+          }
+          MouseMotion { x, y, .. } => {
+            mouse_pos = Point::new(x, y);
           }
           _ => {}
         })?;
@@ -85,12 +93,22 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         const WIDTH: u32 = 240;
         const HEIGHT: u32 = 80;
         const MARGIN: u32 = 20;
+
         let retry_button_area = Rect::new(
           client.width() as i32 - WIDTH as i32 - MARGIN as i32,
           client.height() as i32 - HEIGHT as i32 - MARGIN as i32,
           WIDTH,
           HEIGHT,
         );
+        let on_hover = retry_button_area.contains_point(mouse_pos);
+
+        if on_hover {
+          self
+            .renderer
+            .borrow_mut()
+            .set_draw_color(Color::RGB(220, 224, 220));
+          self.renderer.borrow_mut().fill_rect(retry_button_area)?;
+        }
         self
           .renderer
           .borrow_mut()
