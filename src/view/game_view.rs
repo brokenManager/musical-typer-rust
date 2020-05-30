@@ -27,7 +27,6 @@ pub struct GameView<'ttf, 'canvas> {
   renderer: RenderCtx<'ttf, 'canvas>,
   handler: Handler,
   model: MusicalTyper,
-  ended_game: bool,
 }
 
 impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
@@ -40,7 +39,6 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
       renderer,
       handler,
       model: MusicalTyper::new(score, MusicalTyperConfig::default())?,
-      ended_game: false,
     })
   }
 }
@@ -55,8 +53,9 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
     let mut typed_key_buf = vec![];
     let mut sentence = Sentence::empty();
     let mut timepoints = VecDeque::new();
+    let mut ended = None;
 
-    'main: loop {
+    loop {
       let time = Instant::now();
       {
         for mt_event in mt_events.iter() {
@@ -95,8 +94,10 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
               // TODO: Queue a perfect animation
             }
             EndOfScore => {
-              self.ended_game = true;
-              break 'main;
+              if let None = ended {
+                ended =
+                  Some(self.model.accumulated_time() + 2.0.into());
+              }
             }
           }
         }
@@ -126,7 +127,10 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
           _ => {}
         })?;
         if should_quit {
-          break 'main;
+          player.stop_bgm(500)?;
+          player.play_se(SEKind::GameOver)?;
+          self.handler.delay(2500)?;
+          return Ok(ViewRoute::Quit);
         }
       }
       {
@@ -179,17 +183,17 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
         1.0 / draw_time,
         sdl2::mixer::Music::is_playing()
       );
+
+      if ended
+        .as_ref()
+        .map_or(false, |ended| ended < &self.model.accumulated_time())
+      {
+        return Ok(ViewRoute::ResultView(
+          self.model.activity().score(),
+          self.model.music_info(),
+        ));
+      }
     }
-    if !self.ended_game {
-      player.stop_bgm(500)?;
-      player.play_se(SEKind::GameOver)?;
-      self.handler.delay(2500)?;
-      return Ok(ViewRoute::Quit);
-    }
-    Ok(ViewRoute::ResultView(
-      self.model.activity().score(),
-      self.model.music_info(),
-    ))
   }
 }
 
