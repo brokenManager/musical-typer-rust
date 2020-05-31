@@ -41,43 +41,30 @@ fn op1() -> Result<(), MusicalTyperError> {
       "だけんてすと",
       "",
     )?),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
-    Pointed(10),
     Typed(MusicalTypeResult::Correct),
     UpdateSentence(Sentence::new_with_inputted(
       "打鍵テスト",
       "だけんてすと",
       "dakentesuto",
     )?),
-    Pointed(300),
-    Pointed(100),
-    Pointed(50),
+    DidPerfectSection,
     CompletedSentence(Sentence::new_with_inputted(
       "打鍵テスト",
       "だけんてすと",
       "",
     )?),
     UpdateSentence(Sentence::empty()),
-  ];
+  ]; // 560 points
 
   let mut game =
     MusicalTyper::new(test_score, MusicalTyperConfig::default())?;
@@ -96,6 +83,8 @@ fn op1() -> Result<(), MusicalTyperError> {
     assert_eq!(expected, actual, "index: {}", i);
   }
   assert_eq!(expected_events.len(), actual_events.len());
+
+  assert_eq!(game.activity().score().score_point, 560);
 
   Ok(())
 }

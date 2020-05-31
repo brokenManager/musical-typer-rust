@@ -1,35 +1,41 @@
-use crate::view::renderer::{text::TextAlign, RenderCtx, ViewResult};
-use sdl2::rect::Point;
+use crate::{
+  model::exp::scoremap::MusicInfo,
+  view::renderer::{text::TextAlign, RenderCtx, ViewResult},
+};
+use sdl2::rect::Rect;
 
-pub fn header<'renderer, 'title: 'renderer, 'author: 'renderer>(
-  title: &'title str,
-  author: &'author str,
+pub fn header<'renderer, 'info: 'renderer>(
+  client: Rect,
+  music_info: &'info MusicInfo,
   score_point: i32,
 ) -> impl Fn(RenderCtx) -> ViewResult + 'renderer {
   move |ctx: RenderCtx| -> ViewResult {
     use sdl2::pixels::Color;
 
+    let title = &music_info.title;
+    let author = &music_info.song_author;
+
     ctx.borrow_mut().text(|s| {
       s.text(title)
         .color(Color::RGB(0, 0, 0))
-        .line_height(50)
+        .line_height(60)
         .align(TextAlign::Right)
-        .pos(Point::new(800, 0))
+        .pos(client.top_right().offset(-5, 5))
     })?;
 
     ctx.borrow_mut().text(|s| {
       s.text(author)
         .color(Color::RGB(156, 156, 162))
-        .line_height(50)
+        .line_height(30)
         .align(TextAlign::Right)
-        .pos(Point::new(800, 50))
+        .pos(client.bottom_right().offset(-5, -35))
     })?;
 
     ctx.borrow_mut().text(|s| {
       s.text(format!("{:08}", score_point).as_str())
         .color(Color::RGB(64, 79, 181))
-        .line_height(50)
-        .pos(Point::new(0, 50))
+        .line_height(70)
+        .pos(client.bottom_left().offset(5, -60))
     })?;
 
     Ok(())

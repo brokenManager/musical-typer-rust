@@ -1,8 +1,8 @@
 use super::exp::{
   game_activity::GameActivity,
-  note::NoteContent,
+  note::TypeResult,
   scoremap::{
-    lexer::ScoremapLexError, Scoremap, ScoremapError,
+    lexer::ScoremapLexError, MusicInfo, Scoremap, ScoremapError,
     ScoremapMetadata,
   },
   sentence::{roman::roman_lexer::RomanParseError, Sentence},
@@ -22,6 +22,16 @@ pub enum MusicalTypeResult {
   Vacant,
 }
 
+impl From<TypeResult> for MusicalTypeResult {
+  fn from(res: TypeResult) -> Self {
+    match res {
+      TypeResult::Succeed => MusicalTypeResult::Correct,
+      TypeResult::Mistaken => MusicalTypeResult::Missed,
+      TypeResult::Vacant => MusicalTypeResult::Vacant,
+    }
+  }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum MusicalTyperEvent {
   PlayBgm(String),
@@ -29,8 +39,8 @@ pub enum MusicalTyperEvent {
   MissedSentence(Sentence),
   CompletedSentence(Sentence),
   DidPerfectSection,
-  Pointed(i32),
   Typed(MusicalTypeResult),
+  EndOfScore,
 }
 
 #[derive(Debug)]
@@ -123,6 +133,10 @@ impl MusicalTyper {
     })
   }
 
+  pub fn activity(&self) -> &GameActivity {
+    &self.activity
+  }
+
   #[must_use]
   pub fn key_press(
     &mut self,
@@ -131,49 +145,37 @@ impl MusicalTyper {
     let prev_sentence = self.activity.current_sentence();
     let prev_completed = prev_sentence.completed();
     for typed in typed {
-      use super::exp::scoremap::section::note::TypeResult::*;
+      use super::exp::scoremap::sections::section::note::TypeResult::*;
       let result = self.activity.input(typed);
-      match result {
-        Succeed => {
-          self.event_queue.append(&mut vec![
-            Pointed(self.config.correct_type as i32),
-            Typed(MusicalTypeResult::Correct),
-          ]);
-        }
-        Mistaken => {
-          self.event_queue.append(&mut vec![
-            Pointed(-(self.config.wrong_type as i32)),
-            Typed(MusicalTypeResult::Missed),
-          ]);
-        }
-        Vacant => {
-          self.event_queue.push(Typed(MusicalTypeResult::Vacant));
-        }
-      }
+      let point = match result {
+        Succeed => self.config.correct_type as i32,
+        Mistaken => -(self.config.wrong_type as i32),
+        _ => 0,
+      };
+      self.activity.point(point);
+      self.event_queue.push(Typed(result.into()));
     }
     let curr_sentence = self.activity.current_sentence();
     let curr_completed = curr_sentence.completed();
 
     let mut events = vec![];
     if !prev_completed && curr_completed {
-      if let Some(true) = self
+      if self
         .activity
         .current_section()
-        .map(|section| 1.0 <= section.accuracy())
+        .map_or(false, |section| 1.0 <= section.accuracy())
       {
-        events.append(&mut vec![
-          Pointed(self.config.perfect_section as i32),
-          DidPerfectSection,
-        ]);
+        self.activity.point(self.config.perfect_section as i32);
+        events.push(DidPerfectSection);
       }
-      if let Some(true) = self
+      if self
         .activity
         .current_note()
-        .map(|note| 1.0 <= note.accuracy())
+        .map_or(false, |note| 1.0 <= note.accuracy())
       {
-        events.push(Pointed(self.config.perfect_sentence as i32));
+        self.activity.point(self.config.perfect_sentence as i32);
       }
-      events.push(Pointed(self.config.complete_sentence as i32));
+      self.activity.point(self.config.complete_sentence as i32);
       events.push(CompletedSentence(prev_sentence));
     }
 
@@ -193,11 +195,15 @@ impl MusicalTyper {
 
     self.activity.update_time(self.accumulated_time.clone());
 
+    if self.activity.is_game_over() {
+      return vec![EndOfScore];
+    }
+
     let curr_note_id = self.activity.current_note_id();
 
     let mut events = vec![];
     if !completed && (prev_note_id != curr_note_id) {
-      events.push(Pointed(-(self.config.missed_sentence as i32)));
+      self.activity.point(-(self.config.missed_sentence as i32));
       events.push(MissedSentence(prev_sentence));
     }
 
@@ -221,30 +227,7 @@ impl MusicalTyper {
     self.activity.remaining_ratio(self.accumulated_time.clone())
   }
 
-  pub fn all_roman_len(&self) -> usize {
-    self.activity.sections().iter().fold(0, |acc, section| {
-      section.iter().fold(0, |acc, note| match note.content() {
-        NoteContent::Sentence { sentence, .. } => {
-          sentence.roman().will_input.len() + acc
-        }
-        _ => acc,
-      }) + acc
-    })
-  }
-
-  pub fn get_metadata(&'_ self, key: &str) -> String {
-    match key {
-      "title" => self
-        .metadata
-        .get("title")
-        .cloned()
-        .unwrap_or("曲名不詳".into()),
-      "song_author" => self
-        .metadata
-        .get("song_author")
-        .cloned()
-        .unwrap_or("作曲者不詳".into()),
-      _ => "".into(),
-    }
+  pub fn music_info(&self) -> MusicInfo {
+    self.metadata.get_music_info()
   }
 }

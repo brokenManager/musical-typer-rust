@@ -1,6 +1,6 @@
 use super::{
-  super::section::note::sentence::roman::roman_str::RomanStr, lex,
-  ScoremapLexError, ScoremapLoadConfig,
+  super::super::section::note::sentence::roman::roman_str::RomanStr,
+  lex, ScoremapLexError, ScoremapLoadConfig,
 };
 use crate::model::exp::{
   scoremap::token::{Token, TokenContent},

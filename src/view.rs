@@ -1,15 +1,22 @@
-use crate::model::exp::scoremap::Scoremap;
+use crate::model::exp::{
+  game_activity::GameScore,
+  scoremap::{MusicInfo, Scoremap},
+};
 use crate::model::game::MusicalTyperError;
+use game_view::GameView;
+use handler::{HandleError, Handler};
+use player::PlayerError;
+use renderer::Renderer;
+use renderer::{text::TextError, RenderCtx};
+use result_view::ResultView;
+use std::{cell::RefCell, rc::Rc};
 
-mod gameview;
+mod components;
+mod game_view;
 mod handler;
 mod player;
 mod renderer;
-mod stats;
-
-use gameview::GameView;
-use handler::{HandleError, Handler};
-use renderer::Renderer;
+mod result_view;
 
 #[derive(Debug)]
 pub enum ViewError {
@@ -28,9 +35,6 @@ impl From<MusicalTyperError> for ViewError {
     ViewError::ModelError(err)
   }
 }
-use player::PlayerError;
-use renderer::{text::TextError, RenderCtx};
-use std::{cell::RefCell, rc::Rc};
 
 impl From<TextError> for ViewError {
   fn from(err: TextError) -> Self {
@@ -44,13 +48,25 @@ impl From<HandleError> for ViewError {
   }
 }
 
+pub trait View {
+  fn run(&mut self) -> Result<ViewRoute, ViewError>;
+}
+
+pub enum ViewRoute {
+  SelectMusic,
+  Start(Scoremap),
+  Retry,
+  ResultView(GameScore, MusicInfo),
+  Quit,
+}
+
 impl From<PlayerError> for ViewError {
   fn from(err: PlayerError) -> Self {
     ViewError::PlayerError(err)
   }
 }
 
-pub struct Router<'ttf, 'canvas> {
+struct Router<'ttf, 'canvas> {
   handler: Handler,
   renderer: RenderCtx<'ttf, 'canvas>,
 }
@@ -67,14 +83,38 @@ impl<'ttf, 'canvas> Router<'ttf, 'canvas> {
   }
 
   pub fn run(self, score: Scoremap) -> Result<(), ViewError> {
-    let mut game_view = GameView::new(
-      self.renderer.clone(),
-      self.handler,
-      score,
-      800,
-      600,
-    )?;
-    game_view.run()?;
+    let mut view: Option<Box<dyn View>> =
+      Some(Box::new(ResultView::new(
+        self.renderer.clone(),
+        self.handler.clone(),
+        GameScore::new(0, 0.0, 0.0),
+        score.metadata.get_music_info(),
+      )));
+    while let Some(boxed_view) = view.as_mut() {
+      let next = boxed_view.run()?;
+      match next {
+        ViewRoute::SelectMusic => {}
+        ViewRoute::Start(_) => {}
+        ViewRoute::Retry => {
+          view.replace(Box::new(GameView::new(
+            self.renderer.clone(),
+            self.handler.clone(),
+            score.clone(),
+          )?));
+        }
+        ViewRoute::ResultView(score, info) => {
+          view.replace(Box::new(ResultView::new(
+            self.renderer.clone(),
+            self.handler.clone(),
+            score,
+            info,
+          )));
+        }
+        ViewRoute::Quit => {
+          view = None;
+        }
+      };
+    }
 
     Ok(())
   }
@@ -120,7 +160,8 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
   let texture_creator = canvas.texture_creator();
 
   let handler = Handler::new(sdl);
-  let renderer = Renderer::new(canvas, font, &texture_creator)?;
+  let renderer =
+    Renderer::new(800, 600, canvas, font, &texture_creator)?;
 
   Router::new(handler, renderer).run(score)?;
   Ok(())

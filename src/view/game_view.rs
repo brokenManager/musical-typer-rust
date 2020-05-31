@@ -19,13 +19,11 @@ use super::{
   handler::Handler,
   player::{Player, SEKind},
   renderer::RenderCtx,
-  ViewError,
+  View, ViewError, ViewRoute,
 };
 use whole::WholeProps;
 
 pub struct GameView<'ttf, 'canvas> {
-  width: u32,
-  height: u32,
   renderer: RenderCtx<'ttf, 'canvas>,
   handler: Handler,
   model: MusicalTyper,
@@ -36,35 +34,28 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
     renderer: RenderCtx<'ttf, 'canvas>,
     handler: Handler,
     score: Scoremap,
-    width: u32,
-    height: u32,
   ) -> Result<Self, ViewError> {
     Ok(GameView {
-      width,
-      height,
       renderer,
       handler,
       model: MusicalTyper::new(score, MusicalTyperConfig::default())?,
     })
   }
+}
 
-  pub fn run(&mut self) -> Result<(), ViewError> {
-    let all_roman_len = self.model.all_roman_len();
-
+impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
+  fn run(&mut self) -> Result<ViewRoute, ViewError> {
     struct TypeTimepoint(Seconds);
 
     let mut mt_events = vec![];
     let mut player = Player::new();
     let mut pressed_key_buf = BTreeSet::new();
     let mut typed_key_buf = vec![];
-    let mut sentence: Option<Sentence> = None;
-    let mut score_point = 0;
-    let mut correction_type_count = 0u32;
-    let mut wrong_type_count = 0u32;
+    let mut sentence = Sentence::empty();
     let mut timepoints = VecDeque::new();
-    let mut ended_game = false;
+    let mut ended = None;
 
-    'main: loop {
+    loop {
       let time = Instant::now();
       {
         for mt_event in mt_events.iter() {
@@ -74,18 +65,13 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
               player.change_bgm(bgm_name)?;
             }
             UpdateSentence(new_sentence) => {
-              sentence = Some(new_sentence.clone());
-            }
-            Pointed(point) => {
-              score_point += point;
+              sentence = new_sentence.clone();
             }
             Typed(result) => match result {
               MusicalTypeResult::Missed => {
-                wrong_type_count += 1;
                 player.play_se(SEKind::Fail)?;
               }
               MusicalTypeResult::Correct => {
-                correction_type_count += 1;
                 timepoints.push_back(TypeTimepoint(
                   self.model.accumulated_time(),
                 ));
@@ -95,17 +81,23 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
                 player.play_se(SEKind::Vacant)?;
               }
             },
-            MissedSentence(sentence) => {
+            MissedSentence(_sentence) => {
               player.play_se(SEKind::MissedSentence)?;
               // TODO: Queue a missed animation
             }
-            CompletedSentence(sentence) => {
+            CompletedSentence(_sentence) => {
               player.play_se(SEKind::PerfectSentence)?;
               // TODO: Queue a completed animation
             }
             DidPerfectSection => {
               player.play_se(SEKind::PerfectSection)?;
               // TODO: Queue a perfect animation
+            }
+            EndOfScore => {
+              if let None = ended {
+                ended =
+                  Some(self.model.accumulated_time() + 2.0.into());
+              }
             }
           }
         }
@@ -135,7 +127,10 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
           _ => {}
         })?;
         if should_quit {
-          break 'main;
+          player.stop_bgm(500)?;
+          player.play_se(SEKind::GameOver)?;
+          self.handler.delay(2500)?;
+          return Ok(ViewRoute::Quit);
         }
       }
       {
@@ -150,17 +145,8 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
       }
 
       let type_per_second = timepoints.len() as f64 / 5.0;
-      let achievement_rate =
-        (correction_type_count as f64 / all_roman_len as f64).min(1.);
-      let accuracy = if correction_type_count == 0 {
-        0.0
-      } else {
-        correction_type_count as f64
-          / (correction_type_count + wrong_type_count) as f64
-      };
       whole::render(
         self.renderer.clone(),
-        sdl2::rect::Rect::new(0, 0, self.width, self.height),
         &WholeProps {
           pressed_keys: &pressed_key_buf
             .iter()
@@ -168,12 +154,9 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
             .collect::<Vec<char>>()
             .as_slice(),
           sentence: &sentence,
-          title: &self.model.get_metadata("title"),
-          song_author: &self.model.get_metadata("song_author"),
-          score_point,
+          music_info: self.model.music_info(),
           type_per_second,
-          achievement_rate,
-          accuracy,
+          score: self.model.activity().score(),
           section_remaining_ratio: self
             .model
             .section_remaining_ratio(),
@@ -200,15 +183,17 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
         1.0 / draw_time,
         sdl2::mixer::Music::is_playing()
       );
-    }
-    player.stop_bgm(500)?;
-    if !ended_game {
-      player.play_se(SEKind::GameOver)?;
-      self.handler.delay(2500)?;
-    }
-    self.handler.delay(505)?;
 
-    Ok(())
+      if ended
+        .as_ref()
+        .map_or(false, |ended| ended < &self.model.accumulated_time())
+      {
+        return Ok(ViewRoute::ResultView(
+          self.model.activity().score(),
+          self.model.music_info(),
+        ));
+      }
+    }
   }
 }
 
