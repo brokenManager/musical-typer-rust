@@ -1,3 +1,4 @@
+mod animator;
 mod button;
 mod header;
 mod stats;

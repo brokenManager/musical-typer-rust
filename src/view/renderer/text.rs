@@ -80,6 +80,7 @@ pub struct TextStyle {
   line_height: u32,
   align: TextAlign,
   pos: Point,
+  opacity: u8,
 }
 
 impl TextStyle {
@@ -90,6 +91,7 @@ impl TextStyle {
       line_height: 20,
       align: TextAlign::Left,
       pos: Point::new(0, 0),
+      opacity: u8::max_value(),
     }
   }
 
@@ -120,6 +122,11 @@ impl TextStyle {
 
   pub fn pos(mut self, new_pos: Point) -> Self {
     self.pos = new_pos;
+    self
+  }
+
+  pub fn opacity(mut self, new_opacity: u8) -> Self {
+    self.opacity = new_opacity;
     self
   }
 
