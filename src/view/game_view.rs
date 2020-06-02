@@ -13,6 +13,7 @@ use std::{
   time::Instant,
 };
 
+mod score_event;
 mod whole;
 
 use super::{
