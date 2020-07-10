@@ -14,11 +14,12 @@ where
   H: FnMut(),
 {
   move |ctx, mouse| {
+    let mut canvas = ctx.borrow_mut();
     let on_hover = bounds.contains_point(mouse.mouse_pos);
 
     if on_hover {
-      ctx.borrow_mut().set_draw_color(color_on_hover);
-      ctx.borrow_mut().fill_rect(bounds)?;
+      canvas.set_draw_color(color_on_hover);
+      canvas.fill_rect(bounds)?;
     }
 
     if bounds.contains_point(mouse.started_pressing)
@@ -26,8 +27,8 @@ where
     {
       on_click();
     }
-    ctx.borrow_mut().set_draw_color(border_color);
-    ctx.borrow_mut().draw_rect(bounds)?;
+    canvas.set_draw_color(border_color);
+    canvas.draw_rect(bounds)?;
     Ok(())
   }
 }

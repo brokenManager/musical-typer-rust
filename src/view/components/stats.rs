@@ -24,16 +24,18 @@ pub fn stats(
   let rank = rank::rank(accuracy * 200.0);
 
   move |ctx: RenderCtx, client: Rect| {
+    let mut canvas = ctx.borrow_mut();
+
     let speed_indicator_center =
       Point::new(client.width() as i32 / 2, client.y() + 15);
-    ctx.borrow_mut().set_draw_color(speed_indicator_color);
-    ctx.borrow_mut().fill_rect(Rect::from_center(
+    canvas.set_draw_color(speed_indicator_color);
+    canvas.fill_rect(Rect::from_center(
       speed_indicator_center,
       client.width() - 20,
       20,
     ))?;
 
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text(&format!("{:04.2} Type/s", type_per_second))
         .color(Color::RGB(0, 0, 0))
         .line_height(20)
@@ -41,13 +43,13 @@ pub fn stats(
         .pos(speed_indicator_center)
     })?;
 
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text("正解率")
         .color(Color::RGB(160, 160, 165))
         .line_height(20)
         .pos(client.top_left().clone().offset(10, 30))
     })?;
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text(&format!("{:05.1}%", accuracy * 100.0))
         .color(Color::RGB(
           (250.0 * accuracy) as u8,
@@ -57,15 +59,15 @@ pub fn stats(
         .line_height(client.height() - 20)
         .pos(client.top_left().clone().offset(10, 30))
     })?;
-    ctx.borrow_mut().set_draw_color(Color::RGB(250, 120, 110));
-    ctx.borrow_mut().draw_rect(Rect::new(
+    canvas.set_draw_color(Color::RGB(250, 120, 110));
+    canvas.draw_rect(Rect::new(
       client.left() + 10,
       client.bottom() - 10,
       (client.width() as f64 * 0.5 * accuracy) as u32,
       2,
     ))?;
 
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text("達成率")
         .color(Color::RGB(160, 160, 165))
         .line_height(20)
@@ -74,7 +76,7 @@ pub fn stats(
           client.y() + 30,
         ))
     })?;
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text(&format!("{:05.1}%", achievement_rate * 100.0))
         .color(Color::RGB(64, 79, 181))
         .line_height(client.height() - 20)
@@ -84,12 +86,12 @@ pub fn stats(
         ))
     })?;
 
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text("ランク")
         .color(Color::RGB(160, 160, 165))
         .pos(client.top_left().clone().offset(10, -40))
     })?;
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text(rank)
         .color(Color::RGB(64, 79, 181))
         .line_height(25)

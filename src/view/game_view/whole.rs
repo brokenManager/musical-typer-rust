@@ -30,23 +30,21 @@ pub fn render<'texture>(
   ctx: RenderCtx<'_, 'texture>,
   props: &WholeProps,
 ) -> ViewResult {
-  let client = sdl2::rect::Rect::new(
-    0,
-    0,
-    ctx.borrow().width(),
-    ctx.borrow().height(),
-  );
+  let mut canvas = ctx.borrow_mut();
 
-  ctx.borrow_mut().set_draw_color(Color::RGB(253, 243, 226));
-  ctx.borrow_mut().clear();
+  let client =
+    sdl2::rect::Rect::new(0, 0, canvas.width(), canvas.height());
+
+  canvas.set_draw_color(Color::RGB(253, 243, 226));
+  canvas.clear();
 
   {
     let header_dim = Rect::new(0, 0, client.width(), 100);
     header(header_dim, &props.music_info, props.score.score_point)(
       ctx.clone(),
     )?;
-    ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
-    ctx.borrow_mut().draw_rect(header_dim)?;
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas.draw_rect(header_dim)?;
   }
 
   {
@@ -72,8 +70,8 @@ pub fn render<'texture>(
       keyboard_dim,
     )?;
 
-    ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
-    ctx.borrow_mut().draw_rect(keyboard_dim)?;
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas.draw_rect(keyboard_dim)?;
   }
   {
     let stats_dim =

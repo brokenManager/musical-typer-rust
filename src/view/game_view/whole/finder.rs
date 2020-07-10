@@ -12,13 +12,15 @@ pub fn finder(
 ) -> impl Fn(RenderCtx, Rect) -> ViewResult + '_ {
   let remaining_ratio = remaining_ratio.max(0.).min(1.);
   move |ctx: RenderCtx, offset: Rect| -> ViewResult {
-    ctx.borrow_mut().set_draw_color(Color::RGB(230, 220, 200));
-    ctx.borrow_mut().fill_rect(offset)?;
+    let mut canvas = ctx.borrow_mut();
+
+    canvas.set_draw_color(Color::RGB(230, 220, 200));
+    canvas.fill_rect(offset)?;
 
     let remaining_width =
       (offset.width() as f64 * remaining_ratio) as u32;
-    ctx.borrow_mut().set_draw_color(Color::RGB(203, 193, 176));
-    ctx.borrow_mut().fill_rect(Rect::new(
+    canvas.set_draw_color(Color::RGB(203, 193, 176));
+    canvas.fill_rect(Rect::new(
       offset.x(),
       offset.y(),
       remaining_width,
@@ -28,7 +30,7 @@ pub fn finder(
     const JAPANESE_HEIGHT: u32 = 30;
     let half_x = offset.width() / 2;
     let will_input_japanese = sentence.origin();
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.color(Color::RGB(80, 80, 80))
         .text(will_input_japanese)
         .line_height(JAPANESE_HEIGHT)
@@ -45,7 +47,7 @@ pub fn finder(
       let will_input = will_input.as_str();
       let inputted = inputted.as_str();
 
-      ctx.borrow_mut().text(|s| {
+      canvas.text(|s| {
         s.color(Color::RGB(0, 0, 0))
           .text(will_input)
           .line_height(ROMAN_HEIGHT)
@@ -56,7 +58,7 @@ pub fn finder(
           ))
       })?;
 
-      ctx.borrow_mut().text(|s| {
+      canvas.text(|s| {
         s.color(Color::RGB(80, 80, 80))
           .text(inputted)
           .line_height(ROMAN_HEIGHT)
@@ -76,7 +78,7 @@ pub fn finder(
       let will_input = will_input.as_str();
       let inputted = inputted.as_str();
 
-      ctx.borrow_mut().text(|s| {
+      canvas.text(|s| {
         s.color(Color::RGB(0, 0, 0))
           .text(will_input)
           .line_height(YOMIGANA_HEIGHT)
@@ -90,7 +92,7 @@ pub fn finder(
           ))
       })?;
 
-      ctx.borrow_mut().text(|s| {
+      canvas.text(|s| {
         s.color(Color::RGB(80, 80, 80))
           .text(inputted)
           .line_height(YOMIGANA_HEIGHT)

@@ -12,10 +12,12 @@ pub fn header<'renderer, 'info: 'renderer>(
   move |ctx: RenderCtx| -> ViewResult {
     use sdl2::pixels::Color;
 
+    let mut canvas = ctx.borrow_mut();
+
     let title = &music_info.title;
     let author = &music_info.song_author;
 
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text(title)
         .color(Color::RGB(0, 0, 0))
         .line_height(60)
@@ -23,7 +25,7 @@ pub fn header<'renderer, 'info: 'renderer>(
         .pos(client.top_right().offset(-5, 5))
     })?;
 
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text(author)
         .color(Color::RGB(156, 156, 162))
         .line_height(30)
@@ -31,7 +33,7 @@ pub fn header<'renderer, 'info: 'renderer>(
         .pos(client.bottom_right().offset(-5, -35))
     })?;
 
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.text(format!("{:08}", score_point).as_str())
         .color(Color::RGB(64, 79, 181))
         .line_height(70)

@@ -17,21 +17,19 @@ fn key_cell(
     const BLACK: Color = Color::RGB(0, 0, 0);
     const GLAY: Color = Color::RGB(195, 195, 190);
 
+    let mut canvas = ctx.borrow_mut();
+
     let border_dim = Rect::from_center(
       client.center(),
       client.width() - 5,
       client.height() - 5,
     );
-    ctx.borrow_mut().set_draw_color(if is_highlighted {
-      GREEN
-    } else {
-      BACK
-    });
-    ctx.borrow_mut().fill_rect(border_dim)?;
-    ctx.borrow_mut().set_draw_color(BLACK);
-    ctx.borrow_mut().draw_rect(border_dim)?;
+    canvas.set_draw_color(if is_highlighted { GREEN } else { BACK });
+    canvas.fill_rect(border_dim)?;
+    canvas.set_draw_color(BLACK);
+    canvas.draw_rect(border_dim)?;
 
-    ctx.borrow_mut().text(|s| {
+    canvas.text(|s| {
       s.color(if is_pressed {
         ORANGE
       } else if is_highlighted {
