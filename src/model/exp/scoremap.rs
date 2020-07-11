@@ -58,6 +58,7 @@ pub struct Scoremap {
 }
 
 impl Scoremap {
+  #[allow(dead_code)]
   pub fn from_str<C>(
     string: &str,
     configurator: C,
