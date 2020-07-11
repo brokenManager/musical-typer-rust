@@ -16,6 +16,16 @@ pub type RenderCtx<'ttf, 'texture> =
 
 pub type ViewResult = Result<(), ViewError>;
 
+pub trait Component {
+  type Props;
+
+  fn is_needed_redraw(&self, new_props: &Self::Props) -> bool;
+
+  fn update(&mut self, new_props: Self::Props);
+
+  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult;
+}
+
 pub struct Renderer<'ttf, 'texture> {
   width: u32,
   height: u32,

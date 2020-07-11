@@ -18,10 +18,10 @@ mod whole;
 use super::{
   handler::Handler,
   player::{Player, SEKind},
-  renderer::RenderCtx,
+  renderer::{Component, RenderCtx},
   View, ViewError, ViewRoute,
 };
-use whole::WholeProps;
+use whole::{Whole, WholeProps};
 
 pub struct GameView<'ttf, 'canvas> {
   renderer: RenderCtx<'ttf, 'canvas>,
@@ -145,14 +145,16 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
       }
 
       let type_per_second = timepoints.len() as f64 / 5.0;
-      whole::render(
-        self.renderer.clone(),
-        &WholeProps {
-          pressed_keys: &pressed_key_buf
-            .iter()
-            .cloned()
-            .collect::<Vec<char>>()
-            .as_slice(),
+      let client = sdl2::rect::Rect::new(
+        0,
+        0,
+        self.renderer.borrow().width(),
+        self.renderer.borrow().height(),
+      );
+
+      Whole::new(
+        WholeProps {
+          pressed_keys: pressed_key_buf.iter().cloned().collect(),
           sentence: &sentence,
           music_info: self.model.music_info(),
           type_per_second,
@@ -161,7 +163,10 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
             .model
             .section_remaining_ratio(),
         },
-      )?;
+        client,
+      )
+      .render(self.renderer.clone())?;
+
       self.renderer.borrow_mut().flush();
 
       let typed_key_buf_cloned = typed_key_buf.clone();

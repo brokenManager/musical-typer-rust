@@ -4,26 +4,58 @@ use sdl2::rect::{Point, Rect};
 use super::super::renderer::{
   text::TextAlign, RenderCtx, ViewResult,
 };
-use crate::model::exp::game_activity::GameScore;
+use crate::{
+  model::exp::game_activity::GameScore, view::renderer::Component,
+};
 
 mod rank;
 
-pub fn stats(
-  type_per_second: f64,
-  score: GameScore,
-) -> impl Fn(RenderCtx, Rect) -> ViewResult {
-  let accuracy = score.accuracy;
-  let achievement_rate = score.achievement_rate;
+#[derive(PartialEq)]
+pub struct StatsProps {
+  pub type_per_second: f64,
+  pub score: GameScore,
+}
 
-  let speed_indicator_color = if 4.0 < type_per_second {
-    Color::RGB(250, 119, 109)
-  } else {
-    Color::RGB(178, 255, 89)
-  };
+pub struct Stats {
+  props: StatsProps,
+  client: Rect,
+}
 
-  let rank = rank::rank(accuracy * 200.0);
+impl Stats {
+  pub fn new(props: StatsProps, client: Rect) -> Self {
+    Self { props, client }
+  }
+}
 
-  move |ctx: RenderCtx, client: Rect| {
+impl Component for Stats {
+  type Props = StatsProps;
+
+  fn is_needed_redraw(&self, new_props: &Self::Props) -> bool {
+    &self.props == new_props
+  }
+
+  fn update(&mut self, new_props: Self::Props) {
+    self.props = new_props;
+  }
+
+  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+    let &Stats { props, client } = &self;
+    let &StatsProps {
+      type_per_second,
+      score,
+    } = &props;
+
+    let accuracy = score.accuracy;
+    let achievement_rate = score.achievement_rate;
+
+    let speed_indicator_color = if 4.0 < *type_per_second {
+      Color::RGB(250, 119, 109)
+    } else {
+      Color::RGB(178, 255, 89)
+    };
+
+    let rank = rank::rank(accuracy * 200.0);
+
     let mut canvas = ctx.borrow_mut();
 
     let speed_indicator_center =
