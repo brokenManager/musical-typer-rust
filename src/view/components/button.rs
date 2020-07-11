@@ -37,7 +37,7 @@ where
   type Props = ButtonProps;
 
   fn is_needed_redraw(&self, new_props: &Self::Props) -> bool {
-    &self.props == new_props
+    &self.props != new_props
   }
 
   fn update(&mut self, props: Self::Props) {

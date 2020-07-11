@@ -96,7 +96,7 @@ impl<'a> Component for Whole<'a> {
   type Props = WholeProps<'a>;
 
   fn is_needed_redraw(&self, new_props: &Self::Props) -> bool {
-    &self.props == new_props
+    &self.props != new_props
   }
 
   fn update(&mut self, props: Self::Props) {
@@ -126,16 +126,14 @@ impl<'a> Component for Whole<'a> {
   fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
     let &Whole { client, .. } = &self;
 
-    let mut canvas = ctx.borrow_mut();
-
-    canvas.set_draw_color(Color::RGB(253, 243, 226));
-    canvas.clear();
+    ctx.borrow_mut().set_draw_color(Color::RGB(253, 243, 226));
+    ctx.borrow_mut().clear();
 
     {
       let header_dim = Rect::new(0, 0, client.width(), 100);
       self.header.render(ctx.clone())?;
-      canvas.set_draw_color(Color::RGB(0, 0, 0));
-      canvas.draw_rect(header_dim)?;
+      ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
+      ctx.borrow_mut().draw_rect(header_dim)?;
     }
 
     self.finder.render(ctx.clone())?;
@@ -149,8 +147,8 @@ impl<'a> Component for Whole<'a> {
       );
       self.keyboard.render(ctx.clone())?;
 
-      canvas.set_draw_color(Color::RGB(0, 0, 0));
-      canvas.draw_rect(keyboard_dim)?;
+      ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
+      ctx.borrow_mut().draw_rect(keyboard_dim)?;
     }
 
     self.stats.render(ctx.clone())?;
