@@ -17,6 +17,7 @@ pub enum ScoremapError {
 }
 
 #[readonly::make]
+#[derive(PartialEq, Clone)]
 pub struct MusicInfo {
   pub title: String,
   pub song_author: String,
@@ -57,6 +58,7 @@ pub struct Scoremap {
 }
 
 impl Scoremap {
+  #[allow(dead_code)]
   pub fn from_str<C>(
     string: &str,
     configurator: C,

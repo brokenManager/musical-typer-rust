@@ -1,10 +1,13 @@
 use super::{
-  scoremap::sections::{Sections, section::{
-    note::{
-      sentence::Sentence, Note, NoteContent, NoteId, TypeResult,
+  scoremap::sections::{
+    section::{
+      note::{
+        sentence::Sentence, Note, NoteContent, NoteId, TypeResult,
+      },
+      Section,
     },
-    Section,
-  }},
+    Sections,
+  },
   time::Seconds,
 };
 
@@ -15,7 +18,7 @@ enum State {
 }
 
 #[readonly::make]
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct GameScore {
   pub score_point: i32,
   pub achievement_rate: f64,

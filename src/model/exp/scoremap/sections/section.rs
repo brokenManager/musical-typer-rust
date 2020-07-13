@@ -1,5 +1,5 @@
 use crate::model::exp::time::{Duration, Seconds};
-use note::{Note, NoteContent, NoteId, TypeResult};
+use note::{Note, NoteId, TypeResult};
 
 pub mod note;
 
@@ -31,30 +31,6 @@ impl Section {
     self.notes[self.current_note_index].input(typed)
   }
 
-  pub fn remaining_ratio(&self, now: Seconds) -> f64 {
-    self.duration.remaining_ratio(now)
-  }
-
-  fn char_count(&self) -> (u32, u32) {
-    use NoteContent::*;
-    self.notes.iter().fold((0, 0), |curr, note| {
-      let (will_input, inputted) = match note.content() {
-        Sentence { sentence, .. } => {
-          let roman = sentence.roman();
-          (roman.will_input.len() as u32, roman.inputted.len() as u32)
-        }
-        Caption(_) => (0, 0),
-        Blank => (0, 0),
-      };
-      (curr.0 + will_input, curr.1 + inputted)
-    })
-  }
-
-  pub fn progress(&self) -> f64 {
-    let (will_input, inputted) = self.char_count();
-    inputted as f64 / (will_input + inputted) as f64
-  }
-
   pub fn accuracy(&self) -> f64 {
     let mut accuracies: Vec<_> =
       self.notes.iter().map(|note| note.accuracy()).collect();
@@ -83,6 +59,7 @@ impl Section {
     self.notes.iter()
   }
 
+  #[allow(dead_code)]
   pub fn len(&self) -> usize {
     self.notes.len()
   }
