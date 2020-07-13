@@ -17,10 +17,7 @@ pub struct Button<H> {
   on_click: H,
 }
 
-impl<H> Button<H>
-where
-  H: FnMut(),
-{
+impl<H: FnMut()> Button<H> {
   pub fn new(props: ButtonProps, bounds: Rect, on_click: H) -> Self {
     Self {
       props,
@@ -30,10 +27,7 @@ where
   }
 }
 
-impl<H> Component for Button<H>
-where
-  H: FnMut(),
-{
+impl<H: FnMut()> Component for Button<H> {
   type Props = ButtonProps;
 
   fn is_needed_redraw(&self, new_props: &Self::Props) -> bool {
