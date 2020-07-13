@@ -22,6 +22,7 @@ impl Debug for Sentence {
 }
 
 impl Sentence {
+  #[allow(dead_code)]
   pub fn new(
     origin: &str,
     to_input: &str,
@@ -32,6 +33,7 @@ impl Sentence {
     })
   }
 
+  #[allow(dead_code)]
   pub fn new_with_inputted(
     origin: &str,
     to_input: &str,

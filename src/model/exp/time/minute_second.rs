@@ -34,6 +34,7 @@ impl Duration {
     }
   }
 
+  #[allow(dead_code)]
   pub fn following_replace(&mut self, length: f64) -> Self {
     let following = self.following(length);
     *self = following.clone();

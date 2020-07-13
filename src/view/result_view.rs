@@ -1,14 +1,16 @@
 use super::{
-  components::{button, header, stats},
+  components::{
+    Button, ButtonProps, Header, HeaderProps, Stats, StatsProps,
+  },
   handler::Handler,
-  renderer::RenderCtx,
+  renderer::{Component, RenderCtx},
   View, ViewRoute,
 };
 use crate::model::exp::{
   game_activity::GameScore, scoremap::MusicInfo,
 };
 use sdl2::{pixels::Color, rect::Rect};
-use std::time::Instant;
+use std::{cell::RefCell, rc::Rc, time::Instant};
 
 pub struct ResultView<'ttf, 'canvas> {
   renderer: RenderCtx<'ttf, 'canvas>,
@@ -46,7 +48,47 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
       Game,
       Quit,
     }
-    let mut will_navigate_to = None;
+    let will_navigate_to = Rc::new(RefCell::new(None));
+
+    let stats_dim =
+      Rect::new(0, client.height() as i32 - 300, client.width(), 200);
+    let mut stats = Stats::new(
+      StatsProps {
+        type_per_second: 0.0,
+        score: self.score.clone(),
+      },
+      stats_dim,
+    );
+
+    let header_dim = Rect::new(20, 50, client.width() - 40, 100);
+    let mut header = Header::new(
+      HeaderProps {
+        music_info: self.music_info.clone(),
+        score_point: self.score.score_point,
+      },
+      header_dim,
+    );
+
+    const WIDTH: u32 = 240;
+    const HEIGHT: u32 = 80;
+    const MARGIN: u32 = 20;
+    let retry_button_area = Rect::new(
+      client.width() as i32 - WIDTH as i32 - MARGIN as i32,
+      client.height() as i32 - HEIGHT as i32 - MARGIN as i32,
+      WIDTH,
+      HEIGHT,
+    );
+    let mut retry_button = Button::new(
+      ButtonProps {
+        border_color: Color::RGB(10, 14, 10),
+        color_on_hover: Color::RGB(220, 224, 220),
+        mouse: self.handler.mouse_state().clone(),
+      },
+      retry_button_area,
+      || {
+        will_navigate_to.borrow_mut().replace(Dst::Game);
+      },
+    );
 
     loop {
       let time = Instant::now();
@@ -63,7 +105,7 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
           _ => {}
         })?;
         if should_quit {
-          will_navigate_to = Some(Dst::Quit);
+          will_navigate_to.borrow_mut().replace(Dst::Quit);
         }
       }
 
@@ -73,39 +115,28 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         .set_draw_color(Color::RGB(253, 243, 226));
       self.renderer.borrow_mut().clear();
 
-      let header_dim = Rect::new(20, 50, client.width() - 40, 100);
-      header(header_dim, &self.music_info, self.score.score_point)(
-        self.renderer.clone(),
-      )?;
-      let stats_dim = Rect::new(
-        0,
-        client.height() as i32 - 300,
-        client.width(),
-        200,
-      );
-      stats(0.0, self.score.clone())(
-        self.renderer.clone(),
-        stats_dim,
-      )?;
-      {
-        const WIDTH: u32 = 240;
-        const HEIGHT: u32 = 80;
-        const MARGIN: u32 = 20;
+      header.update(HeaderProps {
+        music_info: self.music_info.clone(),
+        score_point: self.score.score_point,
+      });
+      header.render(self.renderer.clone())?;
 
-        let retry_button_area = Rect::new(
-          client.width() as i32 - WIDTH as i32 - MARGIN as i32,
-          client.height() as i32 - HEIGHT as i32 - MARGIN as i32,
-          WIDTH,
-          HEIGHT,
-        );
-        button(
-          retry_button_area,
-          Color::RGB(10, 14, 10),
-          Color::RGB(220, 224, 220),
-          || {
-            will_navigate_to = Some(Dst::Game);
-          },
-        )(self.renderer.clone(), self.handler.mouse_state())?;
+      stats.update(StatsProps {
+        type_per_second: 0.0,
+        score: self.score.clone(),
+      });
+      stats.render(self.renderer.clone())?;
+
+      {
+        let new_props = ButtonProps {
+          border_color: Color::RGB(10, 14, 10),
+          color_on_hover: Color::RGB(220, 224, 220),
+          mouse: self.handler.mouse_state().clone(),
+        };
+        if retry_button.is_needed_redraw(&new_props) {
+          retry_button.update(new_props);
+        }
+        retry_button.render(self.renderer.clone())?;
 
         use super::renderer::text::TextAlign;
         self.renderer.borrow_mut().text(|style| {
@@ -125,7 +156,8 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         .handler
         .delay((1e3 / 60.0 - draw_time * 1e3).max(0.0) as u32)?;
 
-      if let Some(will_navigate_to) = will_navigate_to {
+      let will_navigate_to = will_navigate_to.borrow();
+      if let Some(will_navigate_to) = will_navigate_to.as_ref() {
         match will_navigate_to {
           Dst::Game => return Ok(ViewRoute::Retry),
           Dst::Quit => return Ok(ViewRoute::Quit),

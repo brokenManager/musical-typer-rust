@@ -52,6 +52,7 @@ pub trait View {
   fn run(&mut self) -> Result<ViewRoute, ViewError>;
 }
 
+#[allow(dead_code)]
 pub enum ViewRoute {
   SelectMusic,
   Start(Scoremap),

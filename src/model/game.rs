@@ -75,7 +75,6 @@ impl From<RomanParseError> for MusicalTyperError {
 }
 
 pub type Point = u32;
-pub type TypingSpeed = f64;
 
 pub struct MusicalTyperConfig {
   wrong_type: Point,
@@ -84,7 +83,6 @@ pub struct MusicalTyperConfig {
   complete_sentence: Point,
   perfect_sentence: Point,
   perfect_section: Point,
-  ideal_type: TypingSpeed,
 }
 
 impl Default for MusicalTyperConfig {
@@ -96,7 +94,6 @@ impl Default for MusicalTyperConfig {
       complete_sentence: 50,
       perfect_sentence: 100,
       perfect_section: 300,
-      ideal_type: 3.0,
     }
   }
 }

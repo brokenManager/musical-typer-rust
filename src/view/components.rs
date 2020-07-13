@@ -3,6 +3,6 @@ mod button;
 mod header;
 mod stats;
 
-pub use button::button;
-pub use header::header;
-pub use stats::stats;
+pub use button::*;
+pub use header::*;
+pub use stats::*;

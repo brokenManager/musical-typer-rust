@@ -9,7 +9,7 @@ pub enum HandleError {
 use HandleError::*;
 
 #[readonly::make]
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct MouseState {
   pub mouse_pos: Point,
   pub mouse_pressed: bool,
