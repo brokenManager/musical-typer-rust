@@ -1,8 +1,14 @@
-use super::TextAlign;
 use sdl2::{
   pixels::Color,
   rect::{Point, Rect},
 };
+
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
+pub enum TextAlign {
+  Left,
+  Center,
+  Right,
+}
 
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct TextStyle {

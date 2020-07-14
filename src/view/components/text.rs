@@ -3,13 +3,12 @@ use crate::view::{
   ViewError,
 };
 use sdl2::{render::Texture, surface::Surface, ttf::Font};
-
-mod style;
-
 use std::{
   collections::HashMap,
   sync::{Arc, RwLock},
 };
+
+mod style;
 pub use style::*;
 
 static TEXT_CACHE: Arc<
@@ -105,11 +104,4 @@ where
       .borrow_mut()
       .paste_texture(&texture, self.style.to_rect(*aspect))
   }
-}
-
-#[derive(Clone, Copy, Hash, PartialEq, Eq)]
-pub enum TextAlign {
-  Left,
-  Center,
-  Right,
 }
