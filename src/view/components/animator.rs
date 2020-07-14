@@ -5,7 +5,7 @@ use crate::{
 };
 
 pub trait TextAnimator {
-  fn style(style: TextStyle, progress: f64) -> TextStyle;
+  fn style(&self, style: TextStyle, progress: f64) -> TextStyle;
 }
 
 pub enum AnimatorCombinator<T> {
@@ -38,11 +38,12 @@ where
 {
   pub fn style(&self, progress: f64) -> TextStyle {
     let init = TextStyle::new();
-    self.drain(init, |style, styler| styler.style(progress, style));
+    self.drain(init, |style, styler| styler.style(style, progress))
   }
 }
 
-type TextAnimatorCombinator = AnimatorCombinator<dyn TextAnimator>;
+type TextAnimatorCombinator =
+  AnimatorCombinator<Box<dyn TextAnimator>>;
 
 #[derive(PartialEq)]
 pub struct AnimatedTextProps {
@@ -61,11 +62,11 @@ impl Component for AnimatedText {
   type Props = AnimatedTextProps;
 
   fn is_needed_redraw(&self, new_props: &Self::Props) -> bool {
-    &self != new_props
+    &self.props != new_props
   }
 
   fn update(&mut self, new_props: Self::Props) {
-    self = new_props;
+    self.props = new_props;
   }
 
   fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
