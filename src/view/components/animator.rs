@@ -1,58 +1,74 @@
+use super::TextStyle;
 use crate::{
   model::exp::time::Seconds,
   view::renderer::{Component, RenderCtx, ViewResult},
 };
 
-mod fade_out_text;
-
-pub use fade_out_text::FadeOutText;
-
-pub trait TransparentComponent: Component {
-  fn render(
-    &self,
-    ctx: RenderCtx<'_, '_>,
-    opacity: f64,
-  ) -> ViewResult;
+pub trait TextAnimator {
+  fn style(style: TextStyle, progress: f64) -> TextStyle;
 }
 
-pub struct FadeOutProps {
-  time: Seconds,
+pub enum AnimatorCombinator<T> {
+  One(T),
+  More(T, Box<AnimatorCombinator<T>>),
 }
 
-pub struct FadeOut<ChildProp> {
-  props: FadeOutProps,
-  child: Box<dyn TransparentComponent<Props = ChildProp>>,
-  duration: Seconds,
-}
+impl<T> AnimatorCombinator<T> {
+  pub fn connect(self, animator: T) -> Self {
+    AnimatorCombinator::More(animator, Box::new(self))
+  }
 
-impl<ChildProps> FadeOut<ChildProps> {
-  pub fn new(
-    child: impl TransparentComponent<Props = ChildProps>,
-    duration: Seconds,
-  ) -> Self {
-    Self {
-      props: FadeOutProps { time: 0.0 },
-      child: Box::new(child),
-      duration,
+  pub fn drain<R, F>(&self, init: R, f: F) -> R
+  where
+    F: Fn(R, &T) -> R,
+  {
+    match self {
+      AnimatorCombinator::One(one) => f(init, one),
+      AnimatorCombinator::More(one, next) => {
+        let after_one = f(init, one);
+        next.drain(after_one, f)
+      }
     }
   }
 }
 
-impl Component for FadeOut {
-  type Props = FadeOutProps;
+impl<T> AnimatorCombinator<T>
+where
+  T: TextAnimator,
+{
+  pub fn style(&self, progress: f64) -> TextStyle {
+    let init = TextStyle::new();
+    self.drain(init, |style, styler| styler.style(progress, style));
+  }
+}
+
+type TextAnimatorCombinator = AnimatorCombinator<dyn TextAnimator>;
+
+#[derive(PartialEq)]
+pub struct AnimatedTextProps {
+  curr_time: Seconds,
+  duration: Seconds,
+}
+
+pub struct AnimatedText {
+  props: AnimatedTextProps,
+  animator: TextAnimatorCombinator,
+}
+
+impl AnimatedText {}
+
+impl Component for AnimatedText {
+  type Props = AnimatedTextProps;
 
   fn is_needed_redraw(&self, new_props: &Self::Props) -> bool {
-    todo!()
+    &self != new_props
   }
 
   fn update(&mut self, new_props: Self::Props) {
-    self.props = new_props;
+    self = new_props;
   }
 
   fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
-    let ratio = self.props.time.clone() / self.duration.clone();
-    let opacity = (1.0 - ratio).max(0.0);
-
-    self.props.child.render(ctx, opacity);
+    todo!()
   }
 }
