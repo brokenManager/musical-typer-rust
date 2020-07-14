@@ -15,14 +15,27 @@ pub trait TransparentComponent: Component {
   ) -> ViewResult;
 }
 
-pub struct FadeOutProps<ChildProp> {
+pub struct FadeOutProps {
   time: Seconds,
-  child: Box<dyn TransparentComponent<Props = ChildProp>>,
 }
 
 pub struct FadeOut<ChildProp> {
-  props: FadeOutProps<ChildProp>,
+  props: FadeOutProps,
+  child: Box<dyn TransparentComponent<Props = ChildProp>>,
   duration: Seconds,
+}
+
+impl<ChildProps> FadeOut<ChildProps> {
+  pub fn new(
+    child: impl TransparentComponent<Props = ChildProps>,
+    duration: Seconds,
+  ) -> Self {
+    Self {
+      props: FadeOutProps { time: 0.0 },
+      child: Box::new(child),
+      duration,
+    }
+  }
 }
 
 impl Component for FadeOut {
