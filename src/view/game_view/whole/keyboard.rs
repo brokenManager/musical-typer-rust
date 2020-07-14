@@ -1,5 +1,6 @@
-use crate::view::renderer::{
-  text::TextAlign, Component, RenderCtx, ViewResult,
+use crate::view::{
+  components::TextAlign,
+  renderer::{Component, RenderCtx, ViewResult},
 };
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};

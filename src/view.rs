@@ -3,11 +3,11 @@ use crate::model::exp::{
   scoremap::{MusicInfo, Scoremap},
 };
 use crate::model::game::MusicalTyperError;
+use components::TextError;
 use game_view::GameView;
 use handler::{HandleError, Handler};
 use player::PlayerError;
-use renderer::Renderer;
-use renderer::{text::TextError, RenderCtx};
+use renderer::{RenderCtx, Renderer};
 use result_view::ResultView;
 use std::{cell::RefCell, rc::Rc};
 

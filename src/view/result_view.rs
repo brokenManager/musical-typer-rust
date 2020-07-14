@@ -138,7 +138,7 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         }
         retry_button.render(self.renderer.clone())?;
 
-        use super::renderer::text::TextAlign;
+        use super::components::TextAlign;
         self.renderer.borrow_mut().text(|style| {
           style
             .align(TextAlign::Center)

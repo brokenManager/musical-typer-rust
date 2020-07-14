@@ -1,3 +1,4 @@
+use super::components::{Text, TextError, TextStyle};
 use super::ViewError;
 use sdl2::{
   pixels::Color,
@@ -7,9 +8,6 @@ use sdl2::{
   video::{Window, WindowContext},
 };
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
-use text::{Text, TextError, TextStyle};
-
-pub mod text;
 
 pub type RenderCtx<'ttf, 'texture> =
   Rc<RefCell<Renderer<'ttf, 'texture>>>;

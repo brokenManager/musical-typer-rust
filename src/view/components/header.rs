@@ -1,8 +1,7 @@
+use super::TextAlign;
 use crate::{
   model::exp::scoremap::MusicInfo,
-  view::renderer::{
-    text::TextAlign, Component, RenderCtx, ViewResult,
-  },
+  view::renderer::{Component, RenderCtx, ViewResult},
 };
 use sdl2::{pixels::Color, rect::Rect};
 

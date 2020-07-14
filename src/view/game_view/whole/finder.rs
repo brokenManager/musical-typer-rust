@@ -3,8 +3,9 @@ use sdl2::rect::{Point, Rect};
 
 use crate::{
   model::exp::sentence::{Sentence, TypingStr},
-  view::renderer::{
-    text::TextAlign, Component, RenderCtx, ViewResult,
+  view::{
+    components::TextAlign,
+    renderer::{Component, RenderCtx, ViewResult},
   },
 };
 

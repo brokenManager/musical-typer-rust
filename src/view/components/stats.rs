@@ -1,8 +1,9 @@
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 
-use super::super::renderer::{
-  text::TextAlign, RenderCtx, ViewResult,
+use super::{
+  super::renderer::{RenderCtx, ViewResult},
+  TextAlign,
 };
 use crate::{
   model::exp::game_activity::GameScore, view::renderer::Component,
