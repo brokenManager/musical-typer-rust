@@ -1,13 +1,12 @@
-use super::components::{Text, TextError, TextStyle};
 use super::ViewError;
 use sdl2::{
   pixels::Color,
   rect::Rect,
-  render::{Canvas, TextureCreator},
+  render::{Canvas, Texture, TextureCreator},
   ttf::Font,
   video::{Window, WindowContext},
 };
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 pub type RenderCtx<'ttf, 'texture> =
   Rc<RefCell<Renderer<'ttf, 'texture>>>;
@@ -29,7 +28,6 @@ pub struct Renderer<'ttf, 'texture> {
   height: u32,
   canvas: Canvas<Window>,
   font: Font<'ttf, 'static>,
-  text_cache: HashMap<TextStyle, Text<'texture>>,
   texture_creator: &'texture TextureCreator<WindowContext>,
 }
 
@@ -49,7 +47,6 @@ impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
       height,
       canvas,
       font,
-      text_cache: HashMap::new(),
       texture_creator,
     })
   }
@@ -88,28 +85,14 @@ impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
       .map_err(|e| ViewError::RenderError(e))
   }
 
-  pub fn text<S>(&mut self, styler: S) -> Result<(), ViewError>
-  where
-    S: FnOnce(TextStyle) -> TextStyle,
-  {
-    let style = styler(TextStyle::new());
-
-    if !self.text_cache.contains_key(&style) {
-      let text = Text::new(style.clone(), &self.font, |surface| {
-        self
-          .texture_creator
-          .create_texture_from_surface(surface)
-          .map_err(|e| TextError::TextureError(e))
-      })?;
-      self.text_cache.insert(style.clone(), text);
-    }
-
-    let text = self
-      .text_cache
-      .get_mut(&style)
-      .ok_or(ViewError::CacheError)?;
-
-    text.render(&mut self.canvas)?;
-    Ok(())
+  pub fn paste_texture(
+    &mut self,
+    texture: &Texture,
+    dst: Rect,
+  ) -> Result<(), ViewError> {
+    self
+      .canvas
+      .copy(texture, None, Some(dst))
+      .map_err(|e| ViewError::RenderError(e))
   }
 }

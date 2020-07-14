@@ -1,10 +1,20 @@
-use sdl2::pixels::Color;
-use sdl2::rect::{Point, Rect};
-use sdl2::{
-  render::{Canvas, RenderTarget, Texture},
-  surface::Surface,
-  ttf::Font,
+use crate::view::{
+  renderer::{Component, RenderCtx, ViewResult},
+  ViewError,
 };
+use sdl2::{render::Texture, surface::Surface, ttf::Font};
+
+mod style;
+
+use std::{
+  collections::HashMap,
+  sync::{Arc, RwLock},
+};
+pub use style::*;
+
+static TEXT_CACHE: Arc<
+  RwLock<HashMap<TextStyle, (Texture<'static>, f64)>>,
+> = Arc::new(RwLock::new(HashMap::new()));
 
 #[derive(Debug)]
 pub enum TextError {
@@ -13,56 +23,87 @@ pub enum TextError {
   RenderError(String),
 }
 
-pub struct Text<'texture> {
-  texture: Texture<'texture>,
+pub struct Text<'text, C> {
   style: TextStyle,
-  aspect: f64,
+  font: &'text Font<'text, 'text>,
+  creator: &'text C,
 }
 
-impl<'texture> Text<'texture> {
-  pub fn new<C>(
+impl<'text, C> Text<'text, C>
+where
+  C: FnOnce(Surface) -> Result<Texture, TextError> + 'text,
+{
+  pub fn new(
     style: TextStyle,
-    font: &Font,
-    creator: C,
-  ) -> Result<Self, TextError>
-  where
-    C: FnOnce(Surface) -> Result<Texture<'texture>, TextError>,
-  {
-    let TextStyle { text, color, .. } = style.clone();
-    let aspect = {
-      let (w, h) =
-        font.size_of(&text).map_err(|e| TextError::FontError(e))?;
-      w as f64 / h as f64
-    };
-    let text = if text == "" { " " } else { &text };
-    let surface = font
-      .render(text)
-      .blended(color.clone())
-      .map_err(|e| TextError::FontError(e))?;
-
-    let texture = creator(surface)?;
-
+    font: &'text Font,
+    creator: &'text C,
+  ) -> Result<Self, TextError> {
     Ok(Self {
-      texture,
       style,
-      aspect,
+      font,
+      creator,
     })
   }
+}
 
-  pub fn render<R>(
-    &self,
-    canvas: &mut Canvas<R>,
-  ) -> Result<(), TextError>
-  where
-    R: RenderTarget,
-  {
-    canvas
-      .copy(
-        &self.texture,
-        None,
-        Some(self.style.to_rect(self.aspect)),
-      )
-      .map_err(|e| TextError::RenderError(e))
+impl<'text, C> Component for Text<'text, C>
+where
+  C: FnOnce(Surface) -> Result<Texture, TextError> + 'text,
+{
+  type Props = TextStyle;
+
+  fn is_needed_redraw(&self, new_props: &Self::Props) -> bool {
+    &self.style != new_props
+  }
+
+  fn update(&mut self, new_props: Self::Props) {
+    self.style = new_props;
+  }
+
+  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+    if !TEXT_CACHE
+      .read()
+      .expect("reading TEXT_CACHE frozen")
+      .contains_key(&self.style)
+    {
+      let &Self {
+        font,
+        style,
+        creator,
+      } = &self;
+      let &TextStyle { text, color, .. } = &self.style;
+      let aspect = {
+        let (w, h) =
+          font.size_of(&text).map_err(|e| ViewError::FontError {
+            message: e.to_string(),
+          })?;
+        w as f64 / h as f64
+      };
+      let text = if text == "" { " " } else { &text };
+      let surface = font
+        .render(text)
+        .blended(color.clone())
+        .map_err(|e| ViewError::FontError {
+          message: e.to_string(),
+        })?;
+
+      let texture =
+        creator(surface).map_err(|e| ViewError::TextError(e))?;
+
+      TEXT_CACHE
+        .write()
+        .expect("writing TEXT_CACHE frozen")
+        .insert(style.clone(), (texture, aspect));
+    }
+    let (texture, aspect) = TEXT_CACHE
+      .read()
+      .expect("reading TEXT_CACHE frozen")
+      .get(&self.style)
+      .expect("missed caching texture");
+
+    ctx
+      .borrow_mut()
+      .paste_texture(&texture, self.style.to_rect(*aspect))
   }
 }
 
@@ -71,74 +112,4 @@ pub enum TextAlign {
   Left,
   Center,
   Right,
-}
-
-#[derive(Clone, Hash, PartialEq, Eq)]
-pub struct TextStyle {
-  text: String,
-  color: Color,
-  line_height: u32,
-  align: TextAlign,
-  pos: Point,
-  opacity: u8,
-}
-
-impl TextStyle {
-  pub fn new() -> Self {
-    TextStyle {
-      text: "".into(),
-      color: Color::RGB(0, 0, 0),
-      line_height: 20,
-      align: TextAlign::Left,
-      pos: Point::new(0, 0),
-      opacity: u8::max_value(),
-    }
-  }
-
-  pub fn text(mut self, new_text: &str) -> Self {
-    if new_text == "" {
-      self.text = String::from(" ");
-    } else {
-      self.text = new_text.into();
-    }
-
-    self
-  }
-
-  pub fn color(mut self, new_color: Color) -> Self {
-    self.color = new_color;
-    self
-  }
-
-  pub fn line_height(mut self, new_line_height: u32) -> Self {
-    self.line_height = new_line_height;
-    self
-  }
-
-  pub fn align(mut self, new_align: TextAlign) -> Self {
-    self.align = new_align;
-    self
-  }
-
-  pub fn pos(mut self, new_pos: Point) -> Self {
-    self.pos = new_pos;
-    self
-  }
-
-  pub fn opacity(mut self, new_opacity: u8) -> Self {
-    self.opacity = new_opacity;
-    self
-  }
-
-  pub fn to_rect(&self, aspect: f64) -> Rect {
-    let (w, h) =
-      ((aspect * self.line_height as f64) as u32, self.line_height);
-    use TextAlign::*;
-
-    match self.align {
-      Left => Rect::new(self.pos.x(), self.pos.y(), w, h),
-      Center => Rect::from_center(self.pos, w, h),
-      Right => Rect::new(self.pos.x() - w as i32, self.pos.y(), w, h),
-    }
-  }
 }

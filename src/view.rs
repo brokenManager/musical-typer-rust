@@ -36,12 +36,6 @@ impl From<MusicalTyperError> for ViewError {
   }
 }
 
-impl From<TextError> for ViewError {
-  fn from(err: TextError) -> Self {
-    ViewError::TextError(err)
-  }
-}
-
 impl From<HandleError> for ViewError {
   fn from(err: HandleError) -> Self {
     ViewError::HandleError(err)
