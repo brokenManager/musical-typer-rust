@@ -20,8 +20,7 @@ mod result_view;
 #[derive(Debug)]
 pub enum ViewError {
   ModelError(MusicalTyperError),
-  InitError { message: String },
-  FontError { message: String },
+  FontError(String),
   PlayerError(PlayerError),
   TextError(TextError),
   RenderError(String),
@@ -131,37 +130,31 @@ pub fn run_router(score: Scoremap) -> Result<(), ViewError> {
     sdl2::mixer::DEFAULT_CHANNELS,
     1024,
   )
-  .map_err(|e| PlayerError::AudioError(e))?;
+  .expect("Fail to open an audio channel");
   sdl2::mixer::allocate_channels(32);
 
   let font = ttf
     .load_font(Path::new("./asset/mplus-1m-medium.ttf"), 128)
-    .map_err(|e| ViewError::FontError {
-      message: e.to_string(),
-    })?;
+    .expect("Font file is not found");
 
-  let video = sdl
-    .video()
-    .map_err(|e| ViewError::InitError { message: e })?;
+  let video = sdl.video().expect("Fail to init video subsystem");
   let window = video
     .window("Musical Typer", 800, 600)
     .position_centered()
     .opengl()
     .build()
-    .map_err(|e| ViewError::InitError {
-      message: e.to_string(),
-    })?;
+    .expect("Fail to open an window");
 
-  let canvas = window.into_canvas().build().map_err(|e| {
-    ViewError::InitError {
-      message: e.to_string(),
-    }
-  })?;
+  let canvas = window
+    .into_canvas()
+    .build()
+    .expect("Fail to create a canvas");
   let texture_creator = canvas.texture_creator();
 
   let handler = Handler::new(sdl);
   let renderer =
-    Renderer::new(800, 600, canvas, font, &texture_creator)?;
+    Renderer::new(800, 600, canvas, font, &texture_creator)
+      .expect("Fail to init a renderer");
 
   Router::new(handler, renderer).run(score)?;
   Ok(())
