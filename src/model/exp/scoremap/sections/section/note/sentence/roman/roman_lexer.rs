@@ -1,4 +1,4 @@
-use super::roman_char::RomanChar;
+use super::RomanChar;
 use crate::model::exp::scoremap::{
   lexer::ScoremapLexError, ScoremapError,
 };

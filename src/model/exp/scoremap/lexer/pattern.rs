@@ -2,7 +2,7 @@ use super::{
   super::token::TokenContent::*, ScoremapLexError, ScoremapLoadConfig,
 };
 use crate::model::exp::{
-  scoremap::token::Token, sentence::roman::roman_str::RomanStr,
+  scoremap::token::Token, sentence::roman::RomanStr,
   time::MinuteSecond,
 };
 use regex::Captures;

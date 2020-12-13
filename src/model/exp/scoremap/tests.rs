@@ -1,7 +1,7 @@
 #[test]
 fn case1() -> Result<(), super::ScoremapError> {
   use super::{super::time::Duration, lexer::ScoremapLoadConfig};
-  use crate::model::exp::scoremap::sections::section::note::Note;
+  use crate::model::exp::note::Note;
 
   let score = super::Scoremap::from_str(
     r#"

@@ -1,5 +1,4 @@
-use roman::roman_lexer::RomanParseError;
-use roman::roman_str::RomanStr;
+use roman::{RomanParseError, RomanStr};
 use std::fmt::{Debug, Formatter};
 
 pub mod roman;
