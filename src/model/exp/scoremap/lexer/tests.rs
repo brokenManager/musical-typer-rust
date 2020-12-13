@@ -102,7 +102,7 @@ fn case2() -> Result<(), ScoremapLexError> {
     .as_bytes(),
   );
   let tokens = lex(
-    ScoremapLoadConfig::new().ignore_invalid_properties(true),
+    ScoremapLoadConfig::new().ignore_unsupported_property(true),
     reader,
   )?;
 

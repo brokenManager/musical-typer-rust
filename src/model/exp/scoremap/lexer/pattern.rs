@@ -73,7 +73,7 @@ pub fn property_lexer(
   }
   let key = captures.get(1)?.as_str().to_owned();
   if !METADATA_KEYS.contains(&key.as_str()) {
-    return Some(if cfg.ignore_invalid_properties {
+    return Some(if cfg.ignore_unsupported_property {
       println!("未対応のプロパティがありました。無視します。");
       Ok(Token {
         line_num,
