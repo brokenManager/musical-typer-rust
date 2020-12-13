@@ -1,5 +1,7 @@
-use sdl2::pixels::Color;
-use sdl2::rect::{Point, Rect};
+use sdl2::{
+  pixels::Color,
+  rect::{Point, Rect},
+};
 
 use super::super::renderer::{
   text::TextAlign, RenderCtx, ViewResult,

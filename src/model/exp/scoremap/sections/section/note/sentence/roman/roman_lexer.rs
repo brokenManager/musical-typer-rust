@@ -1,6 +1,7 @@
 use super::roman_char::RomanChar;
-use crate::model::exp::scoremap::lexer::ScoremapLexError;
-use crate::model::exp::scoremap::ScoremapError;
+use crate::model::exp::scoremap::{
+  lexer::ScoremapLexError, ScoremapError,
+};
 
 #[derive(Debug)]
 pub enum RomanParseError {

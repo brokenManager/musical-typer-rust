@@ -6,8 +6,7 @@ use crate::model::game::MusicalTyperError;
 use game_view::GameView;
 use handler::{HandleError, Handler};
 use player::PlayerError;
-use renderer::Renderer;
-use renderer::{text::TextError, RenderCtx};
+use renderer::{text::TextError, RenderCtx, Renderer};
 use result_view::ResultView;
 use std::{cell::RefCell, rc::Rc};
 

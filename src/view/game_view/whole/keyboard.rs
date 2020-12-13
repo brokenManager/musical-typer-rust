@@ -1,8 +1,10 @@
 use crate::view::renderer::{
   text::TextAlign, Component, RenderCtx, ViewResult,
 };
-use sdl2::pixels::Color;
-use sdl2::rect::{Point, Rect};
+use sdl2::{
+  pixels::Color,
+  rect::{Point, Rect},
+};
 
 const BLUE: Color = Color::RGB(64, 80, 180);
 const ORANGE: Color = Color::RGB(209, 154, 29);

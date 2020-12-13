@@ -1,6 +1,6 @@
-use sdl2::pixels::Color;
-use sdl2::rect::{Point, Rect};
 use sdl2::{
+  pixels::Color,
+  rect::{Point, Rect},
   render::{Canvas, RenderTarget, Texture},
   surface::Surface,
   ttf::Font,
