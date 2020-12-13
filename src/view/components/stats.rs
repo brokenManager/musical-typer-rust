@@ -126,7 +126,7 @@ impl Component for Stats {
         .pos(client.top_left().clone().offset(10, -40))
     })?;
     canvas.text(|s| {
-      s.text(rank)
+      s.text(rank.0)
         .color(Color::RGB(64, 79, 181))
         .line_height(25)
         .pos(client.top_left().clone().offset(10, -25))

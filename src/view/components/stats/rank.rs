@@ -1,5 +1,8 @@
-pub fn rank(acc: f64) -> &'static str {
-  if 200.0 <= acc {
+#[derive(Debug)]
+pub struct Rank(pub &'static str);
+
+pub fn rank(acc: f64) -> Rank {
+  Rank(if 200.0 <= acc {
     "Wow"
   } else if 150.0 <= acc {
     "Unexpected"
@@ -31,25 +34,25 @@ pub fn rank(acc: f64) -> &'static str {
     "E"
   } else {
     "F"
-  }
+  })
 }
 
 #[test]
 fn test_rank() {
-  assert_eq!("Wow", rank(256.0));
-  assert_eq!("Unexpected", rank(199.9));
-  assert_eq!("Very God", rank(149.9));
-  assert_eq!("God", rank(124.9));
-  assert_eq!("Pro", rank(99.9));
-  assert_eq!("Genius", rank(99.49));
-  assert_eq!("Geki-tsuyo", rank(98.9));
-  assert_eq!("tsuyotsuyo", rank(97.9));
-  assert_eq!("AAA", rank(96.9));
-  assert_eq!("AA", rank(93.9));
-  assert_eq!("A", rank(89.9));
-  assert_eq!("B", rank(79.9));
-  assert_eq!("C", rank(59.9));
-  assert_eq!("D", rank(39.9));
-  assert_eq!("E", rank(19.9));
-  assert_eq!("F", rank(0.0));
+  assert_eq!("Wow", rank(256.0).0);
+  assert_eq!("Unexpected", rank(199.9).0);
+  assert_eq!("Very God", rank(149.9).0);
+  assert_eq!("God", rank(124.9).0);
+  assert_eq!("Pro", rank(99.9).0);
+  assert_eq!("Genius", rank(99.49).0);
+  assert_eq!("Geki-tsuyo", rank(98.9).0);
+  assert_eq!("tsuyotsuyo", rank(97.9).0);
+  assert_eq!("AAA", rank(96.9).0);
+  assert_eq!("AA", rank(93.9).0);
+  assert_eq!("A", rank(89.9).0);
+  assert_eq!("B", rank(79.9).0);
+  assert_eq!("C", rank(59.9).0);
+  assert_eq!("D", rank(39.9).0);
+  assert_eq!("E", rank(19.9).0);
+  assert_eq!("F", rank(0.0).0);
 }
