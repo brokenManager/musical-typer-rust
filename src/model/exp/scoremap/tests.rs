@@ -1,7 +1,7 @@
 #[test]
 fn case1() -> Result<(), super::ScoremapError> {
   use super::{super::time::Duration, lexer::ScoremapLoadConfig};
-  use crate::model::exp::scoremap::sections::section::note::Note;
+  use crate::model::exp::note::Note;
 
   let score = super::Scoremap::from_str(
     r#"
@@ -422,7 +422,7 @@ fn case2() -> Result<(), super::ScoremapError> {
 *3.0
 [end]
 "#,
-    |config| config.ignore_invalid_properties(true),
+    |config| config.ignore_unsupported_property(true),
   )?;
   use super::sections::section::note::sentence::Sentence;
   let mut dur = Duration::new(0.0, 2.22).unwrap();

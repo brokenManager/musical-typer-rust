@@ -1,7 +1,7 @@
 use super::TextAlign;
 use crate::{
   model::exp::scoremap::MusicInfo,
-  view::renderer::{Component, RenderCtx, ViewResult},
+  view::renderer::{Component, Renderer, ViewResult},
 };
 use sdl2::{pixels::Color, rect::Rect};
 
@@ -33,14 +33,12 @@ impl Component for Header {
     self.props = new_props;
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+  fn render(&self, canvas: &mut Renderer<'_, '_>) -> ViewResult {
     let &Header { props, client } = &self;
     let &HeaderProps {
       music_info,
       score_point,
     } = &props;
-
-    let mut canvas = ctx.borrow_mut();
 
     let title = &music_info.title;
     let author = &music_info.song_author;

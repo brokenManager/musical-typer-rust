@@ -29,7 +29,7 @@ fn op1() -> Result<(), MusicalTyperError> {
 *3.0
 [end]
 "#,
-    |config| config.ignore_invalid_properties(true),
+    |config| config.ignore_unsupported_property(true),
   )?;
 
   let inputs = &[Wait(2.22), KeyPress("dakentesuto"), Wait(1.0)];

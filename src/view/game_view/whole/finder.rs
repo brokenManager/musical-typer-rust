@@ -1,11 +1,13 @@
-use sdl2::pixels::Color;
-use sdl2::rect::{Point, Rect};
+use sdl2::{
+  pixels::Color,
+  rect::{Point, Rect},
+};
 
 use crate::{
   model::exp::sentence::{Sentence, TypingStr},
   view::{
     components::TextAlign,
-    renderer::{Component, RenderCtx, ViewResult},
+    renderer::{Component, Renderer, ViewResult},
   },
 };
 
@@ -45,13 +47,12 @@ impl<'a> Component for Finder<'a> {
     self.props = new_props;
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+  fn render(&self, canvas: &mut Renderer<'_, '_>) -> ViewResult {
     let &Finder { props, client } = &self;
     let &FinderProps {
       remaining_ratio,
       sentence,
     } = &props;
-    let mut canvas = ctx.borrow_mut();
 
     canvas.set_draw_color(Color::RGB(230, 220, 200));
     canvas.fill_rect(client.clone())?;

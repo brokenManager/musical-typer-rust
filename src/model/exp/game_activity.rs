@@ -1,13 +1,7 @@
 use super::{
-  scoremap::sections::{
-    section::{
-      note::{
-        sentence::Sentence, Note, NoteContent, NoteId, TypeResult,
-      },
-      Section,
-    },
-    Sections,
-  },
+  note::{sentence::Sentence, Note, NoteContent, NoteId, TypeResult},
+  scoremap::sections::Sections,
+  section::Section,
   time::Seconds,
 };
 

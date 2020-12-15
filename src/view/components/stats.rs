@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 
 use super::{
-  super::renderer::{RenderCtx, ViewResult},
+  super::renderer::{Renderer, ViewResult},
   TextAlign,
 };
 use crate::{
@@ -39,7 +39,7 @@ impl Component for Stats {
     self.props = new_props;
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+  fn render(&self, canvas: &mut Renderer<'_, '_>) -> ViewResult {
     let &Stats { props, client } = &self;
     let &StatsProps {
       type_per_second,
@@ -56,8 +56,6 @@ impl Component for Stats {
     };
 
     let rank = rank::rank(accuracy * 200.0);
-
-    let mut canvas = ctx.borrow_mut();
 
     let speed_indicator_center =
       Point::new(client.width() as i32 / 2, client.y() + 15);
@@ -125,7 +123,7 @@ impl Component for Stats {
         .pos(client.top_left().clone().offset(10, -40))
     })?;
     canvas.text(|s| {
-      s.text(rank)
+      s.text(rank.0)
         .color(Color::RGB(64, 79, 181))
         .line_height(25)
         .pos(client.top_left().clone().offset(10, -25))

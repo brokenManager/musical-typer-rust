@@ -1,6 +1,6 @@
 use super::{
-  super::super::section::note::sentence::roman::roman_str::RomanStr,
-  lex, ScoremapLexError, ScoremapLoadConfig,
+  super::super::sentence::roman::RomanStr, lex, ScoremapLexError,
+  ScoremapLoadConfig,
 };
 use crate::model::exp::{
   scoremap::token::{Token, TokenContent},
@@ -102,7 +102,7 @@ fn case2() -> Result<(), ScoremapLexError> {
     .as_bytes(),
   );
   let tokens = lex(
-    ScoremapLoadConfig::new().ignore_invalid_properties(true),
+    ScoremapLoadConfig::new().ignore_unsupported_property(true),
     reader,
   )?;
 

@@ -33,18 +33,21 @@ pub enum ScoremapLexError {
 
 #[derive(Debug, Copy, Clone)]
 pub struct ScoremapLoadConfig {
-  ignore_invalid_properties: bool,
+  ignore_unsupported_property: bool,
 }
 
 impl ScoremapLoadConfig {
   pub fn new() -> Self {
     ScoremapLoadConfig {
-      ignore_invalid_properties: false,
+      ignore_unsupported_property: false,
     }
   }
 
-  pub fn ignore_invalid_properties(mut self, whether: bool) -> Self {
-    self.ignore_invalid_properties = whether;
+  pub fn ignore_unsupported_property(
+    mut self,
+    whether: bool,
+  ) -> Self {
+    self.ignore_unsupported_property = whether;
     self
   }
 }

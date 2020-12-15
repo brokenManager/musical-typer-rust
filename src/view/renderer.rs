@@ -21,7 +21,7 @@ pub trait Component {
 
   fn update(&mut self, new_props: Self::Props);
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult;
+  fn render(&self, ctx: &mut Renderer<'_, '_>) -> ViewResult;
 }
 
 pub struct Renderer<'ttf, 'texture> {

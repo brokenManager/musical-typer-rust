@@ -1,7 +1,5 @@
 use super::{
-  super::super::section::note::sentence::{
-    roman::roman_str::RomanStr, Sentence,
-  },
+  super::super::sentence::{roman::RomanStr, Sentence},
   parse, Note, ScoremapParseError, Token, TokenContent,
 };
 use crate::model::exp::{

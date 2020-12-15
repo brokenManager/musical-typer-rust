@@ -29,7 +29,7 @@ fn main() -> Result<(), EntireError> {
   use model::exp::scoremap::Scoremap;
   let score = Scoremap::from_file(
     File::open(Path::new("score/sampleScore.tsc")).unwrap(),
-    |config| config.ignore_invalid_properties(true),
+    |config| config.ignore_unsupported_property(true),
   )?;
 
   view::run_router(score)?;

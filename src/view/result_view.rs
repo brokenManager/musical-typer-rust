@@ -119,13 +119,13 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         music_info: self.music_info.clone(),
         score_point: self.score.score_point,
       });
-      header.render(self.renderer.clone())?;
+      header.render(&mut self.renderer.borrow_mut())?;
 
       stats.update(StatsProps {
         type_per_second: 0.0,
         score: self.score.clone(),
       });
-      stats.render(self.renderer.clone())?;
+      stats.render(&mut self.renderer.borrow_mut())?;
 
       {
         let new_props = ButtonProps {
@@ -136,7 +136,7 @@ impl<'ttf, 'canvas> View for ResultView<'ttf, 'canvas> {
         if retry_button.is_needed_redraw(&new_props) {
           retry_button.update(new_props);
         }
-        retry_button.render(self.renderer.clone())?;
+        retry_button.render(&mut self.renderer.borrow_mut())?;
 
         use super::components::TextAlign;
         self.renderer.borrow_mut().text(|style| {

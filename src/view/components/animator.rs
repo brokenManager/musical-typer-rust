@@ -1,7 +1,7 @@
 use super::TextStyle;
 use crate::{
   model::exp::time::Seconds,
-  view::renderer::{Component, RenderCtx, ViewResult},
+  view::renderer::{Component, Renderer, ViewResult},
 };
 
 pub trait TextAnimator {
@@ -69,7 +69,7 @@ impl Component for AnimatedText {
     self.props = new_props;
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+  fn render(&self, ctx: &mut Renderer<'_, '_>) -> ViewResult {
     todo!()
   }
 }
