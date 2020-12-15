@@ -165,7 +165,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
         },
         client,
       )
-      .render(self.renderer.clone())?;
+      .render(&mut self.renderer.borrow_mut())?;
 
       self.renderer.borrow_mut().flush();
 

@@ -1,6 +1,6 @@
 use crate::view::{
   handler::MouseState,
-  renderer::{Component, RenderCtx, ViewResult},
+  renderer::{Component, Renderer, ViewResult},
 };
 use sdl2::{pixels::Color, rect::Rect};
 
@@ -46,7 +46,7 @@ impl<H: FnMut()> Component for Button<H> {
     }
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+  fn render(&self, canvas: &mut Renderer<'_, '_>) -> ViewResult {
     let &Button { props, bounds, .. } = &self;
     let &ButtonProps {
       color_on_hover,
@@ -54,7 +54,6 @@ impl<H: FnMut()> Component for Button<H> {
       mouse,
     } = &props;
 
-    let mut canvas = ctx.borrow_mut();
     let on_hover = bounds.contains_point(mouse.mouse_pos);
 
     if on_hover {

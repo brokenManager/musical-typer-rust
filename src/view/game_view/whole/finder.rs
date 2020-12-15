@@ -6,7 +6,7 @@ use sdl2::{
 use crate::{
   model::exp::sentence::{Sentence, TypingStr},
   view::renderer::{
-    text::TextAlign, Component, RenderCtx, ViewResult,
+    text::TextAlign, Component, Renderer, ViewResult,
   },
 };
 
@@ -46,13 +46,12 @@ impl<'a> Component for Finder<'a> {
     self.props = new_props;
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+  fn render(&self, canvas: &mut Renderer<'_, '_>) -> ViewResult {
     let &Finder { props, client } = &self;
     let &FinderProps {
       remaining_ratio,
       sentence,
     } = &props;
-    let mut canvas = ctx.borrow_mut();
 
     canvas.set_draw_color(Color::RGB(230, 220, 200));
     canvas.fill_rect(client.clone())?;

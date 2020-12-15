@@ -1,5 +1,5 @@
 use crate::view::renderer::{
-  text::TextAlign, Component, RenderCtx, ViewResult,
+  text::TextAlign, Component, Renderer, ViewResult,
 };
 use sdl2::{
   pixels::Color,
@@ -54,9 +54,7 @@ impl Component for KeyCell {
     self != new_props
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
-    let mut canvas = ctx.borrow_mut();
-
+  fn render(&self, canvas: &mut Renderer<'_, '_>) -> ViewResult {
     let border_dim = Rect::from_center(
       self.client.center(),
       self.client.width() - 5,
@@ -150,9 +148,9 @@ impl Component for Keyboard {
     self.props = new_props;
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+  fn render(&self, ctx: &mut Renderer<'_, '_>) -> ViewResult {
     for cell in &self.cells {
-      cell.render(ctx.clone())?;
+      cell.render(ctx)?;
     }
     Ok(())
   }

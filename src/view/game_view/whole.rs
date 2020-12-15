@@ -6,7 +6,7 @@ use crate::{
   },
   view::{
     components::{Header, HeaderProps, Stats, StatsProps},
-    renderer::{Component, RenderCtx, ViewResult},
+    renderer::{Component, Renderer, ViewResult},
   },
 };
 
@@ -122,20 +122,20 @@ impl<'a> Component for Whole<'a> {
     self.props = props;
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+  fn render(&self, ctx: &mut Renderer<'_, '_>) -> ViewResult {
     let &Whole { client, .. } = &self;
 
-    ctx.borrow_mut().set_draw_color(Color::RGB(253, 243, 226));
-    ctx.borrow_mut().clear();
+    ctx.set_draw_color(Color::RGB(253, 243, 226));
+    ctx.clear();
 
     {
       let header_dim = Rect::new(0, 0, client.width(), 100);
-      self.header.render(ctx.clone())?;
-      ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
-      ctx.borrow_mut().draw_rect(header_dim)?;
+      self.header.render(ctx)?;
+      ctx.set_draw_color(Color::RGB(0, 0, 0));
+      ctx.draw_rect(header_dim)?;
     }
 
-    self.finder.render(ctx.clone())?;
+    self.finder.render(ctx)?;
 
     {
       let keyboard_dim = Rect::new(
@@ -144,13 +144,13 @@ impl<'a> Component for Whole<'a> {
         client.width(),
         200,
       );
-      self.keyboard.render(ctx.clone())?;
+      self.keyboard.render(ctx)?;
 
-      ctx.borrow_mut().set_draw_color(Color::RGB(0, 0, 0));
-      ctx.borrow_mut().draw_rect(keyboard_dim)?;
+      ctx.set_draw_color(Color::RGB(0, 0, 0));
+      ctx.draw_rect(keyboard_dim)?;
     }
 
-    self.stats.render(ctx.clone())?;
+    self.stats.render(ctx)?;
 
     Ok(())
   }

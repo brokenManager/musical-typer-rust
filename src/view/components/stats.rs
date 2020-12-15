@@ -3,9 +3,7 @@ use sdl2::{
   rect::{Point, Rect},
 };
 
-use super::super::renderer::{
-  text::TextAlign, RenderCtx, ViewResult,
-};
+use super::super::renderer::{text::TextAlign, Renderer, ViewResult};
 use crate::{
   model::exp::game_activity::GameScore, view::renderer::Component,
 };
@@ -40,7 +38,7 @@ impl Component for Stats {
     self.props = new_props;
   }
 
-  fn render(&self, ctx: RenderCtx<'_, '_>) -> ViewResult {
+  fn render(&self, canvas: &mut Renderer<'_, '_>) -> ViewResult {
     let &Stats { props, client } = &self;
     let &StatsProps {
       type_per_second,
@@ -57,8 +55,6 @@ impl Component for Stats {
     };
 
     let rank = rank::rank(accuracy * 200.0);
-
-    let mut canvas = ctx.borrow_mut();
 
     let speed_indicator_center =
       Point::new(client.width() as i32 / 2, client.y() + 15);
