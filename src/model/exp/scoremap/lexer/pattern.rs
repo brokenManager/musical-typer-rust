@@ -180,7 +180,7 @@ pub fn seconds_lexer(
   *curr_mise = curr_mise.seconds(num);
   Some(Ok(Token {
     line_num: *line_num,
-    content: Time(curr_mise.clone()),
+    content: Time(*curr_mise),
   }))
 }
 

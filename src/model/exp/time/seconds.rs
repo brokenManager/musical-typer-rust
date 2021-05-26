@@ -4,7 +4,7 @@ use std::{
   ops::{Add, AddAssign, Div, Sub, SubAssign},
 };
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct Seconds(i64); // owns milliseconds
 
 impl Seconds {

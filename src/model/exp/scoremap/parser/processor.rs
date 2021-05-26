@@ -39,18 +39,18 @@ impl ParserCtx {
   ) -> Result<Duration, ScoremapParseError> {
     let mut next_times =
       tokens.iter().flat_map(|token| match token.content {
-        TokenContent::Time(ref mise) => vec![mise.clone()],
+        TokenContent::Time(ref mise) => vec![*mise],
         _ => vec![],
       });
     let next_time = next_times.next().unwrap_or_else(|| {
       self
         .curr_time
         .clone()
-        .seconds(self.curr_time.to_seconds() + 1.0.into())
+        .seconds(self.curr_time.as_seconds() + 1.0.into())
     });
     Duration::new(
-      self.curr_time.clone().to_seconds().as_f64(),
-      next_time.to_seconds().as_f64(),
+      self.curr_time.clone().as_seconds().as_f64(),
+      next_time.as_seconds().as_f64(),
     )
     .map_err(|err| ScoremapParseError::InvalidDuration {
       line_num,
@@ -80,8 +80,8 @@ pub(super) fn double_time_processor(
     // 時間指定が二連続の場合は空白ノーツを追加
     let res = Some(Ok(Note::blank(
       Duration::new(
-        from.to_seconds().as_f64(),
-        to.to_seconds().as_f64(),
+        from.as_seconds().as_f64(),
+        to.as_seconds().as_f64(),
       )
       .ok()?,
     )));
@@ -120,7 +120,7 @@ pub(super) fn single_time_processor(
       // それ以前に遡る時間指定は無視
       return None;
     }
-    *curr_time = specified.clone();
+    *curr_time = *specified;
     *parsed_japanese = None;
     if notes.is_empty() {
       return Some(Ok(Note::blank(duration)));

@@ -190,7 +190,7 @@ impl MusicalTyper {
     let prev_sentence = self.activity.current_sentence();
     let prev_note_id = self.activity.current_note_id();
 
-    self.activity.update_time(self.accumulated_time.clone());
+    self.activity.update_time(self.accumulated_time);
 
     if self.activity.is_game_over() {
       return vec![EndOfScore];
@@ -217,11 +217,11 @@ impl MusicalTyper {
   }
 
   pub fn accumulated_time(&self) -> Seconds {
-    self.accumulated_time.clone()
+    self.accumulated_time
   }
 
   pub fn section_remaining_ratio(&self) -> f64 {
-    self.activity.remaining_ratio(self.accumulated_time.clone())
+    self.activity.remaining_ratio(self.accumulated_time)
   }
 
   pub fn music_info(&self) -> MusicInfo {

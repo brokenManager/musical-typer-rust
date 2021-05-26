@@ -29,8 +29,8 @@ impl Duration {
 
   pub fn following(&self, length: f64) -> Self {
     Self {
-      from: self.to.clone(),
-      to: self.to.clone() + length.into(),
+      from: self.to,
+      to: self.to + length.into(),
     }
   }
 
@@ -42,8 +42,8 @@ impl Duration {
   }
 
   pub fn concat(&self, other: &Self) -> Self {
-    let start = self.from.clone().min(other.from.clone());
-    let end = self.to.clone().max(other.to.clone());
+    let start = self.from.min(other.from);
+    let end = self.to.max(other.to);
     Self {
       from: start,
       to: end,
@@ -55,8 +55,8 @@ impl Duration {
   }
 
   pub fn remaining_ratio(&self, now: Seconds) -> f64 {
-    let duration = self.to.clone() - self.from.clone();
-    let elapsed = now - self.from.clone();
+    let duration = self.to - self.from;
+    let elapsed = now - self.from;
     elapsed / duration
   }
 }
@@ -85,7 +85,7 @@ fn duration() -> DurationResult<()> {
   Ok(())
 }
 
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct MinuteSecond {
   minutes: u32,
   seconds: Seconds,
@@ -98,7 +98,7 @@ impl MinuteSecond {
   pub fn minutes(&self, minutes: u32) -> Self {
     MinuteSecond {
       minutes,
-      seconds: self.seconds.clone(),
+      seconds: self.seconds,
     }
   }
   pub fn seconds<T: Into<Seconds> + SubAssign>(
@@ -114,14 +114,14 @@ impl MinuteSecond {
       seconds,
     }
   }
-  pub fn to_seconds(&self) -> Seconds {
-    Seconds::new(self.minutes as f64 * 60.0) + self.seconds.clone()
+  pub fn as_seconds(&self) -> Seconds {
+    Seconds::new(self.minutes as f64 * 60.0) + self.seconds
   }
 }
 
 impl From<MinuteSecond> for Seconds {
   fn from(ms: MinuteSecond) -> Self {
-    ms.to_seconds()
+    ms.as_seconds()
   }
 }
 
