@@ -12,17 +12,17 @@ use std::collections::VecDeque;
 use ScoremapParseError::*;
 
 #[derive(Debug, Clone)]
-pub struct ParserCtx {
-  pub metadata: ScoremapMetadata,
-  pub sections: Vec<Vec<Note>>,
-  pub notes: Vec<Note>,
+pub(super) struct ParserCtx {
+  pub(super) metadata: ScoremapMetadata,
+  pub(super) sections: Vec<Vec<Note>>,
+  pub(super) notes: Vec<Note>,
   parsing_lyrics: bool,
   parsed_japanese: Option<String>,
   curr_time: MinuteSecond,
 }
 
 impl ParserCtx {
-  pub fn new() -> Self {
+  pub(super) fn new() -> Self {
     Self {
       metadata: ScoremapMetadata::new(),
       sections: vec![],
@@ -59,15 +59,15 @@ impl ParserCtx {
   }
 }
 
-pub type ParserBody = fn(
-  &mut VecDeque<&Token>,
-  &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>>;
+pub(super) type ParseResult =
+  Option<Result<Note, ScoremapParseError>>;
+pub(super) type ParserBody =
+  fn(&mut VecDeque<&Token>, &mut ParserCtx) -> ParseResult;
 
-pub fn double_time_processor(
+pub(super) fn double_time_processor(
   tokens: &mut VecDeque<&Token>,
   _: &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>> {
+) -> ParseResult {
   if let [Token {
     content: TokenContent::Time(from),
     ..
@@ -90,10 +90,10 @@ pub fn double_time_processor(
   None
 }
 
-pub fn single_time_processor(
+pub(super) fn single_time_processor(
   tokens: &mut VecDeque<&Token>,
   ctx: &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>> {
+) -> ParseResult {
   if let Some(Token {
     content: TokenContent::Time(specified),
     line_num,
@@ -129,10 +129,10 @@ pub fn single_time_processor(
   None
 }
 
-pub fn command_processor(
+pub(super) fn command_processor(
   tokens: &mut VecDeque<&Token>,
   ParserCtx { parsing_lyrics, .. }: &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>> {
+) -> ParseResult {
   if let Some(Token {
     content: TokenContent::Command(command),
     line_num,
@@ -172,10 +172,10 @@ pub fn command_processor(
   None
 }
 
-pub fn caption_processor(
+pub(super) fn caption_processor(
   tokens: &mut VecDeque<&Token>,
   ctx: &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>> {
+) -> ParseResult {
   if let Some(Token {
     content: TokenContent::Caption(caption),
     line_num,
@@ -195,14 +195,14 @@ pub fn caption_processor(
   None
 }
 
-pub fn property_processor(
+pub(super) fn property_processor(
   tokens: &mut VecDeque<&Token>,
   ParserCtx {
     metadata,
     parsing_lyrics,
     ..
   }: &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>> {
+) -> ParseResult {
   if let Some(Token {
     content: TokenContent::Property { key, value },
     line_num,
@@ -220,10 +220,10 @@ pub fn property_processor(
   None
 }
 
-pub fn yomigana_processor(
+pub(super) fn yomigana_processor(
   tokens: &mut VecDeque<&Token>,
   ctx: &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>> {
+) -> ParseResult {
   if let Some(Token {
     content: TokenContent::Yomigana(yomigana),
     line_num,
@@ -248,12 +248,12 @@ pub fn yomigana_processor(
   None
 }
 
-pub fn section_processor(
+pub(super) fn section_processor(
   tokens: &mut VecDeque<&Token>,
   ParserCtx {
     notes, sections, ..
   }: &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>> {
+) -> ParseResult {
   if let Some(Token {
     content: TokenContent::Section(_),
     ..
@@ -268,12 +268,12 @@ pub fn section_processor(
   None
 }
 
-pub fn lyrics_processor(
+pub(super) fn lyrics_processor(
   tokens: &mut VecDeque<&Token>,
   ParserCtx {
     parsed_japanese, ..
   }: &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>> {
+) -> ParseResult {
   if let Some(Token {
     content: TokenContent::Lyrics(lyrics),
     ..
@@ -289,10 +289,10 @@ pub fn lyrics_processor(
   None
 }
 
-pub fn comment_processor(
+pub(super) fn comment_processor(
   tokens: &mut VecDeque<&Token>,
   _: &mut ParserCtx,
-) -> Option<Result<Note, ScoremapParseError>> {
+) -> ParseResult {
   if let Some(Token {
     content: TokenContent::Comment,
     ..
