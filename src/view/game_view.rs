@@ -158,7 +158,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
           sentence: &sentence,
           music_info: self.model.music_info(),
           type_per_second,
-          score: self.model.activity().score(),
+          score: self.model.activity().score().clone(),
           section_remaining_ratio: self
             .model
             .section_remaining_ratio(),
@@ -194,7 +194,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
         .map_or(false, |ended| ended < &self.model.accumulated_time())
       {
         return Ok(ViewRoute::ResultView(
-          self.model.activity().score(),
+          self.model.activity().score().clone(),
           self.model.music_info(),
         ));
       }

@@ -124,17 +124,12 @@ impl GameActivity {
   }
 
   pub fn current_sentence(&self) -> Sentence {
-    self
-      .current_note()
-      .and_then(|note| {
-        if let NoteContent::Sentence { sentence, .. } = note.content()
-        {
-          Some(sentence.clone())
-        } else {
-          None
-        }
-      })
-      .unwrap_or_else(Sentence::empty)
+    if let Some(note) = self.current_note() {
+      if let NoteContent::Sentence { sentence, .. } = note.content() {
+        return sentence.clone();
+      }
+    }
+    Sentence::empty()
   }
 
   pub fn current_note_id(&self) -> NoteId {
@@ -152,8 +147,8 @@ impl GameActivity {
     self.score.score_point += amount;
   }
 
-  pub fn score(&self) -> GameScore {
-    self.score.clone()
+  pub fn score(&self) -> &GameScore {
+    &self.score
   }
 
   pub fn is_game_over(&self) -> bool {
