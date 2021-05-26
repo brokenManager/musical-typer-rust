@@ -5,11 +5,11 @@ use std::{
 };
 
 #[derive(Debug, Default, Clone)]
-pub struct Seconds(u64); // owns milliseconds
+pub struct Seconds(i64); // owns milliseconds
 
 impl Seconds {
   pub fn new(seconds: f64) -> Self {
-    Self((seconds * 1000.0).ceil() as u64)
+    Self((seconds * 1000.0).ceil() as i64)
   }
 
   pub fn as_f64(&self) -> f64 {
