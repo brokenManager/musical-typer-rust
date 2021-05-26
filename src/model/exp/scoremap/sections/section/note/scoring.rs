@@ -6,7 +6,7 @@ mod achievement_rate;
 use accuracy::Accuracy;
 use achievement_rate::AchievementRate;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Scoring {
   accuracy: Accuracy,
   achievement_rate: AchievementRate,
@@ -14,10 +14,7 @@ pub struct Scoring {
 
 impl Scoring {
   pub fn new() -> Self {
-    Self {
-      accuracy: Accuracy::new(),
-      achievement_rate: AchievementRate::new(),
-    }
+    Self::default()
   }
 
   pub fn point(&mut self, res: &TypeResult) {
