@@ -111,7 +111,7 @@ pub fn single_time_processor(
     } = ctx;
     if !*parsing_lyrics {
       eprintln!("{:?}", tokens);
-      return Some(Err(InvalidTimingDeifinition {
+      return Some(Err(InvalidTimingDefinition {
         line_num: *line_num,
         reason: "時間指定は歌詞定義の中のみ有効です。",
       }));
@@ -210,7 +210,7 @@ pub fn property_processor(
   {
     tokens.remove(0);
     if *parsing_lyrics {
-      return Some(Err(InvalidPropertyDeifinition {
+      return Some(Err(InvalidPropertyDefinition {
         line_num: *line_num,
         reason: "プロパティの指定は歌詞定義の外のみ有効です。",
       }));

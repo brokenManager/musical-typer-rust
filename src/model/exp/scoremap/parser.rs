@@ -17,7 +17,7 @@ pub enum ScoremapParseError {
     line_num: usize,
     reason: &'static str,
   },
-  InvalidPropertyDeifinition {
+  InvalidPropertyDefinition {
     line_num: usize,
     reason: &'static str,
   },
@@ -25,7 +25,7 @@ pub enum ScoremapParseError {
     line_num: usize,
     reason: &'static str,
   },
-  InvalidTimingDeifinition {
+  InvalidTimingDefinition {
     line_num: usize,
     reason: &'static str,
   },

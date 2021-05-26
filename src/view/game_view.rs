@@ -45,14 +45,14 @@ impl<'ttf, 'canvas> GameView<'ttf, 'canvas> {
 
 impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
   fn run(&mut self) -> Result<ViewRoute, ViewError> {
-    struct TypeTimepoint(Seconds);
+    struct TypeTimePoint(Seconds);
 
     let mut mt_events = vec![];
     let mut player = Player::new();
     let mut pressed_key_buf = BTreeSet::new();
     let mut typed_key_buf = vec![];
     let mut sentence = Sentence::empty();
-    let mut timepoints = VecDeque::new();
+    let mut time_points = VecDeque::new();
     let mut ended = None;
 
     loop {
@@ -72,7 +72,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
                 player.play_se(SEKind::Fail)?;
               }
               MusicalTypeResult::Correct => {
-                timepoints.push_back(TypeTimepoint(
+                time_points.push_back(TypeTimePoint(
                   self.model.accumulated_time(),
                 ));
                 player.play_se(SEKind::Correct)?;
@@ -135,16 +135,16 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
       }
       {
         let expire_limit = self.model.accumulated_time() - 5.0.into();
-        while let Some(front) = timepoints.front() {
+        while let Some(front) = time_points.front() {
           if front.0 < expire_limit {
-            timepoints.pop_front();
+            time_points.pop_front();
           } else {
             break;
           }
         }
       }
 
-      let type_per_second = timepoints.len() as f64 / 5.0;
+      let type_per_second = time_points.len() as f64 / 5.0;
       let client = sdl2::rect::Rect::new(
         0,
         0,

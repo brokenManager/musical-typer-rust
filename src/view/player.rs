@@ -37,7 +37,7 @@ impl<'music> Drop for Player<'music> {
   }
 }
 
-fn loaad_chunks() -> Result<Chunks, PlayerError> {
+fn load_chunks() -> Result<Chunks, PlayerError> {
   let path = Path::new("asset/");
   let mut chunks: Chunks = HashMap::new();
   for entry in path.read_dir()? {
@@ -59,7 +59,7 @@ impl<'music> Player<'music> {
   pub fn new() -> Self {
     Self {
       music: None,
-      chunks: loaad_chunks().expect("missing audio file dir"),
+      chunks: load_chunks().expect("missing audio file dir"),
     }
   }
 

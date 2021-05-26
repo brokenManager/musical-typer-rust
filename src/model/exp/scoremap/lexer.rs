@@ -19,8 +19,8 @@ pub enum ScoremapLexError {
   InternalRegexCompileFailure(regex::Error),
   CaptureFailure,
   ParsingNumberFailure,
-  UnexceptedEndOfFile,
-  InvalidPropertyDeifinition {
+  UnexpectedEndOfFile,
+  InvalidPropertyDefinition {
     line_num: usize,
     reason: &'static str,
   },
@@ -143,7 +143,7 @@ where
   let mut tokens: Vec<Token> = vec![];
   for (line_num, line) in reader.lines().enumerate() {
     let line_num = line_num + 1; // starts from 1
-    let line = line.map_err(|_e| UnexceptedEndOfFile)?;
+    let line = line.map_err(|_e| UnexpectedEndOfFile)?;
     ctx.set_line(line, line_num);
     if let Some(token) = entire.lex(&mut ctx).transpose()? {
       tokens.push(token);

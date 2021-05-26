@@ -66,7 +66,7 @@ pub fn property_lexer(
 ) -> Option<Result<Token, ScoremapLexError>> {
   let line_num = *line_num;
   if captures.len() != 3 {
-    return Some(Err(InvalidPropertyDeifinition {
+    return Some(Err(InvalidPropertyDefinition {
       line_num,
       reason: "プロパティの指定が正しくありません。",
     }));
@@ -80,7 +80,7 @@ pub fn property_lexer(
         content: Comment,
       })
     } else {
-      Err(InvalidPropertyDeifinition {
+      Err(InvalidPropertyDefinition {
         line_num,
         reason: "未対応のプロパティです。",
       })
