@@ -54,7 +54,7 @@ impl<'a> Component for Finder<'a> {
     } = &props;
 
     canvas.set_draw_color(Color::RGB(230, 220, 200));
-    canvas.fill_rect(client.clone())?;
+    canvas.fill_rect(*client)?;
 
     let remaining_width =
       (client.width() as f64 * remaining_ratio) as u32;

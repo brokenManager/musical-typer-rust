@@ -85,7 +85,7 @@ fn duration() -> DurationResult<()> {
   Ok(())
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct MinuteSecond {
   minutes: u32,
   seconds: Seconds,
@@ -93,10 +93,7 @@ pub struct MinuteSecond {
 
 impl MinuteSecond {
   pub fn new() -> Self {
-    MinuteSecond {
-      minutes: 0,
-      seconds: 0.0.into(),
-    }
+    Self::default()
   }
   pub fn minutes(&self, minutes: u32) -> Self {
     MinuteSecond {
@@ -114,7 +111,7 @@ impl MinuteSecond {
     }
     MinuteSecond {
       minutes: self.minutes,
-      seconds: seconds.into(),
+      seconds,
     }
   }
   pub fn to_seconds(&self) -> Seconds {

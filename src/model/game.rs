@@ -211,7 +211,7 @@ impl MusicalTyper {
     let sentence = self.activity.current_sentence();
     self.event_queue.push(UpdateSentence(sentence));
 
-    let res = self.event_queue.iter().cloned().collect();
+    let res = self.event_queue.to_vec();
     self.event_queue.clear();
     res
   }

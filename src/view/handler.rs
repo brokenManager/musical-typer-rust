@@ -41,7 +41,7 @@ impl Handler {
   }
 
   pub fn delay(&self, ms: u32) -> Result<(), HandleError> {
-    self.sdl.timer().map_err(|e| TimerError(e))?.delay(ms);
+    self.sdl.timer().map_err(TimerError)?.delay(ms);
     Ok(())
   }
 
@@ -52,10 +52,7 @@ impl Handler {
   where
     F: FnMut(Event),
   {
-    let mut poller = self
-      .sdl
-      .event_pump()
-      .map_err(|e| EventError(e.to_string()))?;
+    let mut poller = self.sdl.event_pump().map_err(EventError)?;
     for event in poller.poll_iter() {
       use sdl2::event::Event::*;
       match &event {

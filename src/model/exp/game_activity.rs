@@ -106,7 +106,7 @@ impl GameActivity {
 
   pub fn update_time(&mut self, time: Seconds) {
     self.state = State::OnGame;
-    if let Some(_) = self.sections.update(time) {
+    if self.sections.update(time).is_some() {
       return;
     }
     self.state = State::GameOver;
@@ -134,7 +134,7 @@ impl GameActivity {
           None
         }
       })
-      .unwrap_or(Sentence::empty())
+      .unwrap_or_else(Sentence::empty)
   }
 
   pub fn current_note_id(&self) -> NoteId {
@@ -157,10 +157,6 @@ impl GameActivity {
   }
 
   pub fn is_game_over(&self) -> bool {
-    if let State::GameOver = self.state {
-      true
-    } else {
-      false
-    }
+    matches!(self.state, State::GameOver)
   }
 }

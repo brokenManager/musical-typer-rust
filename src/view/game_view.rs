@@ -94,7 +94,7 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
               // TODO: Queue a perfect animation
             }
             EndOfScore => {
-              if let None = ended {
+              if ended.is_none() {
                 ended =
                   Some(self.model.accumulated_time() + 2.0.into());
               }

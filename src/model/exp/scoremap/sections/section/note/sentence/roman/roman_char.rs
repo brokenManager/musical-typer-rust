@@ -28,7 +28,7 @@ impl RomanChar {
       .iter()
       .filter(|style| style.starts_with(input))
       .collect();
-    if filtered.len() < 1 {
+    if filtered.is_empty() {
       None
     } else {
       Some(filtered[0])
@@ -40,7 +40,7 @@ impl RomanChar {
   }
 
   pub fn determined_style(&self) -> &str {
-    self.determined_style.unwrap_or(self.styles()[0])
+    self.determined_style.unwrap_or_else(|| self.styles()[0])
   }
 
   pub fn input(&mut self, typed: char) -> bool {
@@ -66,7 +66,7 @@ impl RomanChar {
       .cloned()
       .filter(|s| s.starts_with(typed))
       .collect();
-    if 0 < fixed.len() {
+    if !fixed.is_empty() {
       self.styles = fixed;
     }
   }

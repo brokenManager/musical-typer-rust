@@ -8,7 +8,7 @@ use crate::model::exp::{
 use regex::Captures;
 use ScoremapLexError::*;
 
-const METADATA_KEYS: &[&'static str] = &[
+const METADATA_KEYS: &[&str] = &[
   "title",
   "song_author",
   "singer",

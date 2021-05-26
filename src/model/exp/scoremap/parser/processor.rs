@@ -42,15 +42,15 @@ impl ParserCtx {
         TokenContent::Time(ref mise) => vec![mise.clone()],
         _ => vec![],
       });
-    let next_time = next_times.next().unwrap_or(
+    let next_time = next_times.next().unwrap_or_else(|| {
       self
         .curr_time
         .clone()
-        .seconds(self.curr_time.to_seconds() + 1.0.into()),
-    );
+        .seconds(self.curr_time.to_seconds() + 1.0.into())
+    });
     Duration::new(
       self.curr_time.clone().to_seconds().as_f64(),
-      next_time.clone().to_seconds().as_f64(),
+      next_time.to_seconds().as_f64(),
     )
     .map_err(|err| ScoremapParseError::InvalidDuration {
       line_num,
@@ -122,7 +122,7 @@ pub fn single_time_processor(
     }
     *curr_time = specified.clone();
     *parsed_japanese = None;
-    if notes.len() < 1 {
+    if notes.is_empty() {
       return Some(Ok(Note::blank(duration)));
     }
   }
@@ -260,7 +260,7 @@ pub fn section_processor(
   }) = tokens.front()
   {
     tokens.remove(0);
-    if 0 < notes.len() {
+    if !notes.is_empty() {
       sections.push(notes.clone());
       *notes = vec![];
     }

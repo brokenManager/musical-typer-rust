@@ -41,12 +41,12 @@ impl ScoremapMetadata {
         .0
         .get("title")
         .cloned()
-        .unwrap_or("曲名不詳".into()),
+        .unwrap_or_else(|| "曲名不詳".into()),
       song_author: self
         .0
         .get("song_author")
         .cloned()
-        .unwrap_or("作曲者不詳".into()),
+        .unwrap_or_else(|| "作曲者不詳".into()),
     }
   }
 }
@@ -74,8 +74,8 @@ impl Scoremap {
       configurator(lexer::ScoremapLoadConfig::new()),
       reader,
     )
-    .map_err(|e| LexError(e))?;
-    Ok(parser::parse(&tokens).map_err(|e| ParseError(e))?)
+    .map_err(LexError)?;
+    parser::parse(&tokens).map_err(ParseError)
   }
 
   pub fn from_file<C>(
@@ -93,8 +93,8 @@ impl Scoremap {
       configurator(lexer::ScoremapLoadConfig::new()),
       reader,
     )
-    .map_err(|e| LexError(e))?;
+    .map_err(LexError)?;
 
-    Ok(parser::parse(&tokens).map_err(|e| ParseError(e))?)
+    parser::parse(&tokens).map_err(ParseError)
   }
 }

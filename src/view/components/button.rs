@@ -57,12 +57,12 @@ impl<H: FnMut()> Component for Button<H> {
     let on_hover = bounds.contains_point(mouse.mouse_pos);
 
     if on_hover {
-      canvas.set_draw_color(color_on_hover.clone());
-      canvas.fill_rect(bounds.clone())?;
+      canvas.set_draw_color(*color_on_hover);
+      canvas.fill_rect(*bounds)?;
     }
 
-    canvas.set_draw_color(border_color.clone());
-    canvas.draw_rect(bounds.clone())?;
+    canvas.set_draw_color(*border_color);
+    canvas.draw_rect(*bounds)?;
     Ok(())
   }
 }

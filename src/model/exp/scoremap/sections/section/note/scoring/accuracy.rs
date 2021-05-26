@@ -1,6 +1,6 @@
 use super::super::TypeResult;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Accuracy {
   correction_type_count: u32,
   wrong_type_count: u32,
@@ -8,10 +8,7 @@ pub struct Accuracy {
 
 impl Accuracy {
   pub fn new() -> Self {
-    Self {
-      correction_type_count: 0,
-      wrong_type_count: 0,
-    }
+    Self::default()
   }
 
   pub fn point(&mut self, res: &TypeResult) {

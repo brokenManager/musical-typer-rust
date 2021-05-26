@@ -47,7 +47,7 @@ fn loaad_chunks() -> Result<Chunks, PlayerError> {
         file.path().file_stem().map_or("".into(), |name| {
           name.to_string_lossy().to_string()
         }),
-        Chunk::from_file(file.path()).map_err(|e| AudioError(e))?,
+        Chunk::from_file(file.path()).map_err(AudioError)?,
       );
     }
   }
@@ -70,7 +70,7 @@ impl<'music> Player<'music> {
     let bgm_file_path = format!("score/{}", bgm_name);
     let music =
       sdl2::mixer::Music::from_file(Path::new(&bgm_file_path))
-        .map_err(|e| AudioError(e))?;
+        .map_err(AudioError)?;
     self.music = Some(music);
     self.play_bgm()?;
     Ok(())
@@ -78,20 +78,19 @@ impl<'music> Player<'music> {
 
   pub fn play_bgm(&self) -> Result<(), PlayerError> {
     if let Some(ref music) = self.music {
-      music.play(0).map_err(|e| AudioError(e))?;
+      music.play(0).map_err(AudioError)?;
     }
     Ok(())
   }
 
   pub fn stop_bgm(&self, fade_time: i32) -> Result<(), PlayerError> {
-    sdl2::mixer::Music::fade_out(fade_time).map_err(|e| AudioError(e))
+    sdl2::mixer::Music::fade_out(fade_time).map_err(AudioError)
   }
 
   fn play_se_file(&self, name: &str) -> Result<(), PlayerError> {
-    let chunk = self.chunks.get(name).ok_or(AudioError(format!(
-      "missing such audio file: {}",
-      name
-    )))?;
+    let chunk = self.chunks.get(name).ok_or_else(|| {
+      AudioError(format!("missing such audio file: {}", name))
+    })?;
     let _ = Channel::all().play(chunk, 0).map_err(|e| {
       eprintln!("{:?}", e);
     });

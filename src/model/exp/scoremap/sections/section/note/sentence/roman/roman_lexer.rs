@@ -19,11 +19,11 @@ impl From<RomanParseError> for ScoremapError {
   }
 }
 
-pub fn parse<'a>(
+pub fn parse(
   romans: &mut Vec<RomanChar>,
-  mut yomigana: &'a [char],
+  mut yomigana: &[char],
 ) -> Result<(), RomanParseError> {
-  while yomigana.len() != 0 {
+  while !yomigana.is_empty() {
     let replaced_count = match yomigana {
       ['っ', 'く', 'ぁ' | 'ぃ' | 'ぅ' | 'ぇ' | 'ぉ', ..] => {
         romans.push(RomanChar::new(&["q", "k", "xtu", "ltu"]));

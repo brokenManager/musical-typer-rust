@@ -31,14 +31,14 @@ impl<'texture> Text<'texture> {
     let TextStyle { text, color, .. } = style.clone();
     let aspect = {
       let (w, h) =
-        font.size_of(&text).map_err(|e| TextError::FontError(e))?;
+        font.size_of(&text).map_err(TextError::FontError)?;
       w as f64 / h as f64
     };
-    let text = if text == "" { " " } else { &text };
+    let text = if text.is_empty() { " " } else { &text };
     let surface = font
       .render(text)
-      .blended(color.clone())
-      .map_err(|e| TextError::FontError(e))?;
+      .blended(color)
+      .map_err(TextError::FontError)?;
 
     let texture = creator(surface)?;
 
@@ -62,7 +62,7 @@ impl<'texture> Text<'texture> {
         None,
         Some(self.style.to_rect(self.aspect)),
       )
-      .map_err(|e| TextError::RenderError(e))
+      .map_err(TextError::RenderError)
   }
 }
 
@@ -94,7 +94,7 @@ impl TextStyle {
   }
 
   pub fn text(mut self, new_text: &str) -> Self {
-    if new_text == "" {
+    if new_text.is_empty() {
       self.text = String::from(" ");
     } else {
       self.text = new_text.into();

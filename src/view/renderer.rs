@@ -77,17 +77,11 @@ impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
   }
 
   pub fn fill_rect(&mut self, rect: Rect) -> Result<(), ViewError> {
-    self
-      .canvas
-      .fill_rect(rect)
-      .map_err(|e| ViewError::RenderError(e))
+    self.canvas.fill_rect(rect).map_err(ViewError::RenderError)
   }
 
   pub fn draw_rect(&mut self, rect: Rect) -> Result<(), ViewError> {
-    self
-      .canvas
-      .draw_rect(rect)
-      .map_err(|e| ViewError::RenderError(e))
+    self.canvas.draw_rect(rect).map_err(ViewError::RenderError)
   }
 
   pub fn text<S>(&mut self, styler: S) -> Result<(), ViewError>
@@ -101,7 +95,7 @@ impl<'ttf, 'texture> Renderer<'ttf, 'texture> {
         self
           .texture_creator
           .create_texture_from_surface(surface)
-          .map_err(|e| TextError::TextureError(e))
+          .map_err(TextError::TextureError)
       })?;
       self.text_cache.insert(style.clone(), text);
     }

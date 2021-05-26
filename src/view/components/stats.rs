@@ -77,7 +77,7 @@ impl Component for Stats {
       s.text("正解率")
         .color(Color::RGB(160, 160, 165))
         .line_height(20)
-        .pos(client.top_left().clone().offset(10, 30))
+        .pos(client.top_left().offset(10, 30))
     })?;
     canvas.text(|s| {
       s.text(&format!("{:05.1}%", accuracy * 100.0))
@@ -87,7 +87,7 @@ impl Component for Stats {
           (110.0 * accuracy) as u8,
         ))
         .line_height(client.height() - 20)
-        .pos(client.top_left().clone().offset(10, 30))
+        .pos(client.top_left().offset(10, 30))
     })?;
     canvas.set_draw_color(Color::RGB(250, 120, 110));
     canvas.draw_rect(Rect::new(
@@ -119,13 +119,13 @@ impl Component for Stats {
     canvas.text(|s| {
       s.text("ランク")
         .color(Color::RGB(160, 160, 165))
-        .pos(client.top_left().clone().offset(10, -40))
+        .pos(client.top_left().offset(10, -40))
     })?;
     canvas.text(|s| {
       s.text(rank.0)
         .color(Color::RGB(64, 79, 181))
         .line_height(25)
-        .pos(client.top_left().clone().offset(10, -25))
+        .pos(client.top_left().offset(10, -25))
     })?;
     Ok(())
   }

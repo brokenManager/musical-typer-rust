@@ -90,7 +90,7 @@ pub struct Keyboard {
 impl Keyboard {
   pub fn new(initial_props: KeyboardProps, client: Rect) -> Self {
     const CELL_ASPECT: f64 = 1.0;
-    const KEY_CHARS_ROWS: &[&'static str] = &[
+    const KEY_CHARS_ROWS: &[&str] = &[
       "1234567890-^¥",
       "qwertyuiop@[",
       "asdfghjkl;:]",

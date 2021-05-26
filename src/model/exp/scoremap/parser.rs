@@ -77,13 +77,15 @@ pub fn parse(
   use processor::*;
 
   let mut tokens: VecDeque<_> = tokens
-    .into_iter()
-    .filter(|t| match t {
-      Token {
-        content: TokenContent::Comment,
-        ..
-      } => false,
-      _ => true,
+    .iter()
+    .filter(|t| {
+      !matches!(
+        t,
+        Token {
+          content: TokenContent::Comment,
+          ..
+        }
+      )
     })
     .collect();
 
@@ -116,7 +118,7 @@ pub fn parse(
     .connect(comment_parser);
 
   let mut ctx = ParserCtx::new();
-  while 1 <= tokens.len() {
+  while !tokens.is_empty() {
     if let Some(note) =
       parser.parse(&mut tokens, &mut ctx).transpose()?
     {
