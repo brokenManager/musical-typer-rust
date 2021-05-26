@@ -43,16 +43,14 @@ impl LexerCtx {
   }
 }
 
-pub type Tokenizer = fn(
-  Captures,
-  &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>>;
+pub type TokenResult = Option<Result<Token, ScoremapLexError>>;
+pub type Tokenizer = fn(Captures, &mut LexerCtx) -> TokenResult;
 
 pub const COMMENT: &str = r"^[[:space:]]*(:?#.*)?$";
 pub fn comment_lexer(
   _: Captures,
   LexerCtx { line_num, .. }: &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>> {
+) -> TokenResult {
   Some(Ok(Token {
     line_num: *line_num,
     content: Comment,
@@ -63,7 +61,7 @@ pub const PROPERTY: &str = r"^:([[:^space:]]+)[[:space:]]+(.+)$";
 pub fn property_lexer(
   captures: Captures,
   LexerCtx { line_num, cfg, .. }: &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>> {
+) -> TokenResult {
   let line_num = *line_num;
   if captures.len() != 3 {
     return Some(Err(InvalidPropertyDefinition {
@@ -98,7 +96,7 @@ pub const COMMAND: &str =
 pub fn command_lexer(
   captures: Captures,
   LexerCtx { line_num, .. }: &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>> {
+) -> TokenResult {
   let string = captures.get(1)?.as_str();
   Some(Ok(Token {
     line_num: *line_num,
@@ -110,7 +108,7 @@ pub const YOMIGANA: &str = r"^:([あいうえおかきくけこさしすせそ�
 pub fn yomigana_lexer(
   captures: Captures,
   LexerCtx { line_num, .. }: &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>> {
+) -> TokenResult {
   let line_num = *line_num;
   let string = captures.get(1)?.as_str();
   let content = Yomigana({
@@ -133,7 +131,7 @@ pub const CAPTION: &str =
 pub fn caption_lexer(
   captures: Captures,
   LexerCtx { line_num, .. }: &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>> {
+) -> TokenResult {
   let string = captures.get(1)?.as_str();
   Some(Ok(Token {
     line_num: *line_num,
@@ -146,7 +144,7 @@ pub const SECTION: &str =
 pub fn section_lexer(
   captures: Captures,
   LexerCtx { line_num, .. }: &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>> {
+) -> TokenResult {
   let string = captures.get(1)?.as_str();
   Some(Ok(Token {
     line_num: *line_num,
@@ -163,7 +161,7 @@ pub fn seconds_lexer(
     curr_mise,
     ..
   }: &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>> {
+) -> TokenResult {
   let num: f64 = {
     let num_res = captures
       .get(1)?
@@ -195,7 +193,7 @@ pub fn minutes_lexer(
     line_num,
     ..
   }: &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>> {
+) -> TokenResult {
   let num: u32 = {
     let num_res = captures
       .get(1)?
@@ -217,7 +215,7 @@ pub fn minutes_lexer(
 pub fn lyrics_lexer(
   _: Captures,
   LexerCtx { line_num, line, .. }: &mut LexerCtx,
-) -> Option<Result<Token, ScoremapLexError>> {
+) -> TokenResult {
   Some(Ok(Token {
     line_num: *line_num,
     content: Lyrics(line.to_owned()),

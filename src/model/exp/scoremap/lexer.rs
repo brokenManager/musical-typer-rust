@@ -2,7 +2,7 @@ use regex::Regex;
 use std::io::{BufReader, Read};
 
 use super::token::Token;
-use pattern::{LexerCtx, Tokenizer};
+use pattern::{LexerCtx, TokenResult, Tokenizer};
 
 mod pattern;
 #[cfg(test)]
@@ -79,10 +79,7 @@ impl Lexer {
     }
   }
 
-  fn lex(
-    &mut self,
-    ctx: &mut LexerCtx,
-  ) -> Option<Result<Token, ScoremapLexError>> {
+  fn lex(&mut self, ctx: &mut LexerCtx) -> TokenResult {
     let line = ctx.line();
     self
       .pattern
