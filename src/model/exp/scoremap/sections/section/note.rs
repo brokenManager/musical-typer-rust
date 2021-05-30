@@ -34,8 +34,11 @@ use rand::{thread_rng, Rng};
 
 impl Note {
   fn new(duration: Duration, content: NoteContent) -> Self {
-    let id =
-      thread_rng().sample_iter(&Alphanumeric).take(5).collect();
+    let id = thread_rng()
+      .sample_iter(&Alphanumeric)
+      .take(5)
+      .map(|n| n as char)
+      .collect();
     Self {
       id,
       duration,
