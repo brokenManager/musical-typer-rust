@@ -95,12 +95,14 @@ impl MinuteSecond {
   pub fn new() -> Self {
     Self::default()
   }
+
   pub fn minutes(&self, minutes: u32) -> Self {
     MinuteSecond {
       minutes,
       seconds: self.seconds,
     }
   }
+
   pub fn seconds<T: Into<Seconds> + SubAssign>(
     &self,
     seconds: T,
@@ -114,6 +116,7 @@ impl MinuteSecond {
       seconds,
     }
   }
+
   pub fn as_seconds(&self) -> Seconds {
     Seconds::new(self.minutes as f64 * 60.0) + self.seconds
   }

@@ -34,9 +34,11 @@ impl LexerCtx {
       line: "".into(),
     }
   }
+
   pub fn line(&self) -> String {
     self.line.clone()
   }
+
   pub fn set_line(&mut self, line: String, line_num: usize) {
     self.line = line;
     self.line_num = line_num;

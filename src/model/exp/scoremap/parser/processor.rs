@@ -32,6 +32,7 @@ impl ParserCtx {
       curr_time: MinuteSecond::new(),
     }
   }
+
   fn calc_duration(
     &self,
     tokens: &VecDeque<&Token>,

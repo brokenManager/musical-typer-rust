@@ -33,6 +33,7 @@ impl From<f64> for Seconds {
 
 impl Add for Seconds {
   type Output = Self;
+
   fn add(self, rhs: Self) -> Self::Output {
     Self(self.0 + rhs.0)
   }
@@ -46,6 +47,7 @@ impl AddAssign for Seconds {
 
 impl Sub for Seconds {
   type Output = Self;
+
   fn sub(self, rhs: Self) -> Self::Output {
     Self(self.0.saturating_sub(rhs.0))
   }
@@ -59,6 +61,7 @@ impl SubAssign for Seconds {
 
 impl Div for Seconds {
   type Output = f64;
+
   fn div(self, rhs: Self) -> Self::Output {
     self.0 as f64 / rhs.0 as f64
   }
