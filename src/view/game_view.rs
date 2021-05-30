@@ -55,6 +55,24 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
     let mut time_points = VecDeque::new();
     let mut ended = None;
 
+    let client = sdl2::rect::Rect::new(
+      0,
+      0,
+      self.renderer.borrow().width(),
+      self.renderer.borrow().height(),
+    );
+    let mut whole_view = Whole::new(
+      WholeProps {
+        pressed_keys: pressed_key_buf.iter().cloned().collect(),
+        sentence: sentence.clone(),
+        music_info: self.model.music_info(),
+        type_per_second: 0.0,
+        score: self.model.activity().score().clone(),
+        section_remaining_ratio: self.model.section_remaining_ratio(),
+      },
+      client,
+    );
+
     loop {
       let time = Instant::now();
       {
@@ -145,27 +163,16 @@ impl<'ttf, 'canvas> View for GameView<'ttf, 'canvas> {
       }
 
       let type_per_second = time_points.len() as f64 / 5.0;
-      let client = sdl2::rect::Rect::new(
-        0,
-        0,
-        self.renderer.borrow().width(),
-        self.renderer.borrow().height(),
-      );
 
-      Whole::new(
-        WholeProps {
-          pressed_keys: pressed_key_buf.iter().cloned().collect(),
-          sentence: &sentence,
-          music_info: self.model.music_info(),
-          type_per_second,
-          score: self.model.activity().score().clone(),
-          section_remaining_ratio: self
-            .model
-            .section_remaining_ratio(),
-        },
-        client,
-      )
-      .render(&mut self.renderer.borrow_mut())?;
+      whole_view.update(WholeProps {
+        pressed_keys: pressed_key_buf.iter().cloned().collect(),
+        sentence: sentence.clone(),
+        music_info: self.model.music_info(),
+        type_per_second,
+        score: self.model.activity().score().clone(),
+        section_remaining_ratio: self.model.section_remaining_ratio(),
+      });
+      whole_view.render(&mut self.renderer.borrow_mut())?;
 
       self.renderer.borrow_mut().flush();
 

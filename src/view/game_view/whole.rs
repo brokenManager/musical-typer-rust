@@ -17,26 +17,25 @@ use finder::{Finder, FinderProps};
 use keyboard::{Keyboard, KeyboardProps};
 
 #[derive(PartialEq)]
-pub struct WholeProps<'a> {
+pub struct WholeProps {
   pub pressed_keys: Vec<char>,
-  pub sentence: &'a Sentence,
+  pub sentence: Sentence,
   pub music_info: MusicInfo,
   pub type_per_second: f64,
   pub score: GameScore,
   pub section_remaining_ratio: f64,
 }
 
-pub struct Whole<'a> {
-  props: WholeProps<'a>,
+pub struct Whole {
   keyboard: Keyboard,
-  finder: Finder<'a>,
+  finder: Finder,
   header: Header,
   stats: Stats,
   client: Rect,
 }
 
-impl<'a> Whole<'a> {
-  pub fn new(props: WholeProps<'a>, client: Rect) -> Self {
+impl Whole {
+  pub fn new(props: WholeProps, client: Rect) -> Self {
     let hint = {
       let roman = props.sentence.roman();
       roman.will_input.chars().next().map_or(vec![], |c| vec![c])
@@ -55,7 +54,7 @@ impl<'a> Whole<'a> {
     let finder_dim = Rect::new(0, 100, client.width(), 150);
     let finder = Finder::new(
       FinderProps {
-        sentence: props.sentence,
+        sentence: props.sentence.clone(),
         remaining_ratio: props.section_remaining_ratio,
       },
       finder_dim,
@@ -75,13 +74,12 @@ impl<'a> Whole<'a> {
     let stats = Stats::new(
       StatsProps {
         type_per_second: props.type_per_second,
-        score: props.score.clone(),
+        score: props.score,
       },
       stats_dim,
     );
 
     Self {
-      props,
       keyboard,
       finder,
       header,
@@ -91,11 +89,11 @@ impl<'a> Whole<'a> {
   }
 }
 
-impl<'a> Component for Whole<'a> {
-  type Props = WholeProps<'a>;
+impl Component for Whole {
+  type Props = WholeProps;
 
-  fn is_needed_redraw(&self, new_props: &Self::Props) -> bool {
-    &self.props != new_props
+  fn is_needed_redraw(&self, _: &Self::Props) -> bool {
+    true
   }
 
   fn update(&mut self, props: Self::Props) {
@@ -110,16 +108,14 @@ impl<'a> Component for Whole<'a> {
     });
 
     self.finder.update(FinderProps {
-      sentence: props.sentence,
+      sentence: props.sentence.clone(),
       remaining_ratio: props.section_remaining_ratio,
     });
 
     self.stats.update(StatsProps {
       type_per_second: props.type_per_second,
-      score: props.score.clone(),
+      score: props.score,
     });
-
-    self.props = props;
   }
 
   fn render(&self, ctx: &mut Renderer<'_, '_>) -> ViewResult {

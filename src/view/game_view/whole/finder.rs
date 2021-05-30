@@ -11,21 +11,18 @@ use crate::{
 };
 
 #[derive(PartialEq)]
-pub struct FinderProps<'a> {
-  pub sentence: &'a Sentence,
+pub struct FinderProps {
+  pub sentence: Sentence,
   pub remaining_ratio: f64,
 }
 
-pub struct Finder<'a> {
-  props: FinderProps<'a>,
+pub struct Finder {
+  props: FinderProps,
   client: Rect,
 }
 
-impl<'a> Finder<'a> {
-  pub fn new(
-    mut initial_props: FinderProps<'a>,
-    client: Rect,
-  ) -> Self {
+impl Finder {
+  pub fn new(mut initial_props: FinderProps, client: Rect) -> Self {
     initial_props.remaining_ratio =
       initial_props.remaining_ratio.max(0.).min(1.);
     Self {
@@ -35,8 +32,8 @@ impl<'a> Finder<'a> {
   }
 }
 
-impl<'a> Component for Finder<'a> {
-  type Props = FinderProps<'a>;
+impl Component for Finder {
+  type Props = FinderProps;
 
   fn is_needed_redraw(&self, new_props: &Self::Props) -> bool {
     &self.props != new_props
